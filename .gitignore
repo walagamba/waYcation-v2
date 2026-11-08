@@ -1,0 +1,19 @@
+# Java & Maven Build Output
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IDE & OS Files
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Environment & Local Secrets
+.env
+.env*.local
+*.log

@@ -1,0 +1,109 @@
+:root {
+  --brand-navy: #003580;
+  --brand-navy-dark: #00224f;
+  --brand-yellow: #febb02;
+  --brand-yellow-hover: #e5a800;
+  --bg-canvas: #f8fafc;
+  --card-surface: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --border-color: #e2e8f0;
+  --signal-red: #f43f5e;
+  --emerald-green: #10b981;
+  --owner-indigo: #4338ca;
+  --admin-crimson: #b91c1c;
+}
+
+.dark {
+  --bg-canvas: #09090b;
+  --card-surface: #121215;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-color: #27272a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  scroll-behavior: smooth;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.bg-grid-pattern {
+  background-size: 24px 24px;
+  background-image:
+    linear-gradient(to right, rgba(100, 116, 139, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(100, 116, 139, 0.06) 1px, transparent 1px);
+}
+
+.waycation-card {
+  background-color: var(--card-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.waycation-card:hover {
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1);
+}
+
+.btn-brand-primary {
+  background-color: var(--brand-navy);
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.btn-brand-primary:hover {
+  background-color: var(--brand-navy-dark);
+}
+
+.btn-brand-accent {
+  background-color: var(--brand-yellow);
+  color: #0f172a;
+  font-weight: 800;
+  border-radius: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-brand-accent:hover {
+  background-color: var(--brand-yellow-hover);
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal-backdrop.active {
+  display: flex;
+}
