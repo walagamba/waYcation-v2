@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Account Settings | waYcation 2.0')}"></head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="flex-grow max-w-4xl w-full mx-auto px-4 py-10 space-y-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900">Account &amp; Profile Settings</h1>
+            <p class="text-sm text-slate-600">Manage your personal details, security preferences, and data privacy.</p>
+        </div>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800"
+              th:text="${profile != null ? profile.role : 'TOURIST'}">TOURIST</span>
+    </div>
+
+    <div th:if="${errorMessage}" class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm"
+         th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm"
+         th:text="${successMessage}"></div>
+
+    <!-- Card 1: Personal Profile -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <h2 class="text-lg font-semibold text-slate-900 mb-1">Personal Profile</h2>
+        <p class="text-xs text-slate-500 mb-5">Update how your name and avatar appear across bookings and reviews.</p>
+
+        <form th:action="@{/account/update}" method="post" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="displayName" class="block text-sm font-medium text-slate-700 mb-1">Display Name</label>
+                    <input id="displayName" name="displayName" type="text" required minlength="2"
+                           th:value="${profile != null ? profile.displayName : ''}"
+                           class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+                </div>
+                <div>
+                    <label for="emailReadonly" class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                    <input id="emailReadonly" type="email" disabled
+                           th:value="${profile != null ? profile.email : ''}"
+                           class="w-full rounded-lg border border-slate-200 bg-slate-100 px-3.5 py-2 text-sm text-slate-500 cursor-not-allowed" />
+                </div>
+            </div>
+
+            <div>
+                <label for="avatarUrl" class="block text-sm font-medium text-slate-700 mb-1">Avatar Image URL</label>
+                <input id="avatarUrl" name="avatarUrl" type="url"
+                       placeholder="https://images.unsplash.com/..."
+                       th:value="${profile != null ? profile.avatarUrl : ''}"
+                       class="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+            </div>
+
+            <div class="pt-2">
+                <button type="submit"
+                        class="px-5 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition">
+                    Save Profile Changes
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <!-- Card 2: Security & Password -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <h2 class="text-lg font-semibold text-slate-900 mb-1">Security &amp; Password</h2>
+        <p class="text-xs text-slate-500 mb-4">Your session is authenticated via Firebase UID <code class="text-slate-700" th:text="${profile != null ? profile.firebaseUid : 'N/A'}"></code>.</p>
+        <div class="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div>
+                <p class="text-sm font-medium text-slate-800">Password &amp; Multi-Factor Recovery</p>
+                <p class="text-xs text-slate-500">Keep your account protected with a strong password.</p>
+            </div>
+            <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">Protected</span>
+        </div>
+    </section>
+
+    <!-- Card 3: Danger Zone Account Anonymization -->
+    <section class="bg-rose-50/60 rounded-2xl border border-rose-200 p-6">
+        <h2 class="text-lg font-semibold text-rose-900 mb-1">Danger Zone: Account Anonymization</h2>
+        <p class="text-xs text-rose-700 mb-4">
+            Deleting your account anonymizes your personal profile data (<code class="font-mono">Anonymized User</code>) while preserving historical booking and audit records.
+        </p>
+        <form th:action="@{/account/delete}" method="post"
+              onsubmit="return confirm('Are you sure you want to anonymize and deactivate your account?');">
+            <button type="submit"
+                    class="px-5 py-2.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-white text-sm font-semibold shadow-sm transition">
+                Anonymize &amp; Delete Account
+            </button>
+        </form>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>
