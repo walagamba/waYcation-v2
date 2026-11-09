@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pkg.title + ' | waYcation 2.0 Travel Package'}">Package Detail | waYcation 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Top Navigation -->
+    <header class="border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <a href="/" class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center font-extrabold text-slate-950 text-lg">
+                        W
+                    </div>
+                    <span class="text-xl font-extrabold tracking-tight text-white">wa<span class="text-emerald-400">Y</span>cation</span>
+                </a>
+                <a href="/packages" class="text-sm font-medium text-slate-400 hover:text-emerald-400 transition-colors">
+                    &larr; Back to All Packages
+                </a>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/admin/packages" class="text-xs font-semibold px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors">
+                    Admin Console
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Flash / Purchase Confirmation Banner -->
+    <div th:if="${purchased or successMessage != null}" class="bg-emerald-500/15 border-b border-emerald-500/30">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 font-extrabold flex items-center justify-center text-sm">&#10003;</span>
+                <div>
+                    <div class="text-sm font-bold text-emerald-300">Immutable Travel Package Snapshot Purchased!</div>
+                    <div class="text-xs text-slate-300" th:text="${successMessage != null ? successMessage : 'Your bundle price and multi-hotel stop sequence have been permanently locked.'}">
+                        Your bundle price and multi-hotel stop sequence have been permanently locked.
+                    </div>
+                </div>
+            </div>
+            <span class="text-xs font-mono px-3 py-1 rounded-lg bg-slate-900 text-emerald-400 border border-emerald-500/30">
+                STATUS: CONFIRMED
+            </span>
+        </div>
+    </div>
+
+    <div th:if="${errorMessage != null}" class="bg-rose-500/15 border-b border-rose-500/30">
+        <div class="max-w-7xl mx-auto px-6 py-3 text-sm text-rose-300 font-medium" th:text="${errorMessage}"></div>
+    </div>
+
+    <!-- Hero Package Header -->
+    <section class="relative border-b border-slate-800 overflow-hidden">
+        <div class="h-80 md:h-96 w-full relative">
+            <img th:src="${pkg.coverImage != null and !pkg.coverImage.isEmpty() ? pkg.coverImage : 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?auto=format&fit=crop&w=1400&q=80'}"
+                 th:alt="${pkg.title}"
+                 class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-slate-950/20"></div>
+            <div class="absolute bottom-0 inset-x-0 max-w-7xl mx-auto px-6 pb-8">
+                <div class="flex flex-wrap items-center gap-2 mb-3">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500 text-slate-950"
+                          th:text="${pkg.status}">PUBLISHED</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-900/90 text-emerald-300 border border-slate-700"
+                          th:text="${pkg.durationDays + ' Days Total Duration'}">7 Days Total Duration</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-900/90 text-slate-200 border border-slate-700"
+                          th:text="${(pkg.hotels != null ? pkg.hotels.size() : 0) + ' Curated Properties'}">3 Curated Properties</span>
+                </div>
+                <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight" th:text="${pkg.title}">
+                    Ceylon Heritage &amp; Southern Coast Circuit
+                </h1>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content: Itinerary Timeline + Immutable Snapshot Checkout Card -->
+    <main class="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-10 flex-1 w-full">
+
+        <!-- Left 2 Columns: Package Overview & Ordered Multi-Hotel Itinerary Timeline -->
+        <div class="lg:col-span-2 space-y-10">
+
+            <!-- Overview -->
+            <div class="rounded-3xl border border-slate-800 bg-slate-900/50 p-7">
+                <h2 class="text-lg font-bold text-white mb-3">Curated Circuit Overview</h2>
+                <p class="text-slate-300 text-sm leading-relaxed"
+                   th:text="${pkg.description != null ? pkg.description : 'Discover Sri Lanka through an expertly sequenced multi-hotel itinerary with guaranteed room allocations and locked bundle pricing.'}">
+                </p>
+            </div>
+
+            <!-- Ordered Multi-Hotel Itinerary Timeline -->
+            <div class="rounded-3xl border border-slate-800 bg-slate-900/50 p-7">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-emerald-400">Screen 05 &bull; Stop Sequence</span>
+                        <h2 class="text-xl font-extrabold text-white mt-0.5">Ordered Multi-Hotel Itinerary Timeline</h2>
+                    </div>
+                    <span class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300"
+                          th:text="${pkg.hotels != null ? pkg.hotels.size() + ' Stops' : '0 Stops'}">3 Stops</span>
+                </div>
+
+                <div class="relative pl-8 border-l-2 border-emerald-500/40 space-y-8">
+                    <div th:each="stop, iterStat : ${pkg.hotels}" class="relative group">
+                        <!-- Stop Number Marker -->
+                        <div class="absolute -left-[45px] top-1 w-8 h-8 rounded-full bg-emerald-500 text-slate-950 font-extrabold text-xs flex items-center justify-center ring-4 ring-slate-950"
+                             th:text="${stop.stopOrder}">
+                            1
+                        </div>
+
+                        <div class="rounded-2xl border border-slate-800 bg-slate-950/80 p-5 hover:border-emerald-500/40 transition-colors">
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-400"
+                                          th:text="'Stop #' + ${stop.stopOrder}">Stop #1</span>
+                                    <span class="text-slate-600">&bull;</span>
+                                    <span class="text-xs font-semibold text-slate-300"
+                                          th:text="${stop.city != null ? stop.city : 'Sri Lanka'}">Kandy</span>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+                                      th:text="${stop.nights + (stop.nights == 1 ? ' Night Stay' : ' Nights Stay')}">
+                                    2 Nights Stay
+                                </span>
+                            </div>
+
+                            <h3 class="text-lg font-bold text-white"
+                                th:text="${stop.hotelName != null ? stop.hotelName : ('Hotel ID: ' + stop.hotelId)}">
+                                Kings Pavilion Boutique Resort
+                            </h3>
+
+                            <div class="mt-3 flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-900 text-xs text-slate-400">
+                                <span>Property Reference: <code class="text-slate-300 font-mono" th:text="${stop.hotelId}">hotel-1</code></span>
+                                <a th:href="@{/hotels/{id}(id=${stop.hotelId})}" class="text-emerald-400 hover:underline font-semibold">
+                                    Inspect Property &rarr;
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Tourist Snapshot Purchases -->
+            <div th:if="${myPurchases != null and !myPurchases.isEmpty()}" class="rounded-3xl border border-slate-800 bg-slate-900/50 p-7">
+                <h3 class="text-base font-bold text-white mb-4">Your Immutable Package Purchase Snapshots</h3>
+                <div class="space-y-3">
+                    <div th:each="p : ${myPurchases}" class="rounded-2xl border border-slate-800 bg-slate-950 p-4 text-xs space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-emerald-400" th:text="'Purchase #' + ${p.id}">Purchase #1</span>
+                            <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 font-semibold" th:text="${p.status}">CONFIRMED</span>
+                        </div>
+                        <div class="text-slate-300">
+                            Locked Price: <strong th:text="${p.currency + ' ' + #numbers.formatDecimal(p.priceSnapshot, 1, 'COMMA', 2, 'POINT')}">LKR 245,000.00</strong>
+                        </div>
+                        <pre class="text-[11px] font-mono text-slate-400 bg-slate-900/90 p-3 rounded-xl overflow-x-auto" th:text="${p.packageSnapshot}"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Immutable Snapshot Purchase Checkout Card -->
+        <div class="lg:col-span-1">
+            <div class="sticky top-24 rounded-3xl border border-emerald-500/30 bg-slate-900/80 p-7 shadow-2xl shadow-emerald-950/30 space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                    <div>
+                        <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-400">Bundle Checkout</span>
+                        <h3 class="text-lg font-bold text-white mt-0.5">Immutable Snapshot Lock</h3>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-300 text-xs font-bold border border-emerald-500/20"
+                          th:text="${pkg.durationDays + 'D'}">7D</span>
+                </div>
+
+                <div>
+                    <div class="text-xs text-slate-400">Total Locked Package Price</div>
+                    <div class="flex items-baseline gap-2 mt-1">
+                        <span class="text-sm font-bold text-emerald-400" th:text="${pkg.currency}">LKR</span>
+                        <span class="text-3xl font-extrabold text-white"
+                              th:text="${#numbers.formatDecimal(pkg.priceTotal, 1, 'COMMA', 2, 'POINT')}">245,000.00</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">
+                        Purchasing creates an immutable JSON snapshot of the package title, duration, bundle price, and ordered hotel stops. Even if an admin later edits or archives this package, your confirmed snapshot remains unchanged.
+                    </p>
+                </div>
+
+                <!-- Summary Metrics -->
+                <div class="rounded-2xl bg-slate-950/90 border border-slate-800 p-4 space-y-2.5 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Included Hotel Stops</span>
+                        <span class="font-bold text-white" th:text="${pkg.hotels != null ? pkg.hotels.size() + ' Properties' : '0 Properties'}">3 Properties</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Circuit Duration</span>
+                        <span class="font-bold text-white" th:text="${pkg.durationDays + ' Days'}">7 Days</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Total Travellers Booked</span>
+                        <span class="font-bold text-emerald-400" th:text="${purchaseCount + ' Confirmed'}">0 Confirmed</span>
+                    </div>
+                </div>
+
+                <!-- Purchase Form -->
+                <form th:if="${pkg.status.name() == 'PUBLISHED'}"
+                      th:action="@{/packages/{id}/purchase(id=${pkg.id})}"
+                      method="post"
+                      class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tourist Account UID</label>
+                        <input type="text"
+                               name="touristUid"
+                               value="tourist-demo-uid"
+                               class="w-full rounded-xl bg-slate-950 border border-slate-800 px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-400"
+                               placeholder="Enter your tourist UID" />
+                    </div>
+                    <button type="submit"
+                            class="w-full py-3.5 px-5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm transition shadow-lg shadow-emerald-500/25">
+                        Purchase &amp; Lock Package Snapshot
+                    </button>
+                </form>
+
+                <div th:if="${pkg.status.name() != 'PUBLISHED'}"
+                     class="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-4 text-xs text-amber-300 font-semibold text-center">
+                    This package is currently <span th:text="${pkg.status}">ARCHIVED</span> and unavailable for new purchases.
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>
