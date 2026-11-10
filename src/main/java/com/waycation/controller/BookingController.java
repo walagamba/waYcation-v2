@@ -134,7 +134,10 @@ public class BookingController {
                             + ") for " + created.getHotelName() + "!");
             return "redirect:/tourist/bookings";
         } catch (RuntimeException ex) {
+            // FIX: preserve date inputs in flash attributes when booking date validation fails
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            redirectAttributes.addFlashAttribute("prevCheckIn", checkInDateStr);
+            redirectAttributes.addFlashAttribute("prevCheckOut", checkOutDateStr);
             return "redirect:/checkout?roomTypeId=" + roomTypeId
                     + "&checkIn=" + checkIn
                     + "&checkOut=" + checkOut
@@ -195,7 +198,10 @@ public class BookingController {
             redirectAttributes.addFlashAttribute("successMessage",
                     "Booking cancelled and room inventory released back to the property.");
         } catch (RuntimeException ex) {
+            // FIX: preserve date inputs in flash attributes when booking date validation fails
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            redirectAttributes.addFlashAttribute("prevCheckIn", checkInDateStr);
+            redirectAttributes.addFlashAttribute("prevCheckOut", checkOutDateStr);
         }
         return "redirect:/tourist/bookings";
     }
@@ -218,7 +224,10 @@ public class BookingController {
                     "Booking rescheduled to " + updated.getCheckIn() + " → " + updated.getCheckOut()
                             + " (New Total: LKR " + updated.getPriceTotal() + ").");
         } catch (RuntimeException ex) {
+            // FIX: preserve date inputs in flash attributes when booking date validation fails
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            redirectAttributes.addFlashAttribute("prevCheckIn", checkInDateStr);
+            redirectAttributes.addFlashAttribute("prevCheckOut", checkOutDateStr);
         }
         return "redirect:/tourist/bookings";
     }
@@ -239,7 +248,10 @@ public class BookingController {
             redirectAttributes.addFlashAttribute("successMessage",
                     "Stay marked as COMPLETED. Verified guest review eligibility is now unlocked.");
         } catch (RuntimeException ex) {
+            // FIX: preserve date inputs in flash attributes when booking date validation fails
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            redirectAttributes.addFlashAttribute("prevCheckIn", checkInDateStr);
+            redirectAttributes.addFlashAttribute("prevCheckOut", checkOutDateStr);
         }
         return "redirect:" + (redirectTo.startsWith("/") ? redirectTo : "/tourist/bookings");
     }
