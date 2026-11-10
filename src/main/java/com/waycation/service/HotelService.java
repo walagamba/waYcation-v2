@@ -187,3 +187,6 @@ public class HotelService {
         return hotelRepository.save(existing);
     }
 }
+
+// Soft delete: sets status to INACTIVE instead of deleting, so old bookings still point to a real hotel.
+
