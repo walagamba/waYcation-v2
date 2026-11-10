@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Bookings')}"></head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
+
+    <!-- Header & Quick Stats -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-[#003580]">Tourist Portal • Screen 13</span>
+            <h1 class="text-3xl font-black tracking-tight text-slate-900 mt-1">My Reservations &amp; Stays</h1>
+            <p class="text-sm text-slate-600 mt-1">
+                Manage confirmed stays, reschedule check-in dates atomically, or leave verified guest reviews.
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/hotels"
+               class="px-4 py-2.5 rounded-xl bg-[#003580] hover:bg-blue-900 text-white text-xs font-extrabold shadow-sm transition">
+                + Book Another Stay
+            </a>
+        </div>
+    </div>
+
+    <!-- Flash Alerts -->
+    <div th:if="${successMessage}" class="mb-6 rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-800 font-semibold">
+        <span th:text="${successMessage}">Booking confirmed!</span>
+    </div>
+    <div th:if="${errorMessage}" class="mb-6 rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-700 font-semibold">
+        <span th:text="${errorMessage}">Unable to update booking.</span>
+    </div>
+
+    <!-- Status Filter Tabs -->
+    <div class="flex flex-wrap items-center gap-2 mb-6 border-b border-slate-200 pb-4">
+        <a th:href="@{/tourist/bookings(status='ALL')}"
+           th:classappend="${selectedStatus == 'ALL' ? 'bg-[#003580] text-white' : 'bg-white text-slate-700 hover:bg-slate-100'}"
+           class="px-4 py-2 rounded-xl text-xs font-extrabold border border-slate-200 transition">
+            All Bookings
+        </a>
+        <a th:href="@{/tourist/bookings(status='CONFIRMED')}"
+           th:classappend="${selectedStatus == 'CONFIRMED' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100'}"
+           class="px-4 py-2 rounded-xl text-xs font-extrabold border border-slate-200 transition">
+            Confirmed (<span th:text="${confirmedCount}">0</span>)
+        </a>
+        <a th:href="@{/tourist/bookings(status='COMPLETED')}"
+           th:classappend="${selectedStatus == 'COMPLETED' ? 'bg-blue-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100'}"
+           class="px-4 py-2 rounded-xl text-xs font-extrabold border border-slate-200 transition">
+            Completed (<span th:text="${completedCount}">0</span>)
+        </a>
+        <a th:href="@{/tourist/bookings(status='CANCELLED')}"
+           th:classappend="${selectedStatus == 'CANCELLED' ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100'}"
+           class="px-4 py-2 rounded-xl text-xs font-extrabold border border-slate-200 transition">
+            Cancelled (<span th:text="${cancelledCount}">0</span>)
+        </a>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${#lists.isEmpty(bookings)}" class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+        <div class="text-4xl mb-3">🏝️</div>
+        <h2 class="text-lg font-extrabold text-slate-900">No bookings found for this filter</h2>
+        <p class="text-sm text-slate-500 mt-1 max-w-md mx-auto">
+            Explore curated Sri Lankan boutique hotels across Galle Fort, Ella, Kandy, and Mirissa with guaranteed room locks.
+        </p>
+        <a href="/hotels" class="inline-block mt-5 px-6 py-2.5 rounded-xl bg-[#febb02] text-slate-900 text-xs font-extrabold hover:bg-[#e5a800]">
+            Explore Sri Lankan Hotels →
+        </a>
+    </div>
+
+    <!-- Bookings List -->
+    <div class="space-y-6" th:if="${!#lists.isEmpty(bookings)}">
+        <article th:each="booking : ${bookings}"
+                 class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition hover:shadow-md">
+            <div class="p-6 flex flex-col lg:flex-row gap-6">
+
+                <!-- Property Thumbnail -->
+                <div class="w-full lg:w-56 h-44 shrink-0">
+                    <img th:src="${booking.featuredImage != null ? booking.featuredImage : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80'}"
+                         th:alt="${booking.hotelName}"
+                         class="w-full h-full object-cover rounded-xl border border-slate-100"/>
+                </div>
+
+                <!-- Center Metadata -->
+                <div class="flex-1 space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <!-- Status Badges -->
+                            <span th:if="${booking.status.name() == 'CONFIRMED'}"
+                                  class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold uppercase tracking-wider">
+                                ● CONFIRMED
+                            </span>
+                            <span th:if="${booking.status.name() == 'COMPLETED'}"
+                                  class="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-extrabold uppercase tracking-wider">
+                                ✓ COMPLETED STAY
+                            </span>
+                            <span th:if="${booking.status.name() == 'CANCELLED'}"
+                                  class="px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-extrabold uppercase tracking-wider">
+                                ✕ CANCELLED
+                            </span>
+                            <span th:if="${booking.status.name() == 'PENDING'}"
+                                  class="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-extrabold uppercase tracking-wider">
+                                ⏳ PENDING
+                            </span>
+                            <span class="text-xs font-mono text-slate-400"
+                                  th:text="${'REF #' + (#strings.length(booking.id) > 8 ? #strings.substring(booking.id, 0, 8).toUpperCase() : booking.id)}">
+                                REF #ABCD1234
+                            </span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 font-semibold block">Total Reserved Price</span>
+                            <span class="text-xl font-black text-[#003580]"
+                                  th:text="${booking.currency + ' ' + #numbers.formatDecimal(booking.priceTotal, 1, 'COMMA', 0, 'POINT')}">
+                                LKR 105,000
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <a th:href="@{/hotels/{id}(id=${booking.hotelId})}"
+                           class="text-xl font-extrabold text-slate-900 hover:text-[#003580] transition"
+                           th:text="${booking.hotelName}">
+                            Galle Fort Heritage Hotel
+                        </a>
+                        <p class="text-xs font-semibold text-slate-500 mt-0.5">
+                            <span th:text="${booking.city}">Galle</span> •
+                            <span class="text-slate-700 font-bold" th:text="${booking.roomTypeName}">Deluxe Ocean Suite</span>
+                        </p>
+                    </div>
+
+                    <!-- Dates & Room Count Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                        <div class="rounded-xl bg-slate-50 p-3 border border-slate-100">
+                            <span class="text-[11px] font-bold uppercase text-slate-400 block">Check-In</span>
+                            <span class="text-sm font-extrabold text-slate-800" th:text="${booking.checkIn}">2026-04-10</span>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 p-3 border border-slate-100">
+                            <span class="text-[11px] font-bold uppercase text-slate-400 block">Check-Out</span>
+                            <span class="text-sm font-extrabold text-slate-800" th:text="${booking.checkOut}">2026-04-13</span>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 p-3 border border-slate-100">
+                            <span class="text-[11px] font-bold uppercase text-slate-400 block">Duration</span>
+                            <span class="text-sm font-extrabold text-slate-800" th:text="${booking.nights + ' Nights'}">3 Nights</span>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 p-3 border border-slate-100">
+                            <span class="text-[11px] font-bold uppercase text-slate-400 block">Allocation</span>
+                            <span class="text-sm font-extrabold text-slate-800"
+                                  th:text="${booking.roomCount + ' Room · ' + booking.guestCount + ' Guests'}">1 Room · 2 Guests</span>
+                        </div>
+                    </div>
+
+                    <!-- Policy Snapshot Box -->
+                    <div class="rounded-xl bg-amber-50/70 border border-amber-200/80 p-3 text-xs text-amber-900">
+                        <span class="font-extrabold uppercase tracking-wider mr-1">Policy Snapshot at Booking:</span>
+                        <span th:text="${booking.policySnapshot != null ? booking.policySnapshot : 'Free cancellation up to 48 hours prior to check-in.'}">
+                            Free cancellation up to 48 hours prior to check-in.
+                        </span>
+                    </div>
+
+                    <!-- Action Buttons Row -->
+                    <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <!-- Reschedule Modal Trigger (Active Bookings Only) -->
+                            <button th:if="${booking.status.name() == 'CONFIRMED'}"
+                                    type="button"
+                                    th:attr="data-booking-id=${booking.id},data-checkin=${booking.checkIn},data-checkout=${booking.checkOut},data-hotel=${booking.hotelName}"
+                                    onclick="openRescheduleModal(this)"
+                                    class="px-4 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#003580] text-xs font-extrabold transition">
+                                📅 Reschedule Dates
+                            </button>
+
+                            <!-- Simulate Stay Completion to Unlock Verified Review -->
+                            <form th:if="${booking.status.name() == 'CONFIRMED'}"
+                                  method="post"
+                                  th:action="@{/bookings/{id}/complete(id=${booking.id})}"
+                                  class="inline">
+                                <button type="submit"
+                                        class="px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-extrabold transition">
+                                    ✓ Mark Stay Completed
+                                </button>
+                            </form>
+
+                            <!-- Leave Verified Review Link (Completed Bookings Only) -->
+                            <a th:if="${booking.status.name() == 'COMPLETED'}"
+                               th:href="@{/hotels/{id}(id=${booking.hotelId}, bookingId=${booking.id}, review='true')}"
+                               class="px-4 py-2 rounded-xl bg-[#febb02] hover:bg-[#e5a800] text-slate-950 text-xs font-extrabold shadow-sm transition">
+                                ★ Leave Verified Stay Review
+                            </a>
+                        </div>
+
+                        <!-- Cancel Booking Button -->
+                        <form th:if="${booking.status.name() == 'CONFIRMED' || booking.status.name() == 'PENDING'}"
+                              method="post"
+                              th:action="@{/bookings/{id}/cancel(id=${booking.id})}"
+                              onsubmit="return confirm('Cancel this reservation and release the locked rooms back to inventory?');">
+                            <button type="submit"
+                                    class="px-4 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-extrabold transition">
+                                Cancel Reservation
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </article>
+    </div>
+
+</main>
+
+<!-- Reschedule Modal -->
+<div id="rescheduleModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+                <span class="text-[11px] font-extrabold uppercase tracking-wider text-blue-700">Atomic Inventory Re-Allocation</span>
+                <h3 id="rescheduleHotelTitle" class="text-lg font-black text-slate-900">Reschedule Reservation</h3>
+            </div>
+            <button type="button" onclick="closeRescheduleModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold">✕</button>
+        </div>
+
+        <form id="rescheduleForm" method="post" action="/bookings/id/reschedule" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">New Check-In Date</label>
+                <input id="rescheduleCheckIn" type="date" name="newCheckIn" required
+                       class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:border-[#003580] focus:outline-none"/>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">New Check-Out Date</label>
+                <input id="rescheduleCheckOut" type="date" name="newCheckOut" required
+                       class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:border-[#003580] focus:outline-none"/>
+            </div>
+            <p class="text-xs text-slate-500 leading-relaxed">
+                Your previous room dates will be released and the new dates will be verified for availability in a single database transaction.
+            </p>
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="closeRescheduleModal()"
+                        class="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100">
+                    Keep Current Dates
+                </button>
+                <button type="submit"
+                        class="px-5 py-2.5 rounded-xl bg-[#003580] hover:bg-blue-900 text-white text-xs font-extrabold">
+                    Confirm New Dates
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openRescheduleModal(button) {
+        const bookingId = button.getAttribute('data-booking-id');
+        const checkIn = button.getAttribute('data-checkin');
+        const checkOut = button.getAttribute('data-checkout');
+        const hotelName = button.getAttribute('data-hotel');
+
+        document.getElementById('rescheduleForm').action = '/bookings/' + bookingId + '/reschedule';
+        document.getElementById('rescheduleCheckIn').value = checkIn;
+        document.getElementById('rescheduleCheckOut').value = checkOut;
+        document.getElementById('rescheduleHotelTitle').textContent = hotelName || 'Reschedule Stay';
+        document.getElementById('rescheduleModal').classList.remove('hidden');
+    }
+
+    function closeRescheduleModal() {
+        document.getElementById('rescheduleModal').classList.add('hidden');
+    }
+</script>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>
