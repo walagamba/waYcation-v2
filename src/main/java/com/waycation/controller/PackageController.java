@@ -180,6 +180,39 @@ public class PackageController {
         return "redirect:/admin/packages";
     }
 
+    @GetMapping("/owner/packages")
+    public String viewOwnerPackages(Model model) {
+        return viewAdminPackages(model);
+    }
+
+    @PostMapping("/admin/packages/{id}/edit")
+    public String editPackage(
+            @PathVariable String id,
+            @RequestParam String title,
+            @RequestParam(required = false) String description,
+            @RequestParam Integer durationDays,
+            @RequestParam BigDecimal priceTotal,
+            @RequestParam(required = false, defaultValue = "PUBLISHED") String status,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        String userUid = resolveSessionUid(session, "admin-demo-uid");
+        try {
+            packageService.updatePackage(userUid, id, title, description, durationDays, priceTotal, PackageStatus.valueOf(status.toUpperCase()));
+            redirectAttributes.addFlashAttribute("successMessage", "Travel package '" + title + "' updated successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/packages";
+    }
+
+    @PostMapping({"/admin/packages/{id}/delete", "/owner/packages/{id}/delete"})
+    public String deletePackage(
+            @PathVariable String id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        return archivePackage(id, session, redirectAttributes);
+    }
+
     private String resolveSessionUid(HttpSession session, String fallbackUid) {
         if (session != null) {
             Object uidAttr = session.getAttribute("uid");

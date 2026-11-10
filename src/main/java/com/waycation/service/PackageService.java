@@ -202,8 +202,8 @@ public class PackageService {
         }
         if (profileOpt.isPresent()) {
             Role role = profileOpt.get().getRole();
-            if (role != Role.ADMIN && role != Role.SUPER_ADMIN) {
-                throw new SecurityException("Only ADMIN or SUPER_ADMIN users can manage travel packages.");
+            if (role != Role.ADMIN && role != Role.SUPER_ADMIN && role != Role.HOTEL_OWNER) {
+                throw new SecurityException("Only Administrators and Hotel Owners can manage travel packages.");
             }
         }
     }
