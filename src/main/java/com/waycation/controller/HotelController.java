@@ -187,3 +187,5 @@ public class HotelController {
         return DEFAULT_OWNER_UID;
     }
 }
+
+// Reads the owner id from the session; falls back to a demo id until login (Module 1) exists.
