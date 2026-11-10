@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-highest": "#353534", "outline-variant": "#5e3f3b", "on-secondary-container": "#b4b5b5", "inverse-on-surface": "#313030", "border-dotted": "#3f3f46", "signal-red-glow": "rgba(255, 42, 42, 0.2)", "inverse-surface": "#e5e2e1", "background": "#131313", "signal-red": "#ff2a2a", "tertiary-fixed-dim": "#c6c5cf", "surface-variant": "#353534", "on-surface-variant": "#e8bcb7", "tertiary-container": "#909099", "tertiary": "#c6c5cf", "on-primary": "#690005", "surface-container": "#201f1f", "border-subtle": "#18181b", "on-surface": "#e5e2e1", "on-secondary-fixed": "#1a1c1c", "surface-container-low": "#1c1b1b", "secondary-fixed-dim": "#c6c6c7", "inverse-primary": "#c00011", "secondary-fixed": "#e2e2e2", "primary-container": "#ff5449", "pure-black": "#000000", "on-primary-fixed": "#410002", "primary-fixed-dim": "#ffb4ab", "telemetry-gray": "#a1a1aa", "tertiary-fixed": "#e3e1ec", "surface-translucent": "rgba(10, 10, 10, 0.75)", "error": "#ffb4ab", "on-tertiary": "#2f3038", "on-tertiary-container": "#282931", "surface-container-lowest": "#0e0e0e", "secondary": "#c6c6c7", "border-structural": "#27272a", "on-primary-container": "#5c0004", "surface-tint": "#ffb4ab", "primary": "#ffb4ab", "surface-container-high": "#2a2a2a", "on-primary-fixed-variant": "#93000a", "on-error-container": "#ffdad6", "on-secondary-fixed-variant": "#454747", "on-background": "#e5e2e1", "primary-fixed": "#ffdad6", "on-error": "#690005", "surface": "#131313", "secondary-container": "#454747", "on-tertiary-fixed": "#1a1b22", "on-secondary": "#2f3131", "outline": "#af8783", "error-container": "#93000a", "surface-dim": "#131313", "stark-white": "#ffffff", "surface-bright": "#3a3939", "on-tertiary-fixed-variant": "#46464e" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "space-2xl": "4rem", "space-xl": "2.5rem", "margin-lg": "4rem", "space-xs": "0.25rem", "gutter": "1rem", "margin-md": "2rem", "space-md": "1rem", "gutter-lg": "2rem", "margin": "1rem", "space-lg": "1.5rem", "space-sm": "0.5rem", "gutter-md": "1.5rem" }, "fontFamily": { "label-lg": [ "Space Mono" ], "body-sm": [ "Inter" ], "label-sm": [ "Space Mono" ], "headline-xl": [ "Space Grotesk" ], "headline-sm": [ "Space Grotesk" ], "headline-xl-mobile": [ "Space Grotesk" ], "body-lg": [ "Inter" ], "label-md": [ "Space Mono" ], "headline-lg-mobile": [ "Space Grotesk" ], "headline-lg": [ "Space Grotesk" ], "headline-md": [ "Space Grotesk" ], "body-md": [ "Inter" ] }, "fontSize": { "label-lg": [ "13px", { "lineHeight": "18px", "letterSpacing": "0.06em", "fontWeight": "700" } ], "body-sm": [ "12px", { "lineHeight": "18px", "fontWeight": "400" } ], "label-sm": [ "10px", { "lineHeight": "14px", "letterSpacing": "0.1em", "fontWeight": "400" } ], "headline-xl": [ "56px", { "lineHeight": "64px", "letterSpacing": "-0.04em", "fontWeight": "700" } ], "headline-sm": [ "20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "headline-xl-mobile": [ "36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "700" } ], "body-lg": [ "16px", { "lineHeight": "24px", "fontWeight": "400" } ], "label-md": [ "11px", { "lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "400" } ], "headline-lg-mobile": [ "28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "headline-lg": [ "40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "600" } ], "headline-md": [ "28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-md": [ "14px", { "lineHeight": "20px", "fontWeight": "400" } ] } } } };</script></head><body class="bg-pure-black text-on-surface selection:bg-signal-red selection:text-stark-white min-h-screen"><header class="fixed top-0 w-full z-50 bg-pure-black/90 backdrop-blur-md border-b border-border-structural"><div class="h-16 max-w-7xl mx-auto px-margin-md flex items-center justify-between"><div class="flex items-center gap-space-2xl"><a class="flex items-center gap-1.5 group" data-path="stays" href="#"><span class="font-headline-sm text-headline-sm tracking-tight text-stark-white lowercase">waycation</span><span class="w-1.5 h-1.5 rounded-full bg-signal-red shadow-[0_0_8px_rgba(255,42,42,0.8)]"></span></a><nav class="hidden md:flex items-center gap-space-lg" data-active-classes="text-stark-white border-b-2 border-signal-red"><a aria-current="page" class="font-body-md transition-colors py-2 text-stark-white border-b-2 border-signal-red" data-path="stays" href="#">Stays</a><a class="font-body-md text-body-md text-secondary hover:text-stark-white transition-colors py-2" data-path="packages" href="#">Packages</a><a class="font-body-md text-body-md text-secondary hover:text-stark-white transition-colors py-2" data-path="trips" href="#">Trips</a></nav></div><div class="flex items-center gap-space-md"><a class="flex items-center gap-space-sm pl-space-sm pr-space-xs py-1 rounded border border-border-structural hover:border-stark-white transition-colors text-secondary hover:text-stark-white" data-path="account" href="#"><span class="font-label-md text-label-md hidden sm:inline tracking-wider uppercase">Account</span><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></a></div></div></header><main class="w-full pt-16 bg-pure-black"><div class="flex flex-col w-full text-on-surface">
+<div class="w-full max-w-7xl mx-auto px-margin-md py-space-lg flex flex-col gap-space-xl">
+<!-- Top Session Status Bar -->
+<header class="w-full bg-surface-container-low rounded-xl p-space-md shadow-xl flex flex-col lg:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-signal-red animate-pulse"></span>
+<h1 class="font-headline-sm text-headline-sm text-stark-white tracking-tight">Ella &amp; Galle Trip</h1>
+</div>
+<span class="text-border-dotted">/</span>
+<span class="font-label-md text-label-md text-telemetry-gray uppercase">Decision Room</span>
+</div>
+<!-- Consensus Progress Indicator -->
+<div class="flex flex-col sm:flex-row items-center gap-space-lg w-full lg:w-auto">
+<div class="flex items-center gap-space-sm w-full sm:w-64">
+<div class="flex-1 bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-stark-white h-full w-2/3 transition-all duration-500 ease-out" id="session-progress"></div>
+</div>
+<span class="font-label-md text-label-md text-stark-white whitespace-nowrap" id="session-tally">2 of 3 voted</span>
+</div>
+<!-- Participants Pills -->
+<div class="flex items-center gap-space-xs">
+<div class="flex items-center gap-1.5 bg-surface-container px-3 py-1.5 rounded-full shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-stark-white"></span>
+<span class="font-body-sm text-body-sm text-stark-white">Kasun</span>
+<span class="font-label-sm text-label-sm text-telemetry-gray">✓</span>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container px-3 py-1.5 rounded-full shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-stark-white"></span>
+<span class="font-body-sm text-body-sm text-stark-white">Amaya</span>
+<span class="font-label-sm text-label-sm text-telemetry-gray">✓</span>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container-highest px-3 py-1.5 rounded-full shadow-sm" id="pill-user">
+<span class="w-1.5 h-1.5 rounded-full bg-signal-red animate-ping"></span>
+<span class="font-body-sm text-body-sm text-stark-white font-medium">Dineth</span>
+<span class="font-label-sm text-label-sm text-signal-red">Deciding</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Voting & Sidebar Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+<!-- Central Voting Stage -->
+<main class="lg:col-span-8 flex flex-col items-center">
+<div class="w-full max-w-lg flex flex-col items-center gap-space-lg">
+<!-- Tactile Card Container -->
+<div class="relative w-full aspect-[4/5] sm:h-[580px] bg-surface-container-lowest rounded-3xl overflow-hidden shadow-2xl transition-all duration-300" id="deck-card">
+<!-- Top Visual (65%) -->
+<div class="relative h-[65%] w-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-105" data-alt="Minimalist luxury tropical architecture at The Fortress Resort and Spa in Galle, Sri Lanka. Warm evening golden hour lighting hitting raw polished concrete, reflective slate infinity pool merging with deep blue Indian Ocean, coconut palms framing an uncrowded open-air pavilion, clean architectural lines and tranquil atmosphere." id="card-image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVSvttMBftJn-FI6KTa2Y-CJRhwkU0AaxAouCdBem07SvnEfCxp9YR4rbmGM1IgG4vpQ0MDx_enmRvMDmr4DvBNmsR3ub9XcsIvFxeriH3Ai9xw8NYmLdRyMsJMNKOGmdhlL_HEOI5n0OVvEU0VjUdkD3AYI7Q5_N0dTL1ufolD1HmjUyQohHVXox7k55GBGGYeXxk5selHvZC3bHJ1alYm4Nvs39z3mJpeVlNDT38iKoR96Tx2JSgWw"/>
+<!-- Ambient Gradient Scrim -->
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-black/40 pointer-events-none"></div>
+<!-- Top Image Badges -->
+<div class="absolute top-space-md left-space-md right-space-md flex items-center justify-between pointer-events-none">
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-pure-black/60 backdrop-blur-md shadow-md">
+<span class="material-symbols-outlined text-[14px] text-stark-white">location_on</span>
+<span class="font-label-sm text-label-sm text-stark-white uppercase tracking-wider" id="card-location">Galle Fort</span>
+</div>
+<div class="flex items-center gap-1 px-3 py-1 rounded-full bg-pure-black/60 backdrop-blur-md shadow-md">
+<span class="text-signal-red text-[12px] leading-none">★</span>
+<span class="font-label-sm text-label-sm text-stark-white font-bold" id="card-rating">4.9</span>
+</div>
+</div>
+<!-- Active Swipe Stamp Overlay -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0 scale-75 transition-all duration-200 bg-stark-white text-pure-black font-headline-md text-headline-md px-6 py-2 rounded-xl shadow-2xl uppercase tracking-widest" id="stamp-endorse">
+                Endorse
+              </div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0 scale-75 transition-all duration-200 bg-signal-red text-stark-white font-headline-md text-headline-md px-6 py-2 rounded-xl shadow-2xl uppercase tracking-widest" id="stamp-pass">
+                Pass
+              </div>
+</div>
+<!-- Bottom Content Dossier (35%) -->
+<div class="h-[35%] w-full bg-surface-container-lowest p-space-md sm:p-space-lg flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between gap-space-sm mb-1">
+<h2 class="font-headline-md text-headline-md text-stark-white truncate" id="card-title">The Fortress Resort &amp; Spa</h2>
+</div>
+<div class="flex items-baseline gap-space-xs mb-space-sm">
+<span class="font-headline-sm text-headline-sm text-stark-white font-semibold" id="card-price">LKR 45,000</span>
+<span class="font-body-sm text-body-sm text-telemetry-gray">/ night</span>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs" id="card-tags">
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm">Oceanfront</span>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm">Infinity pool</span>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm">Ayurvedic Spa</span>
+</div>
+</div>
+<!-- Pagination Subtext -->
+<div class="flex items-center justify-between pt-space-xs">
+<span class="font-label-sm text-label-sm text-telemetry-gray" id="card-counter">Candidate 2 of 4</span>
+<div class="flex items-center gap-1.5" id="pagination-dots">
+<span class="w-1.5 h-1.5 rounded-full bg-surface-container-highest"></span>
+<span class="w-4 h-1.5 rounded-full bg-stark-white"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-surface-container-highest"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-surface-container-highest"></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Tactile Action Triggers -->
+<div class="flex flex-col items-center gap-space-sm w-full">
+<div class="flex items-center justify-center gap-space-xl">
+<!-- Pass Action Button -->
+<button aria-label="Pass Candidate" class="group w-16 h-16 rounded-full bg-surface-container hover:bg-surface-container-highest active:scale-95 flex items-center justify-center shadow-lg transition-all duration-150" id="btn-pass">
+<span class="material-symbols-outlined text-signal-red text-3xl transition-transform group-hover:scale-110">close</span>
+</button>
+<!-- Endorse Action Button -->
+<button aria-label="Endorse Candidate" class="group w-20 h-20 rounded-full bg-stark-white hover:bg-signal-red active:scale-95 flex items-center justify-center shadow-2xl transition-all duration-150" id="btn-endorse">
+<span class="material-symbols-outlined text-pure-black group-hover:text-stark-white text-4xl transition-transform group-hover:scale-110" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<!-- Keyboard Navigation Cue -->
+<p class="font-label-sm text-label-sm text-telemetry-gray tracking-wider uppercase">
+              ← Left Arrow to Pass  ·  Right Arrow to Endorse →
+            </p>
+</div>
+</div>
+</main>
+<!-- Minimal Inspector Sidebar -->
+<aside class="lg:col-span-4 flex flex-col gap-space-lg">
+<!-- Candidate Queue Bento -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-telemetry-gray uppercase">Candidate Deck</span>
+<span class="font-label-sm text-label-sm text-stark-white font-medium" id="queue-tally">1 / 4 Reviewed</span>
+</div>
+<div class="flex flex-col gap-space-xs" id="queue-list">
+<!-- Item 1: Passed -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container opacity-50 hover:opacity-80 transition-opacity">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-label-sm text-label-sm text-telemetry-gray">01</span>
+<span class="font-body-md text-body-md text-stark-white truncate">Amangalla Historic Villa</span>
+</div>
+<span class="font-label-sm text-label-sm text-signal-red uppercase whitespace-nowrap">Passed</span>
+</div>
+<!-- Item 2: Current Active -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-high shadow-md">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="w-1.5 h-1.5 rounded-full bg-stark-white"></span>
+<span class="font-body-md text-body-md text-stark-white font-medium truncate">The Fortress Resort &amp; Spa</span>
+</div>
+<span class="font-label-sm text-label-sm text-stark-white uppercase whitespace-nowrap">Current</span>
+</div>
+<!-- Item 3: Queued -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-label-sm text-label-sm text-telemetry-gray">03</span>
+<span class="font-body-md text-body-md text-secondary truncate">98 Acres Resort &amp; Spa</span>
+</div>
+<span class="font-label-sm text-label-sm text-telemetry-gray uppercase whitespace-nowrap">Queued</span>
+</div>
+<!-- Item 4: Queued -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="font-label-sm text-label-sm text-telemetry-gray">04</span>
+<span class="font-body-md text-body-md text-secondary truncate">Ceylon Tea Trails Bungalow</span>
+</div>
+<span class="font-label-sm text-label-sm text-telemetry-gray uppercase whitespace-nowrap">Queued</span>
+</div>
+</div>
+</div>
+<!-- Room Activity Consensus Bento -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-xl flex flex-col gap-space-md">
+<span class="font-label-md text-label-md text-telemetry-gray uppercase">Group Consensus Meter</span>
+<div class="flex items-center justify-between">
+<div>
+<p class="font-headline-sm text-headline-sm text-stark-white font-medium">67% Match</p>
+<p class="font-body-sm text-body-sm text-telemetry-gray">High alignment on coastal stays</p>
+</div>
+<!-- Inline Mini Donut SVG Metric -->
+<div class="w-12 h-12 relative flex items-center justify-center">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
+<circle class="stroke-surface-container-highest" cx="18" cy="18" fill="none" r="14" stroke-width="3"></circle>
+<circle class="stroke-stark-white transition-all duration-700" cx="18" cy="18" fill="none" id="donut-circle" r="14" stroke-dasharray="88" stroke-dashoffset="29" stroke-linecap="round" stroke-width="3"></circle>
+</svg>
+<span class="material-symbols-outlined text-[16px] text-stark-white absolute">group</span>
+</div>
+</div>
+</div>
+<!-- Shareable Invite Box -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-xl flex flex-col gap-space-sm">
+<span class="font-label-md text-label-md text-telemetry-gray uppercase">Invite Friends</span>
+<p class="font-body-sm text-body-sm text-secondary">Share link to sync collaborative real-time votes.</p>
+<div class="flex items-center gap-space-xs mt-space-xs">
+<div class="flex-1 bg-surface-container px-3 py-2 rounded font-label-sm text-label-sm text-telemetry-gray truncate select-all">
+              waycation.app/r/ella-galle-991
+            </div>
+<button class="bg-stark-white hover:bg-signal-red text-pure-black hover:text-stark-white font-label-sm text-label-sm uppercase px-3 py-2 rounded transition-colors flex items-center gap-1 shadow-sm" id="btn-copy">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+<span>Copy</span>
+</button>
+</div>
+<span class="font-label-sm text-label-sm text-signal-red opacity-0 transition-opacity" id="copy-status">Link copied to clipboard</span>
+</div>
+</aside>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const candidates = [
+      {
+        id: 1,
+        title: "Amangalla Historic Villa",
+        location: "Galle Fort",
+        rating: "4.8",
+        price: "LKR 62,000",
+        tags: ["Colonial Heritage", "Verandah", "Garden Spa"],
+        status: "Passed",
+        image: "placeholder",
+        alt: "Classic 17th century Dutch colonial architecture at Amangalla within Galle Fort Sri Lanka. Polished dark teak floorboards, high white archways, vintage rattan planters chairs, softly filtered monsoon daylight, minimalist heritage aesthetic."
+      },
+      {
+        id: 2,
+        title: "The Fortress Resort & Spa",
+        location: "Galle Fort",
+        rating: "4.9",
+        price: "LKR 45,000",
+        tags: ["Oceanfront", "Infinity pool", "Ayurvedic Spa"],
+        status: "Current",
+        image: "placeholder",
+        alt: "Minimalist luxury tropical architecture at The Fortress Resort and Spa in Galle, Sri Lanka. Warm evening golden hour lighting hitting raw polished concrete, reflective slate infinity pool merging with deep blue Indian Ocean, coconut palms framing an uncrowded open-air pavilion, clean architectural lines and tranquil atmosphere."
+      },
+      {
+        id: 3,
+        title: "98 Acres Resort & Spa",
+        location: "Ella Mountain Range",
+        rating: "4.9",
+        price: "LKR 38,000",
+        tags: ["Tea Estate", "Valley View", "Helipad"],
+        status: "Queued",
+        image: "placeholder",
+        alt: "Dramatic mountain eco resort perched on steep green tea plantation terraces in Ella Sri Lanka. Morning mist drifting between thatched wooden chalets, sunrise illuminating Adam's Peak ridgeline, expansive open wooden deck overlooking emerald valleys."
+      },
+      {
+        id: 4,
+        title: "Ceylon Tea Trails Bungalow",
+        location: "Castlereagh Lake",
+        rating: "5.0",
+        price: "LKR 78,000",
+        tags: ["Lakeside", "Personal Butler", "All-Inclusive"],
+        status: "Queued",
+        image: "placeholder",
+        alt: "Serene lakeside colonial plantation bungalow framed by manicured English gardens and misty highland tea hills. Pristine calm emerald lake surface reflecting early dawn light, secluded infinity pool at water's edge, serene atmosphere."
+      }
+    ];
+
+    let currentIndex = 1; // Starting at Candidate 2
+
+    const card = document.getElementById('deck-card');
+    const cardImage = document.getElementById('card-image');
+    const cardLocation = document.getElementById('card-location');
+    const cardRating = document.getElementById('card-rating');
+    const cardTitle = document.getElementById('card-title');
+    const cardPrice = document.getElementById('card-price');
+    const cardTags = document.getElementById('card-tags');
+    const cardCounter = document.getElementById('card-counter');
+    const paginationDots = document.getElementById('pagination-dots');
+    
+    const stampEndorse = document.getElementById('stamp-endorse');
+    const stampPass = document.getElementById('stamp-pass');
+    
+    const btnPass = document.getElementById('btn-pass');
+    const btnEndorse = document.getElementById('btn-endorse');
+    const btnCopy = document.getElementById('btn-copy');
+    const copyStatus = document.getElementById('copy-status');
+    const queueList = document.getElementById('queue-list');
+    const queueTally = document.getElementById('queue-tally');
+    const donutCircle = document.getElementById('donut-circle');
+    const sessionProgress = document.getElementById('session-progress');
+
+    function updateCard(index) {
+      const item = candidates[index];
+      cardImage.setAttribute('data-alt', item.alt);
+      cardImage.setAttribute('src', 'placeholder');
+      cardLocation.textContent = item.location;
+      cardRating.textContent = item.rating;
+      cardTitle.textContent = item.title;
+      cardPrice.textContent = item.price;
+      cardCounter.textContent = `Candidate ${index + 1} of ${candidates.length}`;
+
+      cardTags.innerHTML = item.tags.map(t => 
+        `<span class="px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm">${t}</span>`
+      ).join('');
+
+      // Update dots
+      paginationDots.innerHTML = candidates.map((_, i) => 
+        i === index 
+          ? `<span class="w-4 h-1.5 rounded-full bg-stark-white transition-all"></span>` 
+          : `<span class="w-1.5 h-1.5 rounded-full bg-surface-container-highest transition-all"></span>`
+      ).join('');
+
+      // Update Sidebar Queue
+      queueTally.textContent = `${index} / ${candidates.length} Reviewed`;
+      queueList.innerHTML = candidates.map((c, i) => {
+        let statusBadge = '';
+        let opacityClass = '';
+        let bgClass = 'bg-surface-container';
+
+        if (i < index) {
+          statusBadge = `<span class="font-label-sm text-label-sm text-signal-red uppercase whitespace-nowrap">Reviewed</span>`;
+          opacityClass = 'opacity-50';
+        } else if (i === index) {
+          statusBadge = `<span class="font-label-sm text-label-sm text-stark-white uppercase whitespace-nowrap">Current</span>`;
+          bgClass = 'bg-surface-container-high shadow-md';
+        } else {
+          statusBadge = `<span class="font-label-sm text-label-sm text-telemetry-gray uppercase whitespace-nowrap">Queued</span>`;
+        }
+
+        const iconOrNumber = i === index 
+          ? `<span class="w-1.5 h-1.5 rounded-full bg-stark-white"></span>`
+          : `<span class="font-label-sm text-label-sm text-telemetry-gray">0${i + 1}</span>`;
+
+        return `
+          <div class="flex items-center justify-between p-space-sm rounded-lg ${bgClass} ${opacityClass} transition-all">
+            <div class="flex items-center gap-space-sm min-w-0">
+              ${iconOrNumber}
+              <span class="font-body-md text-body-md text-stark-white ${i === index ? 'font-medium' : ''} truncate">${c.title}</span>
+            </div>
+            ${statusBadge}
+          </div>
+        `;
+      }).join('');
+
+      // Meter update
+      const percent = Math.min(100, Math.round(((index + 1) / candidates.length) * 100));
+      const offset = 88 - (88 * (percent / 100));
+      donutCircle.setAttribute('stroke-dashoffset', offset.toString());
+      sessionProgress.style.width = `${Math.min(100, ((index + 1) / candidates.length) * 100)}%`;
+    }
+
+    function triggerVote(type) {
+      if (type === 'endorse') {
+        stampEndorse.classList.remove('opacity-0', 'scale-75');
+        stampEndorse.classList.add('opacity-100', 'scale-100');
+        card.style.transform = 'translateX(24px) rotate(2deg)';
+      } else {
+        stampPass.classList.remove('opacity-0', 'scale-75');
+        stampPass.classList.add('opacity-100', 'scale-100');
+        card.style.transform = 'translateX(-24px) rotate(-2deg)';
+      }
+
+      setTimeout(() => {
+        stampEndorse.classList.add('opacity-0', 'scale-75');
+        stampPass.classList.add('opacity-0', 'scale-75');
+        card.style.transform = 'translateX(0) rotate(0)';
+        
+        currentIndex = (currentIndex + 1) % candidates.length;
+        updateCard(currentIndex);
+      }, 240);
+    }
+
+    btnPass.addEventListener('click', () => triggerVote('pass'));
+    btnEndorse.addEventListener('click', () => triggerVote('endorse'));
+
+    // Keyboard controls
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        triggerVote('pass');
+      } else if (e.key === 'ArrowRight') {
+        triggerVote('endorse');
+      }
+    });
+
+    // Share link copy
+    btnCopy.addEventListener('click', () => {
+      navigator.clipboard.writeText('https://waycation.app/r/ella-galle-991').catch(() => {});
+      copyStatus.classList.remove('opacity-0');
+      copyStatus.classList.add('opacity-100');
+      setTimeout(() => {
+        copyStatus.classList.remove('opacity-100');
+        copyStatus.classList.add('opacity-0');
+      }, 2000);
+    });
+
+  })();
+</script></main><footer class="w-full bg-pure-black border-t border-border-structural py-space-xl mt-space-2xl"><div class="max-w-7xl mx-auto px-margin-md flex flex-col md:flex-row items-center justify-between gap-space-md"><div class="flex items-center gap-space-sm"><span class="font-label-sm text-label-sm text-secondary tracking-widest lowercase">waycation</span><span class="text-border-dotted">·</span><span class="font-label-sm text-label-sm text-secondary">© 2025 All rights reserved.</span></div><div class="flex items-center gap-space-lg"><a class="font-label-sm text-label-sm text-secondary hover:text-stark-white transition-colors uppercase tracking-wider" data-path="privacy" href="#">Privacy</a><a class="font-label-sm text-label-sm text-secondary hover:text-stark-white transition-colors uppercase tracking-wider" data-path="terms" href="#">Terms</a><a class="font-label-sm text-label-sm text-secondary hover:text-stark-white transition-colors uppercase tracking-wider" data-path="concierge" href="#">Concierge</a></div></div></footer></body></html>
