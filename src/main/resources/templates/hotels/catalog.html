@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Browse Sri Lanka Hotels')}"></head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<!-- Top Filter & Search Strip -->
+<section class="bg-[#003580] text-white py-10 border-b border-blue-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+            <div>
+                <span class="badge-pill bg-[#febb02]/20 text-[#febb02] mb-2">Verified Properties</span>
+                <h1 class="text-3xl font-black tracking-tight">Sri Lanka Hotel Catalog</h1>
+                <p class="text-sm text-blue-100 mt-1">
+                    Showing <span id="hotel-results-count" class="font-extrabold text-[#febb02]" th:text="${hotels != null ? hotels.size() : 0}">0</span> active properties with real-time room inventory locks.
+                </p>
+            </div>
+            <div class="flex gap-2">
+                <a href="/tourist/trips" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">
+                    ✨ Compare in Group Voting
+                </a>
+                <a href="/owner/hotels/new" class="px-4 py-2 rounded-xl bg-[#febb02] text-slate-900 text-xs font-extrabold">
+                    + List Your Property
+                </a>
+            </div>
+        </div>
+
+        <!-- Client + Server Filter Controls -->
+        <div class="bg-white text-slate-900 p-4 rounded-2xl shadow-lg grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            <div class="md:col-span-6">
+                <label for="hotel-city-filter" class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+                    Filter by City or Property Name
+                </label>
+                <input id="hotel-city-filter" type="text" th:value="${cityFilter}"
+                       placeholder="Type city or hotel name (e.g., Galle, Ella, Kandy, Colombo)..."
+                       class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-none focus:border-[#003580]"/>
+            </div>
+            <div class="md:col-span-4">
+                <label for="hotel-price-sort" class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+                    Sort by Starting Rate
+                </label>
+                <select id="hotel-price-sort" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold bg-white focus:outline-none focus:border-[#003580]">
+                    <option value="asc">Price: Low to High (LKR)</option>
+                    <option value="desc">Price: High to Low (LKR)</option>
+                </select>
+            </div>
+            <div class="md:col-span-2">
+                <a href="/hotels" class="block w-full text-center py-2.5 px-4 rounded-xl border border-slate-300 hover:bg-slate-100 text-xs font-extrabold text-slate-700">
+                    Reset Filters
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Flash Alert Banner -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6" th:if="${errorMessage != null or successMessage != null}">
+    <div th:if="${errorMessage != null}" class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage != null}" class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold" th:text="${successMessage}"></div>
+</div>
+
+<!-- Horizontal Hotel Cards List -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
+    <div id="hotel-cards-container" class="space-y-6" th:if="${hotels != null and !hotels.isEmpty()}">
+        <article th:each="hotel : ${hotels}"
+                 data-hotel-card
+                 th:attr="data-city=${hotel.city},data-name=${hotel.name},data-price=${hotel.startingPrice}"
+                 class="waycation-card overflow-hidden grid grid-cols-1 md:grid-cols-12">
+
+            <!-- Property Thumbnail -->
+            <div class="md:col-span-4 relative min-h-[220px] bg-slate-200">
+                <img th:src="${hotel.featuredImage != null ? hotel.featuredImage : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80'}"
+                     th:alt="${hotel.name}"
+                     class="w-full h-full object-cover"/>
+                <span class="absolute top-3 left-3 badge-pill bg-slate-900/80 text-white" th:text="${hotel.city}">Galle</span>
+            </div>
+
+            <!-- Property Metadata & Room Types Summary -->
+            <div class="md:col-span-5 p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-100">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-bold text-[#003580] uppercase tracking-wider mb-1">
+                        <span th:text="${hotel.city + ', ' + hotel.country}">Galle, Sri Lanka</span>
+                        <span>•</span>
+                        <span>Check-in <span th:text="${hotel.checkInTime}">14:00</span></span>
+                    </div>
+                    <h2 class="text-xl font-black text-slate-900 mb-1">
+                        <a th:href="@{/hotels/{id}(id=${hotel.id})}" class="hover:text-[#003580] transition" th:text="${hotel.name}">
+                            Galle Fort Heritage Villa
+                        </a>
+                    </h2>
+                    <p class="text-xs text-slate-500 mb-3" th:text="${hotel.address != null ? hotel.address : hotel.city}">
+                        Church Street, Galle Fort
+                    </p>
+                    <p class="text-sm text-slate-600 line-clamp-2 mb-4" th:text="${hotel.description}">
+                        Boutique coastal property with private courtyard pool and verified inventory locks.
+                    </p>
+                </div>
+
+                <!-- Room Type Pills -->
+                <div class="flex flex-wrap gap-2">
+                    <span th:each="rt : ${hotel.roomTypes}"
+                          class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold">
+                        <span th:text="${rt.name}">Deluxe Suite</span>
+                        (<span th:text="${rt.capacity + ' guests'}">2 guests</span>)
+                    </span>
+                    <span th:if="${hotel.roomTypes == null or hotel.roomTypes.isEmpty()}"
+                          class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-semibold">
+                        Standard Double Room (2 guests)
+                    </span>
+                </div>
+            </div>
+
+            <!-- Pricing & CTA Column -->
+            <div class="md:col-span-3 p-6 bg-slate-50/60 flex flex-col justify-between items-start md:items-end text-left md:text-right">
+                <div>
+                    <span class="badge-pill bg-emerald-100 text-emerald-800 mb-2">Instant ACID Lock</span>
+                    <div class="text-xs text-slate-500 font-semibold">Starting nightly rate</div>
+                    <div class="text-2xl font-black text-slate-900 mt-0.5">
+                        LKR <span th:text="${#numbers.formatDecimal(hotel.startingPrice, 1, 'COMMA', 0, 'POINT')}">35,000</span>
+                    </div>
+                    <div class="text-[11px] text-slate-500 mt-0.5">Includes taxes &amp; free 48h cancellation</div>
+                </div>
+
+                <div class="w-full mt-4 space-y-2">
+                    <a th:href="@{/hotels/{id}(id=${hotel.id})}"
+                       class="block w-full text-center btn-brand-primary text-xs py-3">
+                        Select Room &amp; Reserve →
+                    </a>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <!-- Empty Catalog State -->
+    <div th:if="${hotels == null or hotels.isEmpty()}" class="waycation-card p-12 text-center">
+        <h2 class="text-xl font-extrabold text-slate-900 mb-2">No Active Hotels Match Your Filter</h2>
+        <p class="text-sm text-slate-600 mb-6">Try clearing the city filter or publish a new boutique property from the Owner Portal.</p>
+        <div class="flex justify-center gap-3">
+            <a href="/hotels" class="btn-brand-primary text-xs">Show All Hotels</a>
+            <a href="/owner/hotels/new" class="btn-brand-accent text-xs">+ Publish Hotel</a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

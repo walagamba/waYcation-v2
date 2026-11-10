@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Owner Property Console')}"></head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<!-- Owner Console Header Banner -->
+<section class="bg-gradient-to-r from-indigo-950 via-indigo-900 to-[#003580] text-white py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <span class="badge-pill bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 mb-2">
+                🏨 Hotel Owner Console
+            </span>
+            <h1 class="text-3xl font-black tracking-tight">My Hotel Properties &amp; Room Inventory</h1>
+            <p class="text-sm text-indigo-200 mt-1">
+                Manage active listings, room capacities, nightly LKR pricing, and soft-deactivation without breaking historical guest bookings.
+            </p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="/owner/bookings" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">
+                View Guest Reservations
+            </a>
+            <a href="/owner/hotels/new" class="btn-brand-accent text-xs px-5 py-2.5">
+                + Publish New Property
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Flash Alerts -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6" th:if="${successMessage != null or errorMessage != null}">
+    <div th:if="${successMessage != null}" class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage != null}" class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold" th:text="${errorMessage}"></div>
+</div>
+
+<!-- Owner Properties Grid -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" th:if="${hotels != null and !hotels.isEmpty()}">
+        <article th:each="hotel : ${hotels}" class="waycation-card overflow-hidden flex flex-col justify-between">
+            <div>
+                <div class="relative h-48 bg-slate-200">
+                    <img th:src="${hotel.featuredImage != null ? hotel.featuredImage : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80'}"
+                         th:alt="${hotel.name}"
+                         class="w-full h-full object-cover"/>
+                    <span class="absolute top-3 left-3 badge-pill"
+                          th:classappend="${hotel.status.name() == 'ACTIVE' ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-200'}"
+                          th:text="${hotel.status}">ACTIVE</span>
+                    <span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-slate-900/80 text-white text-xs font-bold"
+                          th:text="${hotel.city}">Galle</span>
+                </div>
+
+                <div class="p-5">
+                    <h2 class="text-lg font-extrabold text-slate-900 mb-1" th:text="${hotel.name}">Galle Fort Heritage Villa</h2>
+                    <p class="text-xs text-slate-500 mb-3" th:text="${hotel.address != null ? hotel.address : hotel.city}">Church Street, Galle</p>
+
+                    <div class="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50 text-xs mb-4">
+                        <div>
+                            <span class="text-slate-500 block">Room Types</span>
+                            <span class="font-extrabold text-slate-900" th:text="${hotel.roomTypes != null ? hotel.roomTypes.size() : 0}">2</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-500 block">Starting Rate</span>
+                            <span class="font-extrabold text-[#003580]">
+                                LKR <span th:text="${#numbers.formatDecimal(hotel.startingPrice, 1, 'COMMA', 0, 'POINT')}">35,000</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-5 pb-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                <a th:href="@{/hotels/{id}(id=${hotel.id})}" class="text-xs font-extrabold text-[#003580] hover:underline">
+                    View Public Page →
+                </a>
+
+                <form th:if="${hotel.status.name() == 'ACTIVE'}"
+                      th:action="@{/owner/hotels/{id}/deactivate(id=${hotel.id})}"
+                      method="post">
+                    <button type="submit"
+                            class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-extrabold border border-rose-200 transition">
+                        Soft Deactivate
+                    </button>
+                </form>
+                <span th:if="${hotel.status.name() != 'ACTIVE'}"
+                      class="text-xs font-bold text-slate-400">
+                    Deactivated (Bookings Preserved)
+                </span>
+            </div>
+        </article>
+    </div>
+
+    <div th:if="${hotels == null or hotels.isEmpty()}" class="waycation-card p-12 text-center">
+        <h2 class="text-xl font-extrabold text-slate-900 mb-2">No Properties Listed Yet</h2>
+        <p class="text-sm text-slate-600 mb-6">Create your first hotel listing and room type to start accepting reservations.</p>
+        <a href="/owner/hotels/new" class="btn-brand-primary text-xs">+ Publish First Hotel</a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>
