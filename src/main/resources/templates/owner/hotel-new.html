@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Publish New Hotel Property')}"></head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <span class="badge-pill bg-indigo-100 text-indigo-800 mb-2">Owner Onboarding</span>
+            <h1 class="text-3xl font-black text-slate-900">Publish New Hotel &amp; Room Category</h1>
+            <p class="text-sm text-slate-600 mt-1">
+                Configure your Sri Lankan property details and initial bookable room inventory.
+            </p>
+        </div>
+        <a href="/owner/hotels" class="text-xs font-extrabold text-slate-600 hover:text-slate-900">← Back to Owner Console</a>
+    </div>
+
+    <form action="/owner/hotels" method="post" class="waycation-card p-6 sm:p-8 space-y-8">
+        <!-- Section 1: Property Metadata -->
+        <div>
+            <h2 class="text-lg font-extrabold text-slate-900 pb-2 border-b border-slate-100 mb-4">1. Property Profile &amp; Location</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label for="name" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Hotel / Villa Name *</label>
+                    <input id="name" name="name" type="text" required placeholder="e.g., Cinnamon Wild Yala Sanctuary"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-none focus:border-[#003580]"/>
+                </div>
+
+                <div>
+                    <label for="city" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">City / Region *</label>
+                    <input id="city" name="city" type="text" required placeholder="Galle, Ella, Kandy, Mirissa..."
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-none focus:border-[#003580]"/>
+                </div>
+
+                <div>
+                    <label for="address" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Street Address</label>
+                    <input id="address" name="address" type="text" placeholder="Lighthouse Street, Fort"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-none focus:border-[#003580]"/>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="featuredImage" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Featured Photo URL</label>
+                    <input id="featuredImage" name="featuredImage" type="url"
+                           placeholder="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-none focus:border-[#003580]"/>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="description" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Property Description</label>
+                    <textarea id="description" name="description" rows="3"
+                              placeholder="Highlight coastal views, heritage architecture, dining, and nearby excursions..."
+                              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-none focus:border-[#003580]"></textarea>
+                </div>
+
+                <div>
+                    <label for="checkInTime" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Check-In Time</label>
+                    <input id="checkInTime" name="checkInTime" type="text" value="14:00"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"/>
+                </div>
+
+                <div>
+                    <label for="checkOutTime" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Check-Out Time</label>
+                    <input id="checkOutTime" name="checkOutTime" type="text" value="11:00"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Initial Room Type & Inventory Pool -->
+        <div>
+            <h2 class="text-lg font-extrabold text-slate-900 pb-2 border-b border-slate-100 mb-4">2. Primary Room Category &amp; Daily Allocation</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-2">
+                    <label for="roomName" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Room Type Name *</label>
+                    <input id="roomName" name="roomName" type="text" required value="Deluxe Ocean Suite"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"/>
+                </div>
+
+                <div>
+                    <label for="roomCapacity" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Max Guests *</label>
+                    <input id="roomCapacity" name="roomCapacity" type="number" min="1" max="12" value="2" required
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"/>
+                </div>
+
+                <div>
+                    <label for="basePrice" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Nightly Rate (LKR) *</label>
+                    <input id="basePrice" name="basePrice" type="number" step="500" min="1000" value="38000" required
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"/>
+                </div>
+
+                <div>
+                    <label for="totalRooms" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Daily Room Inventory *</label>
+                    <input id="totalRooms" name="totalRooms" type="number" min="1" max="100" value="5" required
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"/>
+                </div>
+
+                <div class="sm:col-span-3">
+                    <label for="roomDescription" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Room Amenities &amp; Notes</label>
+                    <input id="roomDescription" name="roomDescription" type="text"
+                           placeholder="King four-poster bed, ocean balcony, complimentary breakfast, high-speed Wi-Fi"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+            <a href="/owner/hotels" class="px-5 py-2.5 rounded-xl border border-slate-300 text-xs font-extrabold text-slate-700">Cancel</a>
+            <button type="submit" class="btn-brand-primary text-sm px-6 py-3">
+                Publish Property &amp; Room Inventory →
+            </button>
+        </div>
+    </form>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

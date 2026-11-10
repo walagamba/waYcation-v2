@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${hotel.name})}"></head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+
+    <!-- Breadcrumb & Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+            <nav class="text-xs font-bold text-slate-500 mb-2 flex items-center gap-2">
+                <a href="/" class="hover:text-[#003580]">Home</a>
+                <span>/</span>
+                <a href="/hotels" class="hover:text-[#003580]">Hotels</a>
+                <span>/</span>
+                <span class="text-slate-900" th:text="${hotel.city}">Galle</span>
+            </nav>
+            <h1 class="text-3xl sm:text-4xl font-black text-slate-900" th:text="${hotel.name}">Galle Fort Heritage Villa</h1>
+            <p class="text-sm text-slate-600 mt-1">
+                📍 <span th:text="${(hotel.address != null ? hotel.address + ', ' : '') + hotel.city + ', ' + hotel.country}">Church Street, Galle, Sri Lanka</span>
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="badge-pill bg-emerald-100 text-emerald-800" th:text="${hotel.status}">ACTIVE</span>
+            <div class="text-right">
+                <div class="text-xs text-slate-500 font-semibold">Starting from</div>
+                <div class="text-2xl font-black text-[#003580]">
+                    LKR <span th:text="${#numbers.formatDecimal(hotel.startingPrice, 1, 'COMMA', 0, 'POINT')}">35,000</span>
+                    <span class="text-xs font-normal text-slate-500">/ night</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo Gallery Mosaic -->
+    <section class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-10">
+        <div class="md:col-span-8 h-80 sm:h-96 rounded-2xl overflow-hidden bg-slate-200 shadow-sm">
+            <img th:src="${hotel.featuredImage != null ? hotel.featuredImage : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80'}"
+                 th:alt="${hotel.name}"
+                 class="w-full h-full object-cover"/>
+        </div>
+        <div class="md:col-span-4 grid grid-cols-2 md:grid-cols-1 gap-4">
+            <div class="h-36 sm:h-[184px] rounded-2xl overflow-hidden bg-slate-200 shadow-sm">
+                <img th:src="${hotel.photos != null and !hotel.photos.isEmpty() ? hotel.photos[0].url : 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80'}"
+                     alt="Suite Interior"
+                     class="w-full h-full object-cover"/>
+            </div>
+            <div class="h-36 sm:h-[184px] rounded-2xl overflow-hidden bg-slate-200 shadow-sm relative">
+                <img th:src="${hotel.photos != null and hotel.photos.size() > 1 ? hotel.photos[1].url : 'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80'}"
+                     alt="Pool &amp; Courtyard"
+                     class="w-full h-full object-cover"/>
+                <div class="absolute inset-0 bg-slate-900/40 flex items-end p-4">
+                    <span class="text-xs font-extrabold text-white">✓ Verified Sri Lanka Hospitality Partner</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main 2-Column Content: Property Info + Room Selector (Left) & Sticky Booking Form (Right) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- Left Column: Overview, Policies & Room Categories -->
+        <div class="lg:col-span-8 space-y-8">
+            <section class="waycation-card p-6">
+                <h2 class="text-xl font-extrabold text-slate-900 mb-3">Property Overview</h2>
+                <p class="text-sm text-slate-700 leading-relaxed" th:text="${hotel.description}">
+                    Experience authentic Sri Lankan boutique hospitality with private balconies, tropical gardens, and instant room inventory confirmation.
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-100 text-xs">
+                    <div class="p-3 rounded-xl bg-slate-50">
+                        <span class="font-bold text-slate-500 uppercase block">Check-In Window</span>
+                        <span class="text-sm font-extrabold text-slate-900 mt-0.5 block" th:text="${hotel.checkInTime + ' onwards'}">14:00 onwards</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50">
+                        <span class="font-bold text-slate-500 uppercase block">Check-Out Time</span>
+                        <span class="text-sm font-extrabold text-slate-900 mt-0.5 block" th:text="${'Before ' + hotel.checkOutTime}">Before 11:00</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50">
+                        <span class="font-bold text-slate-500 uppercase block">Cancellation Policy</span>
+                        <span class="text-sm font-extrabold text-emerald-700 mt-0.5 block"
+                              th:text="${hotel.cancellationPolicy != null ? hotel.cancellationPolicy : 'Free cancellation up to 48h prior'}">
+                            Free cancellation up to 48h prior
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Available Room Types List -->
+            <section class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-extrabold text-slate-900">Available Room Categories</h2>
+                    <span class="text-xs font-semibold text-slate-500">Protected by PostgreSQL Row-Level Locks</span>
+                </div>
+
+                <div th:if="${hotel.roomTypes != null and !hotel.roomTypes.isEmpty()}" class="space-y-4">
+                    <div th:each="rt, iterStat : ${hotel.roomTypes}"
+                         class="waycation-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-[#003580]">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-base font-extrabold text-slate-900" th:text="${rt.name}">Deluxe Ocean Suite</h3>
+                                <span class="badge-pill bg-blue-50 text-[#003580]" th:text="${'Up to ' + rt.capacity + ' Guests'}">Up to 2 Guests</span>
+                            </div>
+                            <p class="text-xs text-slate-600 mt-1" th:text="${rt.description != null ? rt.description : 'King bed, private terrace, rainfall shower, and complimentary Ceylon breakfast.'}">
+                                King bed, private terrace, rainfall shower, and complimentary Ceylon breakfast.
+                            </p>
+                            <div class="text-xs font-semibold text-emerald-700 mt-2">
+                                ✓ <span th:text="${rt.totalRooms}">5</span> rooms allocated in daily inventory pool
+                            </div>
+                        </div>
+                        <div class="sm:text-right shrink-0">
+                            <div class="text-lg font-black text-slate-900">
+                                <span th:text="${rt.currency}">LKR</span>
+                                <span th:text="${#numbers.formatDecimal(rt.basePrice, 1, 'COMMA', 0, 'POINT')}">38,000</span>
+                            </div>
+                            <div class="text-[11px] text-slate-500">per room / night</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Right Column: Sticky Reservation Sidebar (#dynamic-booking-form) -->
+        <aside class="lg:col-span-4 lg:sticky lg:top-24">
+            <form id="dynamic-booking-form"
+                  action="/bookings/create"
+                  method="post"
+                  th:attr="data-default-price=${hotel.startingPrice}"
+                  class="waycation-card p-6 border-2 border-[#003580] shadow-xl space-y-4">
+
+                <input type="hidden" name="hotelId" th:value="${hotel.id}"/>
+
+                <div class="pb-3 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-extrabold uppercase tracking-wider text-[#003580]">Instant Reservation</span>
+                        <h3 class="text-lg font-black text-slate-900">Lock Your Dates</h3>
+                    </div>
+                    <span class="badge-pill bg-[#febb02] text-slate-900">ACID Safe</span>
+                </div>
+
+                <!-- Room Category Radio Selector -->
+                <div>
+                    <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">1. Select Room Type</label>
+                    <div class="space-y-2" th:if="${hotel.roomTypes != null and !hotel.roomTypes.isEmpty()}">
+                        <label th:each="rt, iterStat : ${hotel.roomTypes}"
+                               class="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-[#003580] cursor-pointer bg-slate-50/70">
+                            <span class="flex items-center gap-2.5">
+                                <input type="radio"
+                                       name="roomTypeId"
+                                       th:value="${rt.id}"
+                                       th:checked="${iterStat.index == 0}"
+                                       th:attr="data-room-price=${rt.basePrice}"
+                                       class="text-[#003580] focus:ring-[#003580]"/>
+                                <span class="text-xs font-bold text-slate-900" th:text="${rt.name}">Deluxe Suite</span>
+                            </span>
+                            <span class="text-xs font-extrabold text-[#003580]">
+                                LKR <span th:text="${#numbers.formatDecimal(rt.basePrice, 1, 'COMMA', 0, 'POINT')}">38,000</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Check-in & Check-out Dates -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="booking-check-in" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Check-In</label>
+                        <input id="booking-check-in" type="date" name="checkIn" required
+                               th:value="${defaultCheckIn}"
+                               class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:border-[#003580]"/>
+                    </div>
+                    <div>
+                        <label for="booking-check-out" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Check-Out</label>
+                        <input id="booking-check-out" type="date" name="checkOut" required
+                               th:value="${defaultCheckOut}"
+                               class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:border-[#003580]"/>
+                    </div>
+                </div>
+
+                <!-- Rooms & Guests -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="booking-room-count" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Rooms</label>
+                        <input id="booking-room-count" type="number" name="roomCount" min="1" max="10" value="1" required
+                               class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:border-[#003580]"/>
+                    </div>
+                    <div>
+                        <label for="booking-guests" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1">Guests</label>
+                        <input id="booking-guests" type="number" name="guests" min="1" max="20" value="2" required
+                               class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold focus:outline-none focus:border-[#003580]"/>
+                    </div>
+                </div>
+
+                <!-- Dynamic Price Summary Box -->
+                <div class="p-4 rounded-xl bg-slate-900 text-white flex items-center justify-between">
+                    <div>
+                        <div class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">Estimated Total</div>
+                        <div id="estimated-booking-nights" class="text-xs text-[#febb02] font-semibold">2 night(s)</div>
+                    </div>
+                    <div id="estimated-booking-total" class="text-xl font-black text-white">
+                        LKR <span th:text="${#numbers.formatDecimal(hotel.startingPrice * 2, 1, 'COMMA', 0, 'POINT')}">70,000</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full btn-brand-accent py-3.5 text-sm font-black shadow-md">
+                    Confirm &amp; Lock Reservation →
+                </button>
+
+                <p class="text-[11px] text-center text-slate-500">
+                    Need group approval first? <a href="/tourist/trips" class="text-[#003580] font-bold underline">Add to Group Voting Room</a>
+                </p>
+            </form>
+        </aside>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>
