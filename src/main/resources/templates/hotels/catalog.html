@@ -1,63 +1,129 @@
+<!--
+  waYcation 2.0 — Public Hotel Discovery Catalog (templates/hotels/catalog.html)
+  Provides city search, client-side filtering, price sorting, and property cards.
+-->
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('Browse Sri Lanka Hotels')}"></head>
-<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+<head th:replace="~{fragments/layout :: head('Hotel Catalog — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
 
 <header th:replace="~{fragments/layout :: navbar}"></header>
 
-<!-- Top Filter & Search Strip -->
-<section class="bg-[#003580] text-white py-10 border-b border-blue-900">
+<!-- Catalog Header & Control Telemetry Strip -->
+<section class="py-10 border-b border-[var(--border-structural)] bg-[var(--bg-canvas-subtle)]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
             <div>
-                <span class="badge-pill bg-[#febb02]/20 text-[#febb02] mb-2">Verified Properties</span>
-                <h1 class="text-3xl font-black tracking-tight">Sri Lanka Hotel Catalog</h1>
-                <p class="text-sm text-blue-100 mt-1">
-                    Showing <span id="hotel-results-count" class="font-extrabold text-[#febb02]" th:text="${hotels != null ? hotels.size() : 0}">0</span> active properties with real-time room inventory locks.
+                <div class="inline-flex items-center gap-2 badge-telemetry mb-3">
+                    <span class="signal-dot"></span>
+                    <span>ACTIVE INVENTORY</span>
+                </div>
+                <h1 class="font-headline text-3xl font-bold tracking-tight text-[var(--text-primary)]">Sri Lanka Hotel Catalog</h1>
+                <p class="font-body text-xs text-[var(--text-secondary)] mt-1">
+                    Displaying <span id="hotel-results-count" class="font-mono font-bold text-[var(--text-primary)]" th:text="${hotels != null ? hotels.size() : 0}">0</span> boutique properties with instant reservation guarantees.
                 </p>
             </div>
             <div class="flex gap-2">
-                <a href="/tourist/trips" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">
-                    ✨ Compare in Group Voting
-                </a>
-                <a href="/owner/hotels/new" class="px-4 py-2 rounded-xl bg-[#febb02] text-slate-900 text-xs font-extrabold">
-                    + List Your Property
+                <a href="/owner/hotels/new" class="btn-monolith-secondary text-xs py-2 px-4">
+                    + List Property
                 </a>
             </div>
         </div>
 
-        <!-- Client + Server Filter Controls -->
-        <div class="bg-white text-slate-900 p-4 rounded-2xl shadow-lg grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-            <div class="md:col-span-6">
-                <label for="hotel-city-filter" class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-1">
-                    Filter by City or Property Name
-                </label>
-                <input id="hotel-city-filter" type="text" th:value="${cityFilter}"
-                       placeholder="Type city or hotel name (e.g., Galle, Ella, Kandy, Colombo)..."
-                       class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:outline-none focus:border-[#003580]"/>
+        <!-- Minimalist Filter & Sort Console -->
+        <div class="monolith-search-pod p-3 space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                <!-- Location Filter Cell -->
+                <div class="md:col-span-5 console-cell">
+                    <div class="flex items-center justify-between text-[var(--text-muted)] mb-0.5">
+                        <div class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
+                            <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">location_on</span>
+                            <span>Destination or Property</span>
+                        </div>
+                        <button type="button" data-clear-input="hotel-city-filter" class="text-[var(--text-muted)] hover:text-[var(--signal-red)] font-mono text-xs transition" title="Clear">✕</button>
+                    </div>
+                    <input id="hotel-city-filter" type="text" th:value="${cityFilter}"
+                           placeholder="Where are you going?"
+                           class="w-full bg-transparent text-sm font-headline font-medium text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none"/>
+                </div>
+
+                <!-- Booking.com Style Date Window Cell -->
+                <div class="md:col-span-4 console-cell booking-date-container relative hidden sm:block">
+                    <div class="flex items-center justify-between text-[var(--text-muted)] mb-0.5">
+                        <div class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
+                            <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">calendar_today</span>
+                            <span>Check-in — Check-out</span>
+                        </div>
+                        <span class="night-count-pill">2 NIGHTS</span>
+                    </div>
+                    <input type="hidden" class="check-in-input"/>
+                    <input type="hidden" class="check-out-input"/>
+                    <button type="button" class="booking-date-trigger w-full text-left flex items-center justify-between text-xs font-headline font-semibold text-[var(--text-primary)] mt-0.5 focus:outline-none">
+                        <span class="booking-date-range-text truncate">Select dates</span>
+                        <span class="font-mono text-[10px] text-[var(--text-muted)]">▾</span>
+                    </button>
+                    <!-- Popover -->
+                    <div class="booking-calendar-popover"></div>
+                </div>
+
+                <!-- Price Sort Dropdown Cell -->
+                <div class="md:col-span-3 console-cell">
+                    <div class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)] mb-0.5">
+                        <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">tune</span>
+                        <span>Sort Rate</span>
+                    </div>
+                    <select id="hotel-price-sort" class="w-full bg-transparent text-xs font-mono font-medium text-[var(--text-primary)] focus:outline-none cursor-pointer">
+                        <option value="asc" class="bg-[var(--card-surface)] text-[var(--text-primary)]">Rate: Low to High (LKR)</option>
+                        <option value="desc" class="bg-[var(--card-surface)] text-[var(--text-primary)]">Rate: High to Low (LKR)</option>
+                    </select>
+                </div>
             </div>
-            <div class="md:col-span-4">
-                <label for="hotel-price-sort" class="block text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-1">
-                    Sort by Starting Rate
-                </label>
-                <select id="hotel-price-sort" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold bg-white focus:outline-none focus:border-[#003580]">
-                    <option value="asc">Price: Low to High (LKR)</option>
-                    <option value="desc">Price: High to Low (LKR)</option>
-                </select>
+
+            <!-- Destination Preset Chips & Basis Filters Row -->
+            <div class="pt-2 border-t border-[var(--border-subtle)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <!-- Basis Filter Pill Chips -->
+                <div class="basis-pill-bar">
+                    <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mr-1 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs text-[var(--signal-red)]">restaurant</span>
+                        <span>Basis:</span>
+                    </span>
+                    <button type="button" data-basis-filter="all" class="basis-pill active">All Stays</button>
+                    <button type="button" data-basis-filter="BB" class="basis-pill">Bed & Breakfast (BB)</button>
+                    <button type="button" data-basis-filter="HB" class="basis-pill">Half Board (HB)</button>
+                    <button type="button" data-basis-filter="FB" class="basis-pill">Full Board (FB)</button>
+                    <button type="button" data-basis-filter="RO" class="basis-pill">Room Only (RO)</button>
+                </div>
+
+                <!-- Quick Location Chips -->
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mr-0.5 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs text-[var(--signal-red)]">near_me</span>
+                        <span>Preset:</span>
+                    </span>
+                    <button type="button" data-destination-chip="all" data-target-input="hotel-city-filter" class="destination-chip">All</button>
+                    <button type="button" data-destination-chip="Galle" data-target-input="hotel-city-filter" class="destination-chip">Galle</button>
+                    <button type="button" data-destination-chip="Ella" data-target-input="hotel-city-filter" class="destination-chip">Ella</button>
+                    <button type="button" data-destination-chip="Kandy" data-target-input="hotel-city-filter" class="destination-chip">Kandy</button>
+                    <button type="button" data-destination-chip="Colombo" data-target-input="hotel-city-filter" class="destination-chip">Colombo</button>
+                    <a href="/hotels" class="destination-chip text-[var(--signal-red)] hover:text-[var(--signal-red-hover)]">Reset</a>
+                </div>
             </div>
-            <div class="md:col-span-2">
-                <a href="/hotels" class="block w-full text-center py-2.5 px-4 rounded-xl border border-slate-300 hover:bg-slate-100 text-xs font-extrabold text-slate-700">
-                    Reset Filters
-                </a>
+        </div>
+                    <button type="button" data-destination-chip="Galle" data-target-input="hotel-city-filter" class="destination-chip">Galle</button>
+                    <button type="button" data-destination-chip="Ella" data-target-input="hotel-city-filter" class="destination-chip">Ella</button>
+                    <button type="button" data-destination-chip="Kandy" data-target-input="hotel-city-filter" class="destination-chip">Kandy</button>
+                    <button type="button" data-destination-chip="Colombo" data-target-input="hotel-city-filter" class="destination-chip">Colombo</button>
+                    <a href="/hotels" class="destination-chip text-[var(--signal-red)] hover:text-[var(--signal-red-hover)]">Reset</a>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Flash Alert Banner -->
+<!-- Flash Feedback Banner -->
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6" th:if="${errorMessage != null or successMessage != null}">
-    <div th:if="${errorMessage != null}" class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold" th:text="${errorMessage}"></div>
-    <div th:if="${successMessage != null}" class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage != null}" class="p-3.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-mono" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage != null}" class="p-3.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs font-mono" th:text="${successMessage}"></div>
 </div>
 
 <!-- Horizontal Hotel Cards List -->
@@ -65,67 +131,76 @@
     <div id="hotel-cards-container" class="space-y-6" th:if="${hotels != null and !hotels.isEmpty()}">
         <article th:each="hotel : ${hotels}"
                  data-hotel-card
-                 th:attr="data-city=${hotel.city},data-name=${hotel.name},data-price=${hotel.startingPrice}"
-                 class="waycation-card overflow-hidden grid grid-cols-1 md:grid-cols-12">
+                 th:attr="data-city=${hotel.city},data-name=${hotel.name},data-price=${hotel.startingPrice},data-basis=${hotel.id.hashCode() % 3 == 0 ? 'HB' : (hotel.id.hashCode() % 2 == 0 ? 'BB' : 'FB')}"
+                 class="monolith-card overflow-hidden grid grid-cols-1 md:grid-cols-12 group animate-fade-up">
 
-            <!-- Property Thumbnail -->
-            <div class="md:col-span-4 relative min-h-[220px] bg-slate-200">
-                <img th:src="${hotel.featuredImage != null ? hotel.featuredImage : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80'}"
+            <!-- Property Media Frame -->
+            <div class="md:col-span-4 relative min-h-[220px] bg-zinc-900 overflow-hidden">
+                <img th:src="${hotel.featuredImage != null ? hotel.featuredImage : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&amp;fit=crop&amp;w=900&amp;q=80'}"
                      th:alt="${hotel.name}"
-                     class="w-full h-full object-cover"/>
-                <span class="absolute top-3 left-3 badge-pill bg-slate-900/80 text-white" th:text="${hotel.city}">Galle</span>
+                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                <span class="absolute top-3 left-3 badge-telemetry bg-black/75 border-zinc-700 text-white" th:text="${hotel.city}">Galle</span>
             </div>
 
-            <!-- Property Metadata & Room Types Summary -->
-            <div class="md:col-span-5 p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-100">
+            <!-- Property Metadata & Room Categories -->
+            <div class="md:col-span-5 p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r border-[var(--border-structural)]">
                 <div>
-                    <div class="flex items-center gap-2 text-xs font-bold text-[#003580] uppercase tracking-wider mb-1">
+                    <div class="flex items-center gap-2 font-mono text-[11px] text-[var(--text-muted)] mb-1">
                         <span th:text="${hotel.city + ', ' + hotel.country}">Galle, Sri Lanka</span>
-                        <span>•</span>
+                        <span>·</span>
                         <span>Check-in <span th:text="${hotel.checkInTime}">14:00</span></span>
                     </div>
-                    <h2 class="text-xl font-black text-slate-900 mb-1">
-                        <a th:href="@{/hotels/{id}(id=${hotel.id})}" class="hover:text-[#003580] transition" th:text="${hotel.name}">
+                    <h2 class="font-headline text-xl font-bold text-[var(--text-primary)] mb-1">
+                        <a th:href="@{/hotels/{id}(id=${hotel.id})}" class="hover:text-[var(--signal-red)] transition" th:text="${hotel.name}">
                             Galle Fort Heritage Villa
                         </a>
                     </h2>
-                    <p class="text-xs text-slate-500 mb-3" th:text="${hotel.address != null ? hotel.address : hotel.city}">
+                    <p class="font-mono text-xs text-[var(--text-muted)] mb-3" th:text="${hotel.address != null ? hotel.address : hotel.city}">
                         Church Street, Galle Fort
                     </p>
-                    <p class="text-sm text-slate-600 line-clamp-2 mb-4" th:text="${hotel.description}">
+                    <p class="font-body text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed mb-4" th:text="${hotel.description}">
                         Boutique coastal property with private courtyard pool and verified inventory locks.
                     </p>
                 </div>
 
                 <!-- Room Type Pills -->
-                <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap gap-1.5">
                     <span th:each="rt : ${hotel.roomTypes}"
-                          class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold">
+                          class="px-2.5 py-1 rounded-full border border-[var(--border-structural)] bg-[var(--bg-canvas-subtle)] text-[var(--text-secondary)] text-[11px] font-mono">
                         <span th:text="${rt.name}">Deluxe Suite</span>
-                        (<span th:text="${rt.capacity + ' guests'}">2 guests</span>)
+                        (<span th:text="${rt.capacity + 'p'}">2p</span>)
                     </span>
                     <span th:if="${hotel.roomTypes == null or hotel.roomTypes.isEmpty()}"
-                          class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-semibold">
-                        Standard Double Room (2 guests)
+                          class="px-2.5 py-1 rounded-full border border-[var(--border-structural)] bg-[var(--bg-canvas-subtle)] text-[var(--text-secondary)] text-[11px] font-mono">
+                        Standard Room (2p)
                     </span>
                 </div>
             </div>
 
-            <!-- Pricing & CTA Column -->
-            <div class="md:col-span-3 p-6 bg-slate-50/60 flex flex-col justify-between items-start md:items-end text-left md:text-right">
+            <!-- Pricing & Reserve CTA Column -->
+            <div class="md:col-span-3 p-6 bg-[var(--card-surface-elevated)] flex flex-col justify-between items-start md:items-end text-left md:text-right">
                 <div>
-                    <span class="badge-pill bg-emerald-100 text-emerald-800 mb-2">Instant ACID Lock</span>
-                    <div class="text-xs text-slate-500 font-semibold">Starting nightly rate</div>
-                    <div class="text-2xl font-black text-slate-900 mt-0.5">
+                    <div class="inline-flex items-center gap-1.5 badge-telemetry mb-2">
+                        <span class="signal-dot"></span>
+                        <span>INSTANT LOCK</span>
+                    </div>
+                    <div class="font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Starting rate</div>
+                    <div class="font-mono text-2xl font-bold text-[var(--text-primary)] mt-0.5">
                         LKR <span th:text="${#numbers.formatDecimal(hotel.startingPrice, 1, 'COMMA', 0, 'POINT')}">35,000</span>
                     </div>
-                    <div class="text-[11px] text-slate-500 mt-0.5">Includes taxes &amp; free 48h cancellation</div>
+                    <div class="font-mono text-[10px] text-[var(--signal-red)] font-semibold mt-0.5 flex items-center justify-start md:justify-end gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                        <span th:text="${hotel.id.hashCode() % 3 == 0 ? 'Half Board Included' : (hotel.id.hashCode() % 2 == 0 ? 'Breakfast Included' : 'Full Board Plan')}">Breakfast Included</span>
+                    </div>
+                    <div class="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">Per night · Free cancellation</div>
                 </div>
 
-                <div class="w-full mt-4 space-y-2">
+                <div class="w-full mt-5">
                     <a th:href="@{/hotels/{id}(id=${hotel.id})}"
-                       class="block w-full text-center btn-brand-primary text-xs py-3">
-                        Select Room &amp; Reserve →
+                       class="w-full btn-monolith-primary py-2.5 text-xs justify-center">
+                        <span>Select Room</span>
+                        <span class="font-mono text-xs">→</span>
                     </a>
                 </div>
             </div>
@@ -133,12 +208,16 @@
     </div>
 
     <!-- Empty Catalog State -->
-    <div th:if="${hotels == null or hotels.isEmpty()}" class="waycation-card p-12 text-center">
-        <h2 class="text-xl font-extrabold text-slate-900 mb-2">No Active Hotels Match Your Filter</h2>
-        <p class="text-sm text-slate-600 mb-6">Try clearing the city filter or publish a new boutique property from the Owner Portal.</p>
+    <div th:if="${hotels == null or hotels.isEmpty()}" class="monolith-card p-12 text-center">
+        <div class="inline-flex items-center gap-2 badge-telemetry mb-4">
+            <span class="signal-dot"></span>
+            <span>NO MATCHES</span>
+        </div>
+        <h2 class="font-headline text-xl font-bold text-[var(--text-primary)] mb-2">No Active Properties Found</h2>
+        <p class="font-body text-xs text-[var(--text-secondary)] mb-6">Try clearing search parameters or publish a new boutique property from the hotelier console.</p>
         <div class="flex justify-center gap-3">
-            <a href="/hotels" class="btn-brand-primary text-xs">Show All Hotels</a>
-            <a href="/owner/hotels/new" class="btn-brand-accent text-xs">+ Publish Hotel</a>
+            <a href="/hotels" class="btn-monolith-primary text-xs">View All Properties</a>
+            <a href="/owner/hotels/new" class="btn-monolith-secondary text-xs">+ List Property</a>
         </div>
     </div>
 </main>

@@ -1,191 +1,289 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('Sri Lanka Boutique Hotels & Group Travel')}"></head>
-<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+<head th:replace="~{fragments/layout :: head('Sri Lanka Boutique Stays & Curated Travel')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
 
 <header th:replace="~{fragments/layout :: navbar}"></header>
 
-<!-- Hero Discovery Section -->
-<section class="relative bg-gradient-to-br from-[#003580] via-[#002861] to-slate-900 text-white py-20 overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="max-w-3xl">
-            <span class="badge-pill bg-[#febb02]/20 text-[#febb02] border border-[#febb02]/40 mb-4">
-                🇱🇰 Sri Lanka Boutique Hospitality &amp; Group Travel
-            </span>
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-4">
-                Discover, Vote &amp; Reserve <span class="text-[#febb02]">Sri Lanka’s</span> Finest Stays.
-            </h1>
-            <p class="text-lg text-blue-100/90 leading-relaxed mb-8">
-                Search verified oceanfront villas, tea-country bungalows, and heritage forts with atomic PostgreSQL room locks and Tinder-style group decision rooms.
-            </p>
+<!-- Hero Section (Radical Monolith Ambient Experience) -->
+<section class="relative pt-16 pb-28 md:pt-24 md:pb-36 border-b border-[var(--border-structural)]">
+    <!-- Ambient Red Glow in isolated clipped background wrapper -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="ambient-glow"></div>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
+        <!-- Quiet Micro-Pill -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--border-structural)] bg-[var(--card-surface)] shadow-sm mb-6">
+            <span class="signal-dot signal-dot-pulse"></span>
+            <span class="font-mono text-[11px] uppercase tracking-widest text-[var(--text-secondary)]">Instant Booking &amp; Verified Stays</span>
         </div>
 
-        <!-- Hero Search Bar -->
-        <form action="/hotels" method="get" class="bg-white text-slate-900 p-3 sm:p-4 rounded-2xl shadow-2xl border-4 border-[#febb02] grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-            <div class="md:col-span-5 px-3 py-1.5 border-b md:border-b-0 md:border-r border-slate-200">
-                <label for="hero-city" class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Destination / City</label>
-                <input id="hero-city" name="city" type="text" placeholder="Galle, Ella, Kandy, Colombo, Mirissa..."
-                       class="w-full mt-0.5 text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none"/>
+        <!-- Monumental Minimalist Headline -->
+        <h1 class="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[var(--text-primary)] max-w-4xl leading-[1.1] mb-5">
+            Decide together. Reserve in seconds<span class="text-[var(--signal-red)]">.</span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="font-body text-base sm:text-lg text-[var(--text-secondary)] max-w-2xl leading-relaxed mb-10">
+            Handpicked boutique stays, tea-country bungalows, and coastal sanctuaries across Sri Lanka with instant, zero-overbooking reservation guarantees.
+        </p>
+
+        <!-- Minimalist Modular Console (Booking.com Style Flow) -->
+        <form action="/hotels" method="get" class="w-full max-w-4xl monolith-search-pod p-2 grid grid-cols-1 md:grid-cols-12 gap-2 items-center text-left">
+            <!-- Cell 1: Destination -->
+            <div class="md:col-span-4 console-cell">
+                <div class="flex items-center justify-between text-[var(--text-muted)] mb-0.5">
+                    <div class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
+                        <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">location_on</span>
+                        <span>Destination</span>
+                    </div>
+                    <button type="button" data-clear-input="hero-city" class="text-[var(--text-muted)] hover:text-[var(--signal-red)] font-mono text-xs transition" title="Clear">✕</button>
+                </div>
+                <input id="hero-city" name="city" type="text" placeholder="Where are you going?"
+                       class="w-full bg-transparent text-sm font-headline font-medium text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none"/>
             </div>
-            <div class="md:col-span-4 px-3 py-1.5 border-b md:border-b-0 md:border-r border-slate-200">
-                <label for="hero-capacity" class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Minimum Guests</label>
-                <select id="hero-capacity" name="minCapacity" class="w-full mt-0.5 text-sm font-semibold text-slate-900 bg-transparent focus:outline-none">
-                    <option value="">Any Guest Count</option>
-                    <option value="2">2+ Guests (Couples / Twin)</option>
-                    <option value="3">3+ Guests (Family Suite)</option>
-                    <option value="4">4+ Guests (Group Villa)</option>
-                </select>
+
+            <!-- Cell 2: Booking.com Style Date Selector -->
+            <div class="md:col-span-4 console-cell booking-date-container relative">
+                <div class="flex items-center justify-between text-[var(--text-muted)] mb-0.5">
+                    <div class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
+                        <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">calendar_today</span>
+                        <span>Check-in — Check-out</span>
+                    </div>
+                    <span class="night-count-pill">2 NIGHTS</span>
+                </div>
+                <input type="hidden" name="checkIn" class="check-in-input"/>
+                <input type="hidden" name="checkOut" class="check-out-input"/>
+                <button type="button" class="booking-date-trigger w-full text-left flex items-center justify-between text-xs font-headline font-semibold text-[var(--text-primary)] mt-0.5 focus:outline-none">
+                    <span class="booking-date-range-text truncate">Select dates</span>
+                    <span class="font-mono text-[10px] text-[var(--text-muted)]">▾</span>
+                </button>
+
+                <!-- Booking.com Style Calendar Popover -->
+                <div class="booking-calendar-popover"></div>
             </div>
-            <div class="md:col-span-3 flex">
-                <button type="submit" class="w-full btn-brand-primary py-3.5 text-sm font-extrabold tracking-wide text-center shadow-md">
-                    Search Hotels →
+
+            <!-- Cell 3: Occupancy Popover -->
+            <div class="md:col-span-2 console-cell occupancy-container relative">
+                <div class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)] mb-0.5">
+                    <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">group</span>
+                    <span>Guests</span>
+                </div>
+                <input type="hidden" name="minCapacity" value="2"/>
+                <input type="hidden" name="roomCount" value="1"/>
+                <button type="button" class="occupancy-trigger w-full text-left flex items-center justify-between text-xs font-headline font-semibold text-[var(--text-primary)] mt-0.5 focus:outline-none">
+                    <span class="occupancy-summary-text truncate">2 Adults · 1 Room</span>
+                    <span class="font-mono text-[10px] text-[var(--text-muted)]">▾</span>
+                </button>
+
+                <!-- Occupancy Stepper Popover -->
+                <div class="occupancy-popover space-y-3">
+                    <div class="flex items-center justify-between text-xs font-mono">
+                        <span class="text-[var(--text-secondary)] uppercase tracking-wider">Adults</span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" class="stepper-btn" data-stepper-target="adults" data-stepper-delta="-1">-</button>
+                            <span class="stepper-adults-val font-bold text-[var(--text-primary)] w-5 text-center">02</span>
+                            <button type="button" class="stepper-btn" data-stepper-target="adults" data-stepper-delta="1">+</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-xs font-mono pt-2 border-t border-[var(--border-subtle)]">
+                        <span class="text-[var(--text-secondary)] uppercase tracking-wider">Rooms</span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" class="stepper-btn" data-stepper-target="rooms" data-stepper-delta="-1">-</button>
+                            <span class="stepper-rooms-val font-bold text-[var(--text-primary)] w-5 text-center">01</span>
+                            <button type="button" class="stepper-btn" data-stepper-target="rooms" data-stepper-delta="1">+</button>
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-[var(--border-subtle)] flex flex-wrap gap-1">
+                        <button type="button" data-preset-guests="1" data-preset-rooms="1" class="destination-chip">Solo (1)</button>
+                        <button type="button" data-preset-guests="2" data-preset-rooms="1" class="destination-chip">Couple (2)</button>
+                        <button type="button" data-preset-guests="4" data-preset-rooms="2" class="destination-chip">Family (4)</button>
+                        <button type="button" data-preset-guests="6" data-preset-rooms="3" class="destination-chip">Group (6+)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cell 4: Action Submit -->
+            <div class="md:col-span-2 p-0.5 flex">
+                <button type="submit" class="w-full h-12 btn-monolith-primary py-2 text-xs justify-center font-bold">
+                    <span>Search Stays</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
                 </button>
             </div>
         </form>
-    </div>
-</section>
 
-<!-- 3 Core Platform Trust Cards -->
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="waycation-card p-6 bg-white">
-            <div class="w-10 h-10 rounded-xl bg-blue-50 text-[#003580] flex items-center justify-center font-black text-lg mb-3">01</div>
-            <h3 class="text-base font-extrabold text-slate-900 mb-1">Atomic Room Reservation Locks</h3>
-            <p class="text-sm text-slate-600 leading-relaxed">
-                Every night between check-in and check-out is locked inside a PostgreSQL ACID transaction so double-bookings never happen.
-            </p>
-        </div>
-        <div class="waycation-card p-6 bg-white">
-            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-black text-lg mb-3">02</div>
-            <h3 class="text-base font-extrabold text-slate-900 mb-1">Tinder-Style Group Voting</h3>
-            <p class="text-sm text-slate-600 leading-relaxed">
-                Planning with friends? Create a trip room, shortlist candidate hotels, and swipe Like or Dislike to crown the group winner.
-            </p>
-        </div>
-        <div class="waycation-card p-6 bg-white">
-            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-black text-lg mb-3">03</div>
-            <h3 class="text-base font-extrabold text-slate-900 mb-1">Verified-Stay Reviews &amp; Bundles</h3>
-            <p class="text-sm text-slate-600 leading-relaxed">
-                Authentic guest reviews gated by confirmed stays, plus curated multi-day Sri Lankan travel packages with bundle discounts.
-            </p>
+        <!-- Trending Destination Preset Chips -->
+        <div class="flex flex-wrap items-center justify-center gap-1.5 mt-4">
+            <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mr-1 flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs text-[var(--signal-red)]">trending_up</span>
+                <span>Popular:</span>
+            </span>
+            <button type="button" data-destination-chip="all" data-target-input="hero-city" class="destination-chip">All Sri Lanka</button>
+            <button type="button" data-destination-chip="Galle" data-target-input="hero-city" class="destination-chip">Galle Fort</button>
+            <button type="button" data-destination-chip="Ella" data-target-input="hero-city" class="destination-chip">Ella Gap</button>
+            <button type="button" data-destination-chip="Kandy" data-target-input="hero-city" class="destination-chip">Kandy Hills</button>
+            <button type="button" data-destination-chip="Colombo" data-target-input="hero-city" class="destination-chip">Colombo</button>
+            <button type="button" data-destination-chip="Mirissa" data-target-input="hero-city" class="destination-chip">Mirissa Bay</button>
+            <button type="button" data-destination-chip="Sigiriya" data-target-input="hero-city" class="destination-chip">Sigiriya</button>
         </div>
     </div>
 </section>
 
-<!-- Featured Sri Lankan Destinations & Properties -->
+<!-- 3 Core Platform Architecture Cards (Telemetry Minimalist) -->
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
-        <div>
-            <span class="text-xs font-extrabold uppercase tracking-widest text-[#003580]">Curated Collection</span>
-            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">Featured Sri Lankan Stays</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="monolith-card p-6 animate-fade-up">
+            <div class="font-mono text-xs font-bold text-[var(--signal-red)] mb-3 tracking-widest">[01] INSTANT CONFIRMATION</div>
+            <h3 class="font-headline text-lg font-semibold text-[var(--text-primary)] mb-2">Zero Overbooking Guarantee</h3>
+            <p class="font-body text-xs text-[var(--text-secondary)] leading-relaxed">
+                Every night from check-in to check-out is confirmed in real time with locked room allocation. Never double-booked.
+            </p>
         </div>
-        <div class="flex flex-wrap gap-2">
-            <a href="/hotels?city=Galle" class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-white border border-slate-200 hover:border-[#003580] text-slate-700">Galle Fort</a>
-            <a href="/hotels?city=Ella" class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-white border border-slate-200 hover:border-[#003580] text-slate-700">Ella Highlands</a>
-            <a href="/hotels?city=Kandy" class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-white border border-slate-200 hover:border-[#003580] text-slate-700">Kandy Hills</a>
-            <a href="/hotels" class="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-[#003580] text-white">View All Catalog →</a>
+
+        <div class="monolith-card p-6 animate-fade-up delay-1">
+            <div class="font-mono text-xs font-bold text-[var(--text-muted)] mb-3 tracking-widest">[02] CURATED ITINERARIES</div>
+            <h3 class="font-headline text-lg font-semibold text-[var(--text-primary)] mb-2">Curated Multi-Stop Packages</h3>
+            <p class="font-body text-xs text-[var(--text-secondary)] leading-relaxed">
+                Handcrafted travel circuits connecting colonial coastal forts, central tea plantations, and highland retreats.
+            </p>
+        </div>
+
+        <div class="monolith-card p-6 animate-fade-up delay-2">
+            <div class="font-mono text-xs font-bold text-[var(--text-muted)] mb-3 tracking-widest">[03] VERIFIED STAYS</div>
+            <h3 class="font-headline text-lg font-semibold text-[var(--text-primary)] mb-2">Gated Guest Authenticity</h3>
+            <p class="font-body text-xs text-[var(--text-secondary)] leading-relaxed">
+                Reviews are strictly restricted to tourists with verified, confirmed reservations. No synthetic feedback.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Sri Lankan Stays Section -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-4 border-b border-[var(--border-structural)] gap-4">
+        <div>
+            <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">Curated Inventory</span>
+            <h2 class="font-headline text-2xl font-bold text-[var(--text-primary)] mt-1">Featured Boutique Accommodations</h2>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="/hotels?city=Galle" class="px-3 py-1 rounded-full text-xs font-mono border border-[var(--border-structural)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-active)] transition">Galle</a>
+            <a href="/hotels?city=Ella" class="px-3 py-1 rounded-full text-xs font-mono border border-[var(--border-structural)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-active)] transition">Ella</a>
+            <a href="/hotels?city=Kandy" class="px-3 py-1 rounded-full text-xs font-mono border border-[var(--border-structural)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-active)] transition">Kandy</a>
+            <a href="/hotels" class="px-3.5 py-1 rounded-full text-xs font-headline font-semibold bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] hover:opacity-90 transition">View All Stays →</a>
         </div>
     </div>
 
+    <!-- Active Hotel Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" th:if="${featuredHotels != null and !featuredHotels.isEmpty()}">
-        <article th:each="hotel : ${featuredHotels}" class="waycation-card overflow-hidden flex flex-col">
-            <div class="relative h-52 bg-slate-200 overflow-hidden">
-                <img th:src="${hotel.featuredImage != null ? hotel.featuredImage : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80'}"
+        <article th:each="hotel : ${featuredHotels}" class="monolith-card overflow-hidden flex flex-col group animate-fade-up">
+            <div class="relative h-56 bg-zinc-900 overflow-hidden">
+                <img th:src="${hotel.featuredImage != null ? hotel.featuredImage : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&amp;fit=crop&amp;w=900&amp;q=80'}"
                      th:alt="${hotel.name}"
-                     class="w-full h-full object-cover"/>
-                <span class="absolute top-3 left-3 badge-pill bg-slate-900/80 text-white" th:text="${hotel.city + ', ' + hotel.country}">Galle, Sri Lanka</span>
-                <span class="absolute bottom-3 right-3 px-3 py-1 rounded-lg bg-[#febb02] text-slate-900 text-xs font-black shadow">
-                    From LKR <span th:text="${#numbers.formatDecimal(hotel.startingPrice, 1, 'COMMA', 0, 'POINT')}">38,000</span> / night
+                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                <span class="absolute top-3 left-3 badge-telemetry bg-black/75 border-zinc-700 text-white" th:text="${hotel.city + ', ' + hotel.country}">Galle, Sri Lanka</span>
+                <span class="absolute bottom-3 right-3 font-mono text-xs font-bold text-white bg-black/80 px-2.5 py-1 rounded-md border border-zinc-700">
+                    LKR <span th:text="${#numbers.formatDecimal(hotel.startingPrice, 1, 'COMMA', 0, 'POINT')}">38,000</span> <span class="text-zinc-400 font-normal">/ night</span>
                 </span>
             </div>
             <div class="p-5 flex-1 flex flex-col justify-between">
                 <div>
-                    <h3 class="text-lg font-extrabold text-slate-900 mb-1" th:text="${hotel.name}">Galle Fort Heritage Villa</h3>
-                    <p class="text-xs text-slate-500 mb-2" th:text="${hotel.address != null ? hotel.address : hotel.city}">Church Street, Galle Fort</p>
-                    <p class="text-sm text-slate-600 line-clamp-2 mb-4" th:text="${hotel.description}">
+                    <h3 class="font-headline text-lg font-bold text-[var(--text-primary)] mb-1" th:text="${hotel.name}">Galle Fort Heritage Villa</h3>
+                    <p class="font-mono text-xs text-[var(--text-muted)] mb-3" th:text="${hotel.address != null ? hotel.address : hotel.city}">Church Street, Galle Fort</p>
+                    <p class="font-body text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed mb-4" th:text="${hotel.description}">
                         Restored Dutch-colonial boutique sanctuary overlooking the Indian Ocean ramparts.
                     </p>
                 </div>
-                <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <span class="text-xs font-semibold text-slate-500">
-                        <span th:text="${hotel.roomTypes != null ? hotel.roomTypes.size() : 1}">2</span> Room Categories
+                <div class="pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between">
+                    <span class="font-mono text-[11px] text-[var(--text-muted)]">
+                        <span th:text="${hotel.roomTypes != null ? hotel.roomTypes.size() : 1}">2</span> CATEGORIES
                     </span>
-                    <a th:href="@{/hotels/{id}(id=${hotel.id})}" class="text-xs font-extrabold text-[#003580] hover:underline">
-                        Explore &amp; Book →
+                    <a th:href="@{/hotels/{id}(id=${hotel.id})}" class="font-headline text-xs font-semibold text-[var(--text-primary)] group-hover:text-[var(--signal-red)] transition flex items-center gap-1">
+                        <span>Details</span>
+                        <span class="font-mono text-xs">→</span>
                     </a>
                 </div>
             </div>
         </article>
     </div>
 
-    <!-- Fallback destination cards when database is empty -->
+    <!-- Fallback Destination Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6" th:if="${featuredHotels == null or featuredHotels.isEmpty()}">
-        <div class="waycation-card p-6">
-            <span class="badge-pill bg-blue-50 text-[#003580] mb-2">Southern Coast</span>
-            <h3 class="text-lg font-extrabold text-slate-900">Galle Fort &amp; Mirissa</h3>
-            <p class="text-sm text-slate-600 mt-1 mb-4">Boutique rampart villas and palm-fringed surf bays along Sri Lanka’s southern coast.</p>
-            <a href="/hotels?city=Galle" class="text-xs font-extrabold text-[#003580]">Browse Galle Stays →</a>
+        <div class="monolith-card p-6">
+            <span class="badge-telemetry mb-3">REGION · 01</span>
+            <h3 class="font-headline text-lg font-bold text-[var(--text-primary)] mb-2">Galle Fort &amp; Mirissa</h3>
+            <p class="font-body text-xs text-[var(--text-secondary)] leading-relaxed mb-4">Historic rampart villas, maritime suites, and palm-lined surf bays along the Southern shoreline.</p>
+            <a href="/hotels?city=Galle" class="font-headline text-xs font-semibold text-[var(--signal-red)] hover:underline">Explore Galle Stays →</a>
         </div>
-        <div class="waycation-card p-6">
-            <span class="badge-pill bg-emerald-50 text-emerald-700 mb-2">Hill Country</span>
-            <h3 class="text-lg font-extrabold text-slate-900">Ella &amp; Nuwara Eliya</h3>
-            <p class="text-sm text-slate-600 mt-1 mb-4">Misty tea-estate planters’ bungalows overlooking Nine Arch Bridge and Little Adam’s Peak.</p>
-            <a href="/hotels?city=Ella" class="text-xs font-extrabold text-[#003580]">Browse Ella Stays →</a>
+        <div class="monolith-card p-6">
+            <span class="badge-telemetry mb-3">REGION · 02</span>
+            <h3 class="font-headline text-lg font-bold text-[var(--text-primary)] mb-2">Ella &amp; Nuwara Eliya</h3>
+            <p class="font-body text-xs text-[var(--text-secondary)] leading-relaxed mb-4">Highland tea estate bungalows overlooking Nine Arch Bridge and scenic mountain passes.</p>
+            <a href="/hotels?city=Ella" class="font-headline text-xs font-semibold text-[var(--signal-red)] hover:underline">Explore Ella Stays →</a>
         </div>
-        <div class="waycation-card p-6">
-            <span class="badge-pill bg-amber-50 text-amber-800 mb-2">Cultural Triangle</span>
-            <h3 class="text-lg font-extrabold text-slate-900">Kandy &amp; Sigiriya</h3>
-            <p class="text-sm text-slate-600 mt-1 mb-4">Sacred lakefront retreats and eco-luxury jungle lodges near ancient rock fortresses.</p>
-            <a href="/hotels?city=Kandy" class="text-xs font-extrabold text-[#003580]">Browse Kandy Stays →</a>
+        <div class="monolith-card p-6">
+            <span class="badge-telemetry mb-3">REGION · 03</span>
+            <h3 class="font-headline text-lg font-bold text-[var(--text-primary)] mb-2">Kandy &amp; Sigiriya</h3>
+            <p class="font-body text-xs text-[var(--text-secondary)] leading-relaxed mb-4">Sacred lakefront sanctuaries and architectural treehouse retreats near ancient citadels.</p>
+            <a href="/hotels?city=Kandy" class="font-headline text-xs font-semibold text-[var(--signal-red)] hover:underline">Explore Kandy Stays →</a>
         </div>
     </div>
 </section>
 
-<!-- Group Decision Teaser Banner -->
+<!-- Curated Packages Banner (Minimalist Bento Pod) -->
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-    <div class="rounded-3xl bg-gradient-to-r from-slate-900 via-[#00224f] to-[#003580] text-white p-8 sm:p-12 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-xl">
-        <div class="max-w-2xl">
-            <span class="badge-pill bg-[#febb02] text-slate-900 mb-3">✨ Group Trip Voting Room</span>
-            <h2 class="text-2xl sm:text-3xl font-black mb-2">Can’t Decide Which Hotel the Group Should Book?</h2>
-            <p class="text-sm sm:text-base text-blue-100 leading-relaxed">
-                Launch a collaborative trip room, add candidate hotels or curated Sri Lankan packages, and let every member swipe right or left. We tally the net score and take you straight to checkout.
+    <div class="monolith-card p-8 sm:p-12 relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8 border-2 border-[var(--border-structural)]">
+        <div class="max-w-2xl relative z-10">
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-4">
+                <span class="signal-dot"></span>
+                <span>HANDPICKED CIRCUITS</span>
+            </div>
+            <h2 class="font-headline text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-3">Multi-Hotel Curated Travel Bundles</h2>
+            <p class="font-body text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+                Connect coastlines, cultural triangles, and highland tea estates in a single unified booking. Enjoy guaranteed rates and verified stops.
             </p>
         </div>
-        <div class="flex flex-wrap gap-3 shrink-0">
-            <a href="/tourist/trips" class="btn-brand-accent text-sm px-6 py-3.5">Open Group Voting Hub →</a>
-            <a href="/packages" class="px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-bold">Browse Packages</a>
+        <div class="flex flex-wrap items-center gap-3 shrink-0 relative z-10">
+            <a href="/packages" class="btn-monolith-primary py-3 px-6 text-sm">
+                <span>View Packages</span>
+                <span class="font-mono text-xs">→</span>
+            </a>
+            <a href="/hotels" class="btn-monolith-secondary py-3 px-5 text-sm">All Stays</a>
         </div>
     </div>
 </section>
 
-<!-- Role Portals Strip -->
+<!-- Role Portals Telemetry Strip -->
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="waycation-card p-6 border-l-4 border-l-[#003580]">
-            <span class="text-xs font-extrabold uppercase tracking-wider text-[#003580]">Tourist Portal</span>
-            <h3 class="text-lg font-extrabold text-slate-900 mt-1">Manage Stays &amp; Group Votes</h3>
-            <p class="text-sm text-slate-600 mt-1 mb-4">View confirmed reservations, cancel eligible bookings, or vote in shared trip rooms.</p>
-            <div class="flex gap-3 text-xs font-extrabold">
-                <a href="/tourist/bookings" class="text-[#003580] hover:underline">My Bookings →</a>
-                <a href="/tourist/sign-in" class="text-slate-500 hover:underline">Tourist Sign-In</a>
+        <div class="monolith-card p-6 border-t-2 border-t-[var(--border-active)]">
+            <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)]">PORTAL · 01</span>
+            <h3 class="font-headline text-base font-bold text-[var(--text-primary)] mt-1 mb-2">Tourist Space</h3>
+            <p class="font-body text-xs text-[var(--text-secondary)] mb-4">Manage active reservations, request date adjustments, or leave verified stay reviews.</p>
+            <div class="flex items-center justify-between text-xs font-mono pt-3 border-t border-[var(--border-subtle)]">
+                <a href="/tourist/bookings" class="font-bold text-[var(--text-primary)] hover:text-[var(--signal-red)] transition">My Reservations →</a>
+                <a href="/tourist/sign-in" class="text-[var(--text-muted)] hover:text-[var(--text-primary)]">Sign In</a>
             </div>
         </div>
-        <div class="waycation-card p-6 border-l-4 border-l-indigo-600">
-            <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-700">Hotel Owner Console</span>
-            <h3 class="text-lg font-extrabold text-slate-900 mt-1">List Properties &amp; Room Types</h3>
-            <p class="text-sm text-slate-600 mt-1 mb-4">Publish boutique hotels, configure room capacities and LKR rates, or manage guest bookings.</p>
-            <div class="flex gap-3 text-xs font-extrabold">
-                <a href="/owner/hotels" class="text-indigo-700 hover:underline">Owner Dashboard →</a>
-                <a href="/owner/hotels/new" class="text-slate-500 hover:underline">+ Add Property</a>
+
+        <div class="monolith-card p-6 border-t-2 border-t-[var(--border-active)]">
+            <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)]">PORTAL · 02</span>
+            <h3 class="font-headline text-base font-bold text-[var(--text-primary)] mt-1 mb-2">Hotelier Console</h3>
+            <p class="font-body text-xs text-[var(--text-secondary)] mb-4">Manage boutique properties, configure room categories, and monitor incoming guest bookings.</p>
+            <div class="flex items-center justify-between text-xs font-mono pt-3 border-t border-[var(--border-subtle)]">
+                <a href="/owner/hotels" class="font-bold text-[var(--text-primary)] hover:text-[var(--signal-red)] transition">Property Portfolio →</a>
+                <a href="/owner/hotels/new" class="text-[var(--text-muted)] hover:text-[var(--text-primary)]">+ New Stay</a>
             </div>
         </div>
-        <div class="waycation-card p-6 border-l-4 border-l-rose-700">
-            <span class="text-xs font-extrabold uppercase tracking-wider text-rose-700">Platform Admin</span>
-            <h3 class="text-lg font-extrabold text-slate-900 mt-1">Curate Multi-Stop Travel Packages</h3>
-            <p class="text-sm text-slate-600 mt-1 mb-4">Assemble hotel + excursion bundles with percentage discounts for Sri Lankan itineraries.</p>
-            <div class="flex gap-3 text-xs font-extrabold">
-                <a href="/admin/packages" class="text-rose-700 hover:underline">Admin Console →</a>
-                <a href="/admin/sign-in" class="text-slate-500 hover:underline">Admin Sign-In</a>
+
+        <div class="monolith-card p-6 border-t-2 border-t-[var(--border-active)]">
+            <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)]">PORTAL · 03</span>
+            <h3 class="font-headline text-base font-bold text-[var(--text-primary)] mt-1 mb-2">Platform Administration</h3>
+            <p class="font-body text-xs text-[var(--text-secondary)] mb-4">Curate multi-hotel itinerary packages, configure coupon codes, and monitor system metrics.</p>
+            <div class="flex items-center justify-between text-xs font-mono pt-3 border-t border-[var(--border-subtle)]">
+                <a href="/admin/packages" class="font-bold text-[var(--signal-red)] hover:underline">Admin Console →</a>
+                <a href="/admin/coupons" class="text-[var(--text-muted)] hover:text-[var(--text-primary)]">Coupons</a>
             </div>
         </div>
     </div>

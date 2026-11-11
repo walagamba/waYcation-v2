@@ -1,78 +1,101 @@
+<!--
+  waYcation 2.0 — Public Registration Portal (templates/auth/sign-up.html)
+  Features interactive 2-card Account Type selector (TOURIST vs HOTEL_OWNER).
+  Administrative roles (ADMIN, SUPER_ADMIN, STAFF) are restricted from public self-signup.
+-->
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('Create Account | waYcation 2.0')}"></head>
-<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+<head th:replace="~{fragments/layout :: head('Create Account — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
 
 <header th:replace="~{fragments/layout :: navbar}"></header>
 
-<main class="flex-grow flex items-center justify-center px-4 py-12">
-    <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200 p-8"
+<main class="flex-grow flex items-center justify-center px-4 py-16">
+    <div class="w-full max-w-xl monolith-card border-2 border-[var(--border-structural)] p-8"
          th:with="currentRole=${selectedRole != null ? selectedRole : 'TOURIST'}">
 
         <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold text-slate-900">Create Your waYcation Account</h1>
-            <p class="text-sm text-slate-600 mt-1">Choose your account type to start exploring or hosting in Sarawak.</p>
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-3">
+                <span class="signal-dot"></span>
+                <span>REGISTRATION &amp; ACCESS TIER</span>
+            </div>
+            <h1 class="font-headline text-2xl font-bold text-[var(--text-primary)]">Create Your Account</h1>
+            <p class="font-body text-xs text-[var(--text-secondary)] mt-1">Select your account tier to explore or host boutique stays in Sri Lanka.</p>
         </div>
 
-        <div th:if="${errorMessage}" class="mb-5 p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-sm"
+        <div th:if="${errorMessage}" class="mb-5 p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-mono"
              th:text="${errorMessage}"></div>
 
         <form th:action="@{/auth/sign-up}" method="post" class="space-y-5">
-            <!-- Role Selector Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <label class="cursor-pointer border rounded-xl p-4 flex flex-col justify-between transition hover:border-slate-900"
-                       th:classappend="${currentRole == 'TOURIST' ? 'border-slate-900 bg-slate-50 ring-2 ring-slate-900' : 'border-slate-200'}">
-                    <div class="flex items-center justify-between">
-                        <span class="font-semibold text-sm text-slate-900">Tourist</span>
-                        <input type="radio" name="role" value="TOURIST"
-                               th:checked="${currentRole == 'TOURIST'}"
-                               class="text-slate-900 focus:ring-slate-900" />
-                    </div>
-                    <p class="text-xs text-slate-600 mt-2">Plan trips, book stays, and explore Sarawak attractions.</p>
-                </label>
+            <input type="hidden" name="redirectUrl" th:value="${redirectUrl}" />
 
-                <label class="cursor-pointer border rounded-xl p-4 flex flex-col justify-between transition hover:border-indigo-700"
-                       th:classappend="${currentRole == 'HOTEL_OWNER' ? 'border-indigo-700 bg-indigo-50/40 ring-2 ring-indigo-700' : 'border-slate-200'}">
-                    <div class="flex items-center justify-between">
-                        <span class="font-semibold text-sm text-indigo-950">Hotel Owner</span>
-                        <input type="radio" name="role" value="HOTEL_OWNER"
-                               th:checked="${currentRole == 'HOTEL_OWNER'}"
-                               class="text-indigo-700 focus:ring-indigo-700" />
-                    </div>
-                    <p class="text-xs text-slate-600 mt-2">List properties, manage room inventory, and accept bookings.</p>
-                </label>
+            <!-- Public Role Selector Cards (Tourist & Hotelier only) -->
+            <div>
+                <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-2">Select Your Role</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <!-- 1. Tourist -->
+                    <label class="cursor-pointer border rounded-lg p-4 flex flex-col justify-between transition bg-[var(--bg-canvas-subtle)] hover:border-[var(--border-active)]"
+                           th:classappend="${currentRole == 'TOURIST' ? 'border-[var(--border-active)] ring-1 ring-[var(--border-active)]' : 'border-[var(--border-structural)]'}">
+                        <div class="flex items-center justify-between">
+                            <span class="font-headline font-semibold text-xs text-[var(--text-primary)] flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">travel_explore</span>
+                                <span>Tourist (Traveler)</span>
+                            </span>
+                            <input type="radio" name="role" value="TOURIST"
+                                   th:checked="${currentRole == 'TOURIST'}"
+                                   class="accent-[var(--signal-red)]" />
+                        </div>
+                        <p class="font-body text-[11px] text-[var(--text-secondary)] mt-2">Reserve stays, lock multi-hotel packages with starting dates, and leave verified reviews.</p>
+                    </label>
+
+                    <!-- 2. Hotelier -->
+                    <label class="cursor-pointer border rounded-lg p-4 flex flex-col justify-between transition bg-[var(--bg-canvas-subtle)] hover:border-[var(--border-active)]"
+                           th:classappend="${currentRole == 'HOTEL_OWNER' ? 'border-[var(--border-active)] ring-1 ring-[var(--border-active)]' : 'border-[var(--border-structural)]'}">
+                        <div class="flex items-center justify-between">
+                            <span class="font-headline font-semibold text-xs text-[var(--text-primary)] flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">domain</span>
+                                <span>Hotelier (Partner)</span>
+                            </span>
+                            <input type="radio" name="role" value="HOTEL_OWNER"
+                                   th:checked="${currentRole == 'HOTEL_OWNER'}"
+                                   class="accent-[var(--signal-red)]" />
+                        </div>
+                        <p class="font-body text-[11px] text-[var(--text-secondary)] mt-2">List boutique properties, manage daily room allocations, and view guest reservations.</p>
+                    </label>
+                </div>
             </div>
 
             <div>
-                <label for="displayName" class="block text-sm font-medium text-slate-700 mb-1">Full Name or Business Name</label>
+                <label for="displayName" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Full Name / Entity Name *</label>
                 <input id="displayName" name="displayName" type="text" required minlength="2"
-                       placeholder="Aisha Lim"
-                       class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+                       placeholder="e.g. Ayesha Silva"
+                       class="monolith-input text-xs font-mono" />
             </div>
 
             <div>
-                <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                <label for="email" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Email Address *</label>
                 <input id="email" name="email" type="email" required autocomplete="email"
-                       placeholder="you@example.com"
-                       class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+                       placeholder="you@domain.com"
+                       class="monolith-input text-xs font-mono" />
             </div>
 
             <div>
-                <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Password (minimum 6 characters)</label>
+                <label for="password" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Password (Min. 6 chars) *</label>
                 <input id="password" name="password" type="password" required minlength="6" autocomplete="new-password"
                        placeholder="••••••••"
-                       class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+                       class="monolith-input text-xs font-mono" />
             </div>
 
             <button type="submit"
-                    class="w-full py-2.5 px-4 rounded-lg bg-indigo-700 hover:bg-indigo-800 text-white font-semibold text-sm shadow transition">
-                Create Account
+                    class="w-full btn-monolith-primary py-3 text-xs justify-center font-bold">
+                <span>Create Account</span>
+                <span class="font-mono text-xs">→</span>
             </button>
         </form>
 
-        <div class="mt-6 pt-4 border-t border-slate-200 text-center text-sm text-slate-600">
-            Already have an account?
-            <a th:href="@{/tourist/sign-in}" class="font-semibold text-indigo-600 hover:text-indigo-800">Sign in here</a>
+        <div class="mt-6 pt-4 border-t border-[var(--border-subtle)] text-center text-xs font-mono text-[var(--text-muted)]">
+            Already registered?
+            <a th:href="@{/tourist/sign-in(redirect=${redirectUrl})}" class="font-bold text-[var(--text-primary)] hover:text-[var(--signal-red)] transition">Sign in here</a>
         </div>
     </div>
 </main>

@@ -1,77 +1,85 @@
+<!--
+  waYcation 2.0 — Role-Tabbed Sign-In Portal (templates/auth/sign-in.html)
+  Supports role-aware authentication across Tourist, Hotelier, Staff, and Admin portals.
+-->
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('Sign In | waYcation 2.0')}"></head>
-<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+<head th:replace="~{fragments/layout :: head('Sign In — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
 
 <header th:replace="~{fragments/layout :: navbar}"></header>
 
-<main class="flex-grow flex items-center justify-center px-4 py-12">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden"
+<main class="flex-grow flex items-center justify-center px-4 py-16">
+    <div class="w-full max-w-md monolith-card overflow-hidden border-2 border-[var(--border-structural)]"
          th:with="role=${portalRole != null ? portalRole : 'TOURIST'}">
 
-        <!-- Role-Adaptive Banner -->
-        <div th:classappend="${role == 'ADMIN' ? 'bg-rose-800' : (role == 'HOTEL_OWNER' ? 'bg-indigo-900' : 'bg-slate-900')}"
-             class="px-8 py-6 text-white">
-            <span class="inline-block text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/15 mb-2"
-                  th:text="${role == 'ADMIN' ? 'System Governance Portal' : (role == 'HOTEL_OWNER' ? 'Partner Property Portal' : 'Traveler Portal')}">
-                Traveler Portal
-            </span>
-            <h1 class="text-2xl font-bold"
-                th:text="${role == 'ADMIN' ? 'Admin Sign In' : (role == 'HOTEL_OWNER' ? 'Hotel Owner Sign In' : 'Tourist Sign In')}">
+        <!-- Role Adaptive Minimalist Header -->
+        <div class="px-8 py-6 border-b border-[var(--border-structural)] bg-[var(--bg-canvas-subtle)]">
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-2">
+                <span class="signal-dot"></span>
+                <span th:text="${role == 'ADMIN' ? 'OPERATIONS &amp; GOVERNANCE' : (role == 'HOTEL_OWNER' ? 'HOTELIER PORTAL' : 'TOURIST PORTAL')}">TOURIST PORTAL</span>
+            </div>
+            <h1 class="font-headline text-2xl font-bold text-[var(--text-primary)]"
+                th:text="${role == 'ADMIN' ? 'Staff &amp; Admin Sign In' : (role == 'HOTEL_OWNER' ? 'Hotelier Sign In' : 'Tourist Sign In')}">
                 Tourist Sign In
             </h1>
-            <p class="text-sm text-white/80 mt-1"
-               th:text="${role == 'ADMIN' ? 'Restricted to authorized platform administrators.' : (role == 'HOTEL_OWNER' ? 'Manage your listings, room availability, and bookings.' : 'Access your saved trips, AI itineraries, and reservations.')}">
-                Access your saved trips, AI itineraries, and reservations.
+            <p class="font-body text-xs text-[var(--text-secondary)] mt-1"
+               th:text="${role == 'ADMIN' ? 'Restricted to authorized operations curators and system administrators.' : (role == 'HOTEL_OWNER' ? 'Manage boutique properties, rates, and guest reservations.' : 'Access your locked reservations and verified stay reviews.')}">
+                Access your locked reservations and verified stay reviews.
             </p>
         </div>
 
         <!-- Portal Switcher Tabs -->
-        <div class="grid grid-cols-3 border-b border-slate-200 bg-slate-100 text-xs font-semibold text-center">
-            <a th:href="@{/tourist/sign-in}"
-               th:classappend="${role == 'TOURIST' ? 'bg-white text-slate-900 border-b-2 border-slate-900' : 'text-slate-600 hover:text-slate-900'}"
+        <div class="grid grid-cols-3 border-b border-[var(--border-structural)] bg-[var(--bg-canvas)] text-xs font-mono text-center">
+            <a th:href="@{/tourist/sign-in(redirect=${redirectUrl})}"
+               th:classappend="${role == 'TOURIST' ? 'bg-[var(--card-surface)] text-[var(--text-primary)] font-bold border-b-2 border-[var(--border-active)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}"
                class="py-3 transition">Tourist</a>
-            <a th:href="@{/owner/sign-in}"
-               th:classappend="${role == 'HOTEL_OWNER' ? 'bg-white text-indigo-900 border-b-2 border-indigo-700' : 'text-slate-600 hover:text-indigo-900'}"
-               class="py-3 transition">Hotel Owner</a>
-            <a th:href="@{/admin/sign-in}"
-               th:classappend="${role == 'ADMIN' ? 'bg-white text-rose-800 border-b-2 border-rose-700' : 'text-slate-600 hover:text-rose-800'}"
-               class="py-3 transition">Admin</a>
+            <a th:href="@{/owner/sign-in(redirect=${redirectUrl})}"
+               th:classappend="${role == 'HOTEL_OWNER' ? 'bg-[var(--card-surface)] text-[var(--text-primary)] font-bold border-b-2 border-[var(--border-active)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}"
+               class="py-3 transition">Hotelier</a>
+            <a th:href="@{/admin/sign-in(redirect=${redirectUrl})}"
+               th:classappend="${role == 'ADMIN' ? 'bg-[var(--card-surface)] text-[var(--signal-red)] font-bold border-b-2 border-[var(--signal-red)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}"
+               class="py-3 transition">Staff / Admin</a>
         </div>
 
         <div class="p-8 space-y-5">
-            <div th:if="${errorMessage}" class="p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-sm"
+            <div th:if="${errorMessage}" class="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-mono"
                  th:text="${errorMessage}"></div>
-            <div th:if="${successMessage}" class="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm"
+            <div th:if="${successMessage}" class="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs font-mono"
                  th:text="${successMessage}"></div>
 
             <form th:action="@{/auth/sign-in}" method="post" class="space-y-4">
                 <input type="hidden" name="portalRole" th:value="${role}" />
+                <input type="hidden" name="redirectUrl" th:value="${redirectUrl}" />
 
                 <div>
-                    <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                    <label for="email" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Email Address</label>
                     <input id="email" name="email" type="email" required autocomplete="email"
-                           placeholder="you@example.com"
-                           class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+                           placeholder="you@domain.com"
+                           class="monolith-input text-xs font-mono" />
                 </div>
 
                 <div>
-                    <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                    <label for="password" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Password</label>
                     <input id="password" name="password" type="password" required autocomplete="current-password"
                            placeholder="••••••••"
-                           class="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600" />
+                           class="monolith-input text-xs font-mono" />
                 </div>
 
                 <button type="submit"
-                        th:classappend="${role == 'ADMIN' ? 'bg-rose-700 hover:bg-rose-800' : (role == 'HOTEL_OWNER' ? 'bg-indigo-700 hover:bg-indigo-800' : 'bg-slate-900 hover:bg-slate-800')}"
-                        class="w-full py-2.5 px-4 rounded-lg text-white font-semibold text-sm shadow transition">
-                    Sign In
+                        class="w-full btn-monolith-primary py-3 text-xs justify-center font-bold">
+                    <span>Authenticate</span>
+                    <span class="font-mono text-xs">→</span>
                 </button>
             </form>
 
-            <div th:if="${role != 'ADMIN'}" class="pt-4 border-t border-slate-200 text-center text-sm text-slate-600">
-                Don't have an account yet?
-                <a th:href="@{/sign-up(role=${role})}" class="font-semibold text-indigo-600 hover:text-indigo-800">Create an account</a>
+            <div th:if="${role != 'ADMIN'}" class="pt-4 border-t border-[var(--border-subtle)] text-center text-xs font-mono text-[var(--text-muted)]">
+                Don't have an account?
+                <a th:href="@{/sign-up(role=${role},redirect=${redirectUrl})}" class="font-bold text-[var(--text-primary)] hover:text-[var(--signal-red)] transition">Register Now</a>
+            </div>
+
+            <div th:if="${role == 'ADMIN'}" class="pt-4 border-t border-[var(--border-subtle)] text-center text-[11px] font-mono text-[var(--text-muted)]">
+                Staff and Administrator roles require provisioning by a Super Administrator.
             </div>
         </div>
     </div>
