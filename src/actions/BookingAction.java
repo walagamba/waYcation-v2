@@ -1,4 +1,4 @@
-package com.waycation.actions;
+﻿package com.waycation.actions;
 
 import com.waycation.model.Booking;
 import com.waycation.service.BookingService;
@@ -13,6 +13,7 @@ import java.util.List;
  * date rescheduling, stay completion marking, and tourist/owner booking retrieval.
  */
 @Component
+    // Facade Design Pattern: wraps booking operations into clean, reusable action methods
 public class BookingAction {
 
     private final BookingService bookingService;
@@ -60,3 +61,4 @@ public class BookingAction {
         return bookingService.markBookingCompleted(callerUid, bookingId);
     }
 }
+

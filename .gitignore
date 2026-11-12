@@ -9,11 +9,11 @@ target/
 *.iws
 *.iml
 *.ipr
-.vscode/
 .DS_Store
 Thumbs.db
 
 # Environment & Local Secrets
-.env
 .env*.local
 *.log
+config.bat
+node_modules
