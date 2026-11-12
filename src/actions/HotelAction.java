@@ -14,6 +14,7 @@ import java.util.List;
  * soft-deactivating listings, and querying owner accommodation portfolios.
  */
 @Component
+    // Facade Design Pattern: provides high-level actions for hotel management
 public class HotelAction {
 
     private final HotelService hotelService;
@@ -47,3 +48,4 @@ public class HotelAction {
         return hotelService.getHotels(city, minCapacity);
     }
 }
+

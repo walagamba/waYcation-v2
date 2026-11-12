@@ -28,6 +28,7 @@ import java.util.Optional;
  * Spring MVC controller handling public hotel discovery, detail pages,
  * and the Hotel Owner property management console.
  */
+    // Spring MVC controller serving catalog search, property details, and owner dashboards
 @Controller
 public class HotelController {
 
@@ -58,21 +59,25 @@ public class HotelController {
     /**
      * Screen 02: Hotel Catalog & Live Search with optional city and capacity query filters.
      */
+    // Public endpoint for searching and browsing hotel listings
     @GetMapping("/hotels")
     public String catalogPage(
             @RequestParam(name = "city", required = false) String city,
             @RequestParam(name = "minCapacity", required = false) Integer minCapacity,
             Model model) {
         List<Hotel> hotels = hotelService.getHotels(city, minCapacity);
+        // Pass filtered list of hotels to Thymeleaf template context
         model.addAttribute("hotels", hotels);
         model.addAttribute("cityFilter", city != null ? city : "");
         model.addAttribute("minCapacity", minCapacity);
+        // Render hotels catalog Thymeleaf view
         return "hotels/catalog";
     }
 
     /**
      * Screen 03: Hotel Property Detail, Room Type Selector, Reservation Sidebar & Verified Reviews.
      */
+    // Public endpoint for viewing detailed hotel information and available rooms
     @GetMapping("/hotels/{id}")
     public String hotelDetailPage(
             @PathVariable("id") String id,
@@ -130,13 +135,13 @@ public class HotelController {
     /**
      * Screen 15: Hotel Owner Properties Management Dashboard.
      */
+    // Owner dashboard endpoint to view their registered properties
     @GetMapping("/owner/hotels")
     public String ownerHotelsDashboard(HttpSession session, Model model) {
         String ownerUid = resolveOwnerUid(session);
         List<Hotel> ownerHotels = hotelService.getHotelsForOwner(ownerUid);
-        if (ownerHotels.isEmpty()) {
-            ownerHotels = hotelService.getHotels(null, null);
-        }
+
+        // Pass filtered list of hotels to Thymeleaf template context
         model.addAttribute("hotels", ownerHotels);
         model.addAttribute("ownerUid", ownerUid);
         return "owner/hotels";
@@ -229,8 +234,7 @@ public class HotelController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
-            Optional<Hotel> target = hotelService.getHotelById(id);
-            String callerUid = target.map(Hotel::getOwnerUid).orElse(resolveOwnerUid(session));
+            String callerUid = resolveOwnerUid(session);   // who is logged in, not who owns the hotel
             Hotel updated = hotelService.deactivateHotel(callerUid, id);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Property '" + updated.getName() + "' has been set to INACTIVE.");
@@ -266,6 +270,11 @@ public class HotelController {
             return "redirect:/owner/hotels";
         }
         Hotel hotel = hotelOpt.get();
+        // Only the owner of this hotel may open its edit page
+        if (!hotel.getOwnerUid().equals(resolveOwnerUid(session))) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Only the owner of this hotel can edit it.");
+            return "redirect:/owner/hotels";
+        }
         model.addAttribute("hotel", hotel);
         model.addAttribute("roomTypes", hotel.getRoomTypes());
         model.addAttribute("ownerUid", resolveOwnerUid(session));
@@ -296,10 +305,13 @@ public class HotelController {
                 redirectAttributes.addFlashAttribute("errorMessage", "Hotel not found.");
                 return "redirect:/owner/hotels";
             }
-            Hotel existing = hotelOpt.get();
-            String callerUid = existing.getOwnerUid();
+            // The caller is the logged-in user, never the hotel's own owner field
+            String callerUid = resolveOwnerUid(session);
 
             Hotel updateData = new Hotel();
+            // new Hotel() starts as ACTIVE / "Sri Lanka"; null means "keep the current value"
+            updateData.setStatus(null);
+            updateData.setCountry(null);
             updateData.setName(name);
             updateData.setCity(city);
             updateData.setAddress(address);
@@ -349,8 +361,7 @@ public class HotelController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
-            Optional<Hotel> hotelOpt = hotelService.getHotelById(hotelId);
-            String callerUid = hotelOpt.map(Hotel::getOwnerUid).orElse(resolveOwnerUid(session));
+            String callerUid = resolveOwnerUid(session);   // who is logged in, not who owns the hotel
             hotelService.deleteRoomType(callerUid, hotelId, roomId);
             redirectAttributes.addFlashAttribute("successMessage", "Room category removed.");
         } catch (Exception ex) {

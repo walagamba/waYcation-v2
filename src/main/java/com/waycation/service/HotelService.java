@@ -1,5 +1,7 @@
 package com.waycation.service;
 
+import com.waycation.exception.HotelAccessDeniedException;
+import com.waycation.exception.HotelNotFoundException;
 import com.waycation.model.Hotel;
 import com.waycation.model.HotelPhoto;
 import com.waycation.model.HotelStatus;
@@ -15,10 +17,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
 /**
  * Domain service managing hotel property listings, room types, photo galleries,
  * and owner lifecycle operations.
  */
+    // Business logic service managing hotel onboarding, room types, and photos
 @Service
 @Transactional
 public class HotelService {
@@ -45,7 +49,9 @@ public class HotelService {
             throw new IllegalArgumentException("Hotel city is required.");
         }
 
+        // Bind newly created hotel to the currently authenticated owner's UID
         hotelData.setOwnerUid(ownerUid);
+        // Set hotel status to ACTIVE upon creation
         if (hotelData.getStatus() == null) {
             hotelData.setStatus(HotelStatus.ACTIVE);
         }
@@ -136,12 +142,8 @@ public class HotelService {
      * Updates mutable fields of an existing hotel and appends or updates its room categories.
      */
     public Hotel updateHotelWithRooms(String callerUid, String hotelId, Hotel updatedFields, List<RoomType> newRoomTypes) {
-        Hotel existing = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new IllegalArgumentException("Hotel not found: " + hotelId));
-
-        if (!existing.getOwnerUid().equals(callerUid)) {
-            throw new SecurityException("Unauthorized: Only the property owner can update this hotel.");
-        }
+        Hotel existing = findHotelOrThrow(hotelId);
+        requireOwner(callerUid, existing, "update it");
 
         if (updatedFields.getName() != null && !updatedFields.getName().isBlank()) {
             existing.setName(updatedFields.getName());
@@ -196,15 +198,11 @@ public class HotelService {
      * Deletes a room type from a hotel after ownership verification.
      */
     public void deleteRoomType(String callerUid, String hotelId, String roomTypeId) {
-        Hotel existing = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new IllegalArgumentException("Hotel not found: " + hotelId));
-
-        if (!existing.getOwnerUid().equals(callerUid)) {
-            throw new SecurityException("Unauthorized: Only property owner can remove room categories.");
-        }
+        Hotel existing = findHotelOrThrow(hotelId);
+        requireOwner(callerUid, existing, "remove its room categories");
 
         RoomType roomType = roomTypeRepository.findById(roomTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("Room category not found: " + roomTypeId));
+                .orElseThrow(() -> new HotelNotFoundException("Room category", roomTypeId));
 
         if (!roomType.getHotel().getId().equals(hotelId)) {
             throw new IllegalArgumentException("Room category does not belong to this property.");
@@ -218,15 +216,39 @@ public class HotelService {
      * Soft-deactivates a hotel by setting its status to INACTIVE, preserving historical booking references.
      */
     public Hotel deactivateHotel(String callerUid, String hotelId) {
-        Hotel existing = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new IllegalArgumentException("Hotel not found: " + hotelId));
-
-        if (callerUid != null && !callerUid.isBlank() && !existing.getOwnerUid().equals(callerUid)) {
-            throw new SecurityException("Unauthorized: Only the property owner can deactivate this hotel.");
-        }
+        Hotel existing = findHotelOrThrow(hotelId);
+        requireOwner(callerUid, existing);
 
         existing.setStatus(HotelStatus.INACTIVE);
         existing.setUpdatedAt(Instant.now());
         return hotelRepository.save(existing);
     }
+
+    // ---------- ownership checks (used by update, delete and deactivate) ----------
+
+    /**
+     * Loads a hotel or throws HotelNotFoundException.
+     */
+    private Hotel findHotelOrThrow(String hotelId) {
+        return hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new HotelNotFoundException(hotelId));
+    }
+
+    /**
+     * METHOD OVERLOADING (1 of 2): checks the caller owns the hotel, with a default action text.
+     */
+    private void requireOwner(String callerUid, Hotel hotel) {
+        requireOwner(callerUid, hotel, "change it");
+    }
+
+    /**
+     * METHOD OVERLOADING (2 of 2): same name, extra parameter for the message.
+     * Refuses when the caller is missing (not logged in) or is not the hotel's owner.
+     */
+    private void requireOwner(String callerUid, Hotel hotel, String action) {
+        if (callerUid == null || callerUid.isBlank() || !callerUid.equals(hotel.getOwnerUid())) {
+            throw new HotelAccessDeniedException(action, hotel.getId());
+        }
+    }
+
 }

@@ -15,6 +15,7 @@ import java.util.UUID;
 /**
  * JPA entity representing a gallery image attached to a hotel listing.
  */
+    // JPA Entity holding image gallery URLs and display order for a hotel
 @Entity
 @Table(name = "hotel_photos")
 public class HotelPhoto {
@@ -109,3 +110,4 @@ public class HotelPhoto {
         this.createdAt = createdAt;
     }
 }
+
