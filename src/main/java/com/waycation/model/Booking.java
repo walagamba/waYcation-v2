@@ -1,4 +1,4 @@
-package com.waycation.model;
+﻿package com.waycation.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,6 +19,7 @@ import java.util.UUID;
 /**
  * JPA entity representing a tourist's hotel room reservation.
  */
+    // JPA Entity representing guest hotel reservations in the 'bookings' table
 @Entity
 @Table(name = "bookings")
 public class Booking {
@@ -28,6 +29,7 @@ public class Booking {
     private String id = UUID.randomUUID().toString();
 
     @Column(name = "tourist_uid", nullable = false)
+    // Links reservation to the authenticated tourist's user account
     private String touristUid;
 
     @Column(name = "hotel_id", nullable = false)
@@ -278,3 +280,5 @@ public class Booking {
         this.guestName = guestName;
     }
 }
+
+

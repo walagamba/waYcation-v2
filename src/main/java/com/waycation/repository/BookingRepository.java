@@ -1,4 +1,4 @@
-package com.waycation.repository;
+﻿package com.waycation.repository;
 
 import com.waycation.model.Booking;
 import com.waycation.model.BookingStatus;
@@ -10,6 +10,7 @@ import java.util.List;
 /**
  * Spring Data JPA repository for {@link Booking} entities.
  */
+    // Spring Data JPA repository for saving and finding reservations
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, String> {
 
@@ -19,3 +20,4 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
 
     List<Booking> findByTouristUidAndStatusIn(String touristUid, List<BookingStatus> statuses);
 }
+
