@@ -140,16 +140,21 @@ public class BookingController {
             @RequestParam("roomTypeId") String roomTypeId,
             @RequestParam("checkIn") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
             @RequestParam("checkOut") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkOut,
-            @RequestParam(name = "guestCount", defaultValue = "2") int guestCount,
+            @RequestParam(name = "guestCount", required = false) Integer guestCount,
+            @RequestParam(name = "guests", required = false) Integer guests,
             @RequestParam(name = "roomCount", defaultValue = "1") int roomCount,
             @RequestParam(name = "couponCode", required = false) String couponCode,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
+        int effectiveGuests = (guestCount != null && guestCount > 0)
+                ? guestCount
+                : ((guests != null && guests > 0) ? guests : 2);
+
         String touristUid = resolveTouristUid(session);
         try {
             Booking created = bookingService.createBooking(
-                    touristUid, roomTypeId, checkIn, checkOut, guestCount, roomCount, couponCode);
+                    touristUid, roomTypeId, checkIn, checkOut, effectiveGuests, roomCount, couponCode);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Booking confirmed (" + created.getId().substring(0, 8).toUpperCase()
                             + ") for " + created.getHotelName() + "!");
@@ -159,7 +164,7 @@ public class BookingController {
             return "redirect:/checkout?roomTypeId=" + roomTypeId
                     + "&checkIn=" + checkIn
                     + "&checkOut=" + checkOut
-                    + "&guests=" + guestCount
+                    + "&guests=" + effectiveGuests
                     + "&rooms=" + roomCount
                     + (couponCode != null && !couponCode.isBlank() ? "&couponCode=" + couponCode : "");
         }

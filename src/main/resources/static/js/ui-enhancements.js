@@ -527,6 +527,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const mealBasisRadios = bookingForm.querySelectorAll("[name='mealBasis']");
     const totalDisplay = document.getElementById("estimated-booking-total");
     const nightsDisplay = document.getElementById("estimated-booking-nights");
+    const couponInput = document.getElementById("couponCode");
+    const applyCouponBtn = document.getElementById("detail-apply-coupon-btn");
+    const couponMsg = document.getElementById("detail-coupon-msg");
+    let currentDiscount = 0;
 
     function recalculateBookingTotal() {
       let basePrice = parseFloat(bookingForm.getAttribute("data-default-price") || "0");
@@ -553,11 +557,95 @@ document.addEventListener("DOMContentLoaded", () => {
         if (diff > 0) nights = diff;
       }
 
-      const total = Math.round(effectiveRate * nights * rooms);
-      if (totalDisplay) totalDisplay.textContent = `LKR ${total.toLocaleString()}`;
+      const subtotal = Math.round(effectiveRate * nights * rooms);
+      const totalPayable = Math.max(0, subtotal - currentDiscount);
+
+      if (totalDisplay) {
+        if (currentDiscount > 0) {
+          totalDisplay.innerHTML = `<span class="line-through text-xs text-[var(--text-muted)] mr-2 font-normal">LKR ${subtotal.toLocaleString()}</span><span>LKR ${totalPayable.toLocaleString()}</span>`;
+        } else {
+          totalDisplay.textContent = `LKR ${subtotal.toLocaleString()}`;
+        }
+      }
       if (nightsDisplay) nightsDisplay.textContent = `${nights} night(s)`;
     }
 
+    function applyDetailCoupon() {
+      if (!couponInput) return;
+      const code = (couponInput.value || "").trim().toUpperCase();
+      if (!code) {
+        currentDiscount = 0;
+        if (couponMsg) couponMsg.innerHTML = '<span class="text-amber-500 font-bold">Please enter a promo code.</span>';
+        recalculateBookingTotal();
+        return;
+      }
+
+      if (applyCouponBtn) {
+        applyCouponBtn.disabled = true;
+        applyCouponBtn.textContent = "Checking...";
+      }
+      if (couponMsg) couponMsg.innerHTML = '<span class="text-[var(--text-muted)]">Checking coupon...</span>';
+
+      let basePrice = parseFloat(bookingForm.getAttribute("data-default-price") || "0");
+      roomTypeRadios.forEach((radio) => {
+        if (radio.checked) basePrice = parseFloat(radio.getAttribute("data-room-price") || String(basePrice));
+      });
+      let mealModifier = 0;
+      mealBasisRadios.forEach((radio) => {
+        if (radio.checked) mealModifier = parseFloat(radio.getAttribute("data-meal-price") || "0");
+      });
+      const rooms = Math.max(1, parseInt(roomCountInput?.value || "1", 10));
+      let nights = 1;
+      if (checkInInput?.value && checkOutInput?.value) {
+        const start = new Date(checkInInput.value);
+        const end = new Date(checkOutInput.value);
+        const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        if (diff > 0) nights = diff;
+      }
+      const rawSubtotal = Math.round((basePrice + mealModifier) * nights * rooms);
+
+      fetch(`/api/coupons/validate?code=${encodeURIComponent(code)}&amount=${rawSubtotal}`)
+        .then(res => res.json())
+        .then(data => {
+          if (applyCouponBtn) {
+            applyCouponBtn.disabled = false;
+            applyCouponBtn.textContent = "Apply";
+          }
+          if (data.valid) {
+            currentDiscount = data.discount || 0;
+            if (couponMsg) {
+              couponMsg.innerHTML = `<span class="text-emerald-500 font-bold">âœ“ ${data.message} (- LKR ${Math.round(currentDiscount).toLocaleString()})</span>`;
+            }
+          } else {
+            currentDiscount = 0;
+            if (couponMsg) {
+              couponMsg.innerHTML = `<span class="text-[var(--signal-red)] font-bold">âœ• ${data.message || 'Invalid coupon'}</span>`;
+            }
+          }
+          recalculateBookingTotal();
+        })
+        .catch(err => {
+          if (applyCouponBtn) {
+            applyCouponBtn.disabled = false;
+            applyCouponBtn.textContent = "Apply";
+          }
+          if (couponMsg) couponMsg.innerHTML = '<span class="text-[var(--signal-red)]">Error validating promo code</span>';
+          currentDiscount = 0;
+          recalculateBookingTotal();
+        });
+    }
+
+    if (applyCouponBtn) {
+      applyCouponBtn.addEventListener("click", applyDetailCoupon);
+    }
+    if (couponInput) {
+      couponInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          applyDetailCoupon();
+        }
+      });
+    }
     [checkInInput, checkOutInput, roomCountInput].forEach((el) => {
       if (el) el.addEventListener("change", recalculateBookingTotal);
     });

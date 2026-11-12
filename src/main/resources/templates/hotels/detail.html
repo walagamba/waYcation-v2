@@ -432,11 +432,17 @@
                         <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">confirmation_number</span>
                         <span>Coupon / Promo Code (Optional)</span>
                     </label>
-                    <input id="couponCode"
-                           name="couponCode"
-                           type="text"
-                           placeholder="e.g. LANKA10, SOUTH5000"
-                           class="monolith-input text-xs font-mono uppercase tracking-wider" />
+                    <div class="flex gap-2">
+                        <input id="couponCode"
+                               name="couponCode"
+                               type="text"
+                               placeholder="e.g. LANKA10, SOUTH5000"
+                               class="monolith-input text-xs font-mono uppercase tracking-wider flex-1" />
+                        <button type="button" id="detail-apply-coupon-btn" class="btn-monolith-secondary text-xs py-2 px-3.5 font-bold shrink-0">
+                            Apply
+                        </button>
+                    </div>
+                    <div id="detail-coupon-msg" class="text-[11px] font-mono mt-1.5"></div>
                 </div>
 
                 <!-- Dynamic Telemetry Price Summary Box -->

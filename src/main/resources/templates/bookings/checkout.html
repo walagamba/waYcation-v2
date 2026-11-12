@@ -101,10 +101,17 @@
                     </div>
                     <div>
                         <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Promo / Coupon Code</label>
-                        <input type="text" name="couponCode" th:value="${couponCode}" placeholder="LANKA10"
-                               class="monolith-input text-xs font-mono uppercase"/>
-                        <span th:if="${couponError != null}" class="text-[10px] font-mono text-red-500 mt-1 block" th:text="${couponError}"></span>
-                        <span th:if="${discount != null and discount > 0}" class="text-[10px] font-mono text-emerald-500 mt-1 block">Coupon Applied Successfully!</span>
+                        <div class="flex gap-2">
+                            <input type="text" id="checkout-coupon-code" name="couponCode" th:value="${couponCode}" placeholder="LANKA10"
+                                   class="monolith-input text-xs font-mono uppercase flex-1"/>
+                            <button type="button" id="checkout-apply-coupon-btn" class="btn-monolith-secondary text-xs py-2 px-3.5 font-bold shrink-0">
+                                Apply
+                            </button>
+                        </div>
+                        <div id="checkout-coupon-msg" class="text-[11px] font-mono mt-1.5">
+                            <span th:if="${couponError != null}" class="text-red-500 font-bold" th:text="${couponError}"></span>
+                            <span th:if="${discount != null and discount > 0}" class="text-emerald-500 font-bold">✓ Coupon Applied Successfully!</span>
+                        </div>
                     </div>
                 </div>
 
@@ -170,16 +177,17 @@
                             LKR 105,000
                         </span>
                     </div>
-                    <div th:if="${discount != null and discount > 0}" class="flex justify-between text-emerald-500 font-bold">
+                    <div id="checkout-discount-row" th:class="${discount != null and discount > 0 ? 'flex justify-between text-emerald-500 font-bold' : 'hidden justify-between text-emerald-500 font-bold'}">
                         <span>Coupon Discount</span>
-                        <span th:text="${'- LKR ' + #numbers.formatDecimal(discount, 1, 'COMMA', 0, 'POINT')}">- LKR 10,500</span>
+                        <span id="checkout-discount-val" th:text="${discount != null and discount > 0 ? '- LKR ' + #numbers.formatDecimal(discount, 1, 'COMMA', 0, 'POINT') : '- LKR 0'}">- LKR 0</span>
                     </div>
                 </div>
 
                 <div class="pt-2 flex items-baseline justify-between font-mono">
                     <span class="text-xs uppercase text-[var(--text-muted)]">Total Payable</span>
-                    <span class="text-xl font-bold text-[var(--text-primary)]"
-                          th:text="${'LKR ' + #numbers.formatDecimal(total != null ? total : subtotal, 1, 'COMMA', 0, 'POINT')}">
+                    <span id="checkout-total-payable" class="text-xl font-bold text-[var(--text-primary)]"
+                          th:text="${'LKR ' + #numbers.formatDecimal(total != null ? total : subtotal, 1, 'COMMA', 0, 'POINT')}"
+                          th:attr="data-raw-subtotal=${subtotal}">
                         LKR 105,000
                     </span>
                 </div>
@@ -206,6 +214,69 @@
 
     </div>
 </main>
+
+<script th:inline="javascript">
+document.addEventListener("DOMContentLoaded", function() {
+    const couponInput = document.getElementById("checkout-coupon-code");
+    const applyBtn = document.getElementById("checkout-apply-coupon-btn");
+    const msgEl = document.getElementById("checkout-coupon-msg");
+    const discountRow = document.getElementById("checkout-discount-row");
+    const discountVal = document.getElementById("checkout-discount-val");
+    const totalEl = document.getElementById("checkout-total-payable");
+    const rawSubtotal = parseFloat(totalEl.getAttribute("data-raw-subtotal") || "0");
+
+    function applyCoupon() {
+        const code = (couponInput.value || "").trim().toUpperCase();
+        if (!code) {
+            msgEl.innerHTML = '<span class="text-amber-500 font-bold">Please enter a promo code first.</span>';
+            discountRow.classList.add("hidden");
+            discountRow.classList.remove("flex");
+            totalEl.innerText = `LKR ${Math.round(rawSubtotal).toLocaleString()}`;
+            return;
+        }
+
+        applyBtn.disabled = true;
+        applyBtn.innerText = "Checking...";
+        msgEl.innerHTML = '<span class="text-[var(--text-muted)]">Validating promo code...</span>';
+
+        fetch(`/api/coupons/validate?code=${encodeURIComponent(code)}&amount=${rawSubtotal}`)
+            .then(res => res.json())
+            .then(data => {
+                applyBtn.disabled = false;
+                applyBtn.innerText = "Apply";
+                if (data.valid) {
+                    msgEl.innerHTML = `<span class="text-emerald-500 font-bold">✓ ${data.message} (Saved LKR ${Number(data.discount).toLocaleString()})</span>`;
+                    discountRow.classList.remove("hidden");
+                    discountRow.classList.add("flex");
+                    discountVal.innerText = `- LKR ${Number(data.discount).toLocaleString()}`;
+                    totalEl.innerText = `LKR ${Number(data.newTotal).toLocaleString()}`;
+                } else {
+                    msgEl.innerHTML = `<span class="text-red-500 font-bold">✕ ${data.message}</span>`;
+                    discountRow.classList.add("hidden");
+                    discountRow.classList.remove("flex");
+                    totalEl.innerText = `LKR ${Math.round(rawSubtotal).toLocaleString()}`;
+                }
+            })
+            .catch(() => {
+                applyBtn.disabled = false;
+                applyBtn.innerText = "Apply";
+                msgEl.innerHTML = '<span class="text-red-500 font-bold">Error connecting to promotions service.</span>';
+            });
+    }
+
+    if (applyBtn) {
+        applyBtn.addEventListener("click", applyCoupon);
+    }
+    if (couponInput) {
+        couponInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                applyCoupon();
+            }
+        });
+    }
+});
+</script>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 
