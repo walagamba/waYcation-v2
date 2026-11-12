@@ -21,7 +21,7 @@
                 Edit Accommodation: <span th:text="${hotel.name}">Property Name</span>
             </h1>
             <p class="font-body text-xs text-[var(--text-secondary)] mt-1">
-                Update property profile, policies, and upload new imagery for your verified listing.
+                Update property profile, policies, imagery, and room categories for your verified listing.
             </p>
         </div>
         <div class="flex items-center gap-3">
@@ -152,6 +152,52 @@
             </div>
         </div>
 
+        <!-- Section 3: Room Categories Management -->
+        <div>
+            <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)] mb-4">
+                <div>
+                    <h2 class="font-headline text-base font-bold text-[var(--text-primary)]">3. Room Categories &amp; Daily Allocation</h2>
+                    <p class="font-body text-xs text-[var(--text-secondary)] mt-0.5">Manage existing room types or dynamically add new room categories.</p>
+                </div>
+                <button type="button" onclick="addNewRoomCategoryRow()" class="btn-monolith-secondary text-xs py-1.5 px-3 flex items-center gap-1 font-mono">
+                    <span class="text-sm font-bold text-[var(--signal-red)]">+</span>
+                    <span>Add Room Category</span>
+                </button>
+            </div>
+
+            <!-- Existing Room Categories List -->
+            <div th:if="${hotel.roomTypes != null and !hotel.roomTypes.isEmpty()}" class="space-y-3 mb-6">
+                <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] block">Current Active Categories</span>
+                <div th:each="rt : ${hotel.roomTypes}"
+                     class="p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono text-xs">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-[var(--text-primary)]" th:text="${rt.name}">Deluxe Suite</span>
+                            <span class="badge-telemetry" th:text="${'Max ' + rt.capacity + ' Guests'}">Max 2 Guests</span>
+                            <span class="text-emerald-500" th:text="${rt.totalRooms + ' Rooms Daily'}">5 Rooms</span>
+                        </div>
+                        <p class="font-body text-xs text-[var(--text-secondary)] mt-1" th:text="${rt.description}">Description</p>
+                    </div>
+                    <div class="flex items-center gap-4 shrink-0">
+                        <div class="text-right">
+                            <span class="font-bold text-[var(--text-primary)]" th:text="${'LKR ' + #numbers.formatDecimal(rt.basePrice, 1, 'COMMA', 0, 'POINT')}">LKR 38,000</span>
+                            <span class="text-[10px] text-[var(--text-muted)] block">/ night</span>
+                        </div>
+                        <!-- Delete Room Type Button (Only if more than 1 room exists) -->
+                        <button th:if="${hotel.roomTypes.size() > 1}"
+                                type="button"
+                                th:attr="onclick='submitDeleteRoom(\'' + ${hotel.id} + '\', \'' + ${rt.id} + '\')'"
+                                class="text-red-500 hover:text-red-400 text-xs font-mono border border-red-500/30 px-2 py-1 rounded">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic New Room Categories Addition Container -->
+            <div id="new-room-categories-container" class="space-y-4"></div>
+        </div>
+
         <!-- Submit & Actions -->
         <div class="pt-6 border-t border-[var(--border-subtle)] flex items-center justify-between">
             <span class="font-mono text-xs text-[var(--text-muted)] flex items-center gap-1.5">
@@ -161,12 +207,61 @@
             <div class="flex items-center gap-3">
                 <a href="/owner/hotels" class="btn-monolith-secondary text-xs py-2.5 px-5">Cancel</a>
                 <button type="submit" class="btn-monolith-primary py-2.5 px-6 text-xs font-bold">
-                    Save Changes →
+                    Save Changes &amp; Room Categories →
                 </button>
             </div>
         </div>
     </form>
 </main>
+
+<!-- Hidden form for deleting an individual room type -->
+<form id="delete-room-form" method="post" style="display: none;"></form>
+
+<script>
+    function submitDeleteRoom(hotelId, roomId) {
+        if (confirm('Are you sure you want to remove this room category?')) {
+            const form = document.getElementById('delete-room-form');
+            form.action = '/owner/hotels/' + hotelId + '/rooms/' + roomId + '/delete';
+            form.submit();
+        }
+    }
+
+    function addNewRoomCategoryRow() {
+        const container = document.getElementById('new-room-categories-container');
+        const count = container.children.length + 1;
+        const card = document.createElement('div');
+        card.className = 'room-category-card p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border-2 border-dashed border-[var(--border-structural)] space-y-4 animate-fade-in';
+        card.innerHTML = `
+            <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                <span class="font-mono text-xs font-bold text-[var(--signal-red)]">New Room Category #\${count}</span>
+                <button type="button" onclick="this.closest('.room-category-card').remove();" class="text-xs font-mono text-red-500 hover:underline">Cancel</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Category Title *</label>
+                    <input name="newRoomName" type="text" required placeholder="e.g. Deluxe Garden Villa" class="monolith-input text-xs font-mono"/>
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Max Guests *</label>
+                    <input name="newRoomCapacity" type="number" min="1" max="12" value="2" required class="monolith-input text-xs font-mono"/>
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Nightly Rate (LKR) *</label>
+                    <input name="newBasePrice" type="number" step="500" min="1000" value="30000" required class="monolith-input text-xs font-mono"/>
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Daily Pool *</label>
+                    <input name="newTotalRooms" type="number" min="1" max="100" value="5" required class="monolith-input text-xs font-mono"/>
+                </div>
+                <div class="sm:col-span-3">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Amenities Specification</label>
+                    <input name="newRoomDescription" type="text" placeholder="Private balcony, ocean view, air-conditioned..." class="monolith-input text-xs font-mono"/>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    }
+</script>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 

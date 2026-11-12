@@ -1,6 +1,6 @@
 <!--
   waYcation 2.0 — Hotelier New Accommodation Onboarding View (templates/owner/hotel-new.html)
-  Supports listing a new property with initial room category, cancellation policy,
+  Supports listing a new property with one or more room categories, cancellation policy,
   multipart image file uploads (featured + gallery photos) with live client-side previews.
 -->
 <!DOCTYPE html>
@@ -19,7 +19,7 @@
             </div>
             <h1 class="font-headline text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">Publish Stay &amp; Room Pool</h1>
             <p class="font-body text-xs text-[var(--text-secondary)] mt-1">
-                Configure your Sri Lankan property profile, upload high-resolution imagery, and set your primary bookable category.
+                Configure your Sri Lankan property profile, upload high-resolution imagery, and set one or more bookable room categories.
             </p>
         </div>
         <a href="/owner/hotels" class="btn-monolith-secondary text-xs py-2 px-3">← Back to Portfolio</a>
@@ -160,39 +160,59 @@
             </div>
         </div>
 
-        <!-- Section 3: Room Category & Inventory Pool -->
+        <!-- Section 3: Room Categories & Daily Allocation -->
         <div>
-            <h2 class="font-headline text-base font-bold text-[var(--text-primary)] pb-2 border-b border-[var(--border-subtle)] mb-4">3. Room Category &amp; Daily Allocation</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="sm:col-span-2">
-                    <label for="roomName" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Category Title *</label>
-                    <input id="roomName" name="roomName" type="text" required value="Deluxe Ocean Suite"
-                           class="monolith-input text-xs font-mono"/>
-                </div>
-
+            <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)] mb-4">
                 <div>
-                    <label for="roomCapacity" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Max Guests *</label>
-                    <input id="roomCapacity" name="roomCapacity" type="number" min="1" max="12" value="2" required
-                           class="monolith-input text-xs font-mono"/>
+                    <h2 class="font-headline text-base font-bold text-[var(--text-primary)]">3. Room Categories &amp; Daily Allocation</h2>
+                    <p class="font-body text-xs text-[var(--text-secondary)] mt-0.5">Add one or more bookable room categories for this property.</p>
                 </div>
+                <button type="button" onclick="addRoomCategory()" class="btn-monolith-secondary text-xs py-1.5 px-3 flex items-center gap-1 font-mono">
+                    <span class="text-sm font-bold text-[var(--signal-red)]">+</span>
+                    <span>Add Room Category</span>
+                </button>
+            </div>
 
-                <div>
-                    <label for="basePrice" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Nightly Rate (LKR) *</label>
-                    <input id="basePrice" name="basePrice" type="number" step="500" min="1000" value="38000" required
-                           class="monolith-input text-xs font-mono"/>
-                </div>
+            <div id="room-categories-container" class="space-y-4">
+                <!-- Room Category Card 1 -->
+                <div class="room-category-card p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] space-y-4">
+                    <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                        <span class="font-mono text-xs font-bold text-[var(--signal-red)] room-cat-label">Room Category #1</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="sm:col-span-2">
+                            <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Category Title *</label>
+                            <input name="roomName" type="text" required value="Deluxe Ocean Suite"
+                                   placeholder="e.g. Deluxe Ocean Suite, Presidential Villa"
+                                   class="monolith-input text-xs font-mono"/>
+                        </div>
 
-                <div>
-                    <label for="totalRooms" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Daily Pool *</label>
-                    <input id="totalRooms" name="totalRooms" type="number" min="1" max="100" value="5" required
-                           class="monolith-input text-xs font-mono"/>
-                </div>
+                        <div>
+                            <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Max Guests *</label>
+                            <input name="roomCapacity" type="number" min="1" max="12" value="2" required
+                                   class="monolith-input text-xs font-mono"/>
+                        </div>
 
-                <div class="sm:col-span-3">
-                    <label for="roomDescription" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Amenities Specification</label>
-                    <input id="roomDescription" name="roomDescription" type="text"
-                           placeholder="Four-poster bed, ocean terrace, Ceylon breakfast..."
-                           class="monolith-input text-xs font-mono"/>
+                        <div>
+                            <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Nightly Rate (LKR) *</label>
+                            <input name="basePrice" type="number" step="500" min="1000" value="38000" required
+                                   class="monolith-input text-xs font-mono"/>
+                        </div>
+
+                        <div>
+                            <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Daily Pool *</label>
+                            <input name="totalRooms" type="number" min="1" max="100" value="5" required
+                                   class="monolith-input text-xs font-mono"/>
+                        </div>
+
+                        <div class="sm:col-span-3">
+                            <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Amenities Specification</label>
+                            <input name="roomDescription" type="text"
+                                   value="Spacious private suite with modern Sri Lankan hospitality."
+                                   placeholder="Four-poster bed, ocean terrace, Ceylon breakfast..."
+                                   class="monolith-input text-xs font-mono"/>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -200,7 +220,7 @@
         <div class="pt-4 border-t border-[var(--border-subtle)] flex items-center justify-end gap-3 font-mono">
             <a href="/owner/hotels" class="btn-monolith-secondary text-xs py-2.5 px-4">Cancel</a>
             <button type="submit" class="btn-monolith-primary text-xs py-2.5 px-5 font-bold">
-                <span>Publish Inventory &amp; Photos</span>
+                <span>Publish Property &amp; Room Categories</span>
                 <span>→</span>
             </button>
         </div>
@@ -244,6 +264,50 @@
         } else {
             grid.classList.add('hidden');
         }
+    }
+
+    function addRoomCategory() {
+        const container = document.getElementById('room-categories-container');
+        const count = container.querySelectorAll('.room-category-card').length + 1;
+        const card = document.createElement('div');
+        card.className = 'room-category-card p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] space-y-4 animate-fade-in';
+        card.innerHTML = `
+            <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                <span class="font-mono text-xs font-bold text-[var(--signal-red)] room-cat-label">Room Category #\${count}</span>
+                <button type="button" onclick="this.closest('.room-category-card').remove(); renumberRoomCategories();" class="text-xs font-mono text-red-500 hover:underline">Remove</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Category Title *</label>
+                    <input name="roomName" type="text" required placeholder="e.g. Standard Garden View" class="monolith-input text-xs font-mono"/>
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Max Guests *</label>
+                    <input name="roomCapacity" type="number" min="1" max="12" value="2" required class="monolith-input text-xs font-mono"/>
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Nightly Rate (LKR) *</label>
+                    <input name="basePrice" type="number" step="500" min="1000" value="25000" required class="monolith-input text-xs font-mono"/>
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Daily Pool *</label>
+                    <input name="totalRooms" type="number" min="1" max="100" value="4" required class="monolith-input text-xs font-mono"/>
+                </div>
+                <div class="sm:col-span-3">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Amenities Specification</label>
+                    <input name="roomDescription" type="text" placeholder="Garden patio, king bed, ensuite bath..." class="monolith-input text-xs font-mono"/>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    }
+
+    function renumberRoomCategories() {
+        const cards = document.querySelectorAll('#room-categories-container .room-category-card');
+        cards.forEach((card, idx) => {
+            const label = card.querySelector('.room-cat-label');
+            if (label) label.textContent = 'Room Category #' + (idx + 1);
+        });
     }
 </script>
 

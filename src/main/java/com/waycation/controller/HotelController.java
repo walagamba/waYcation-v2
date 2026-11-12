@@ -1,9 +1,14 @@
 package com.waycation.controller;
 
+import com.waycation.model.Booking;
+import com.waycation.model.BookingStatus;
 import com.waycation.model.Hotel;
 import com.waycation.model.HotelPhoto;
+import com.waycation.model.Review;
 import com.waycation.model.RoomType;
+import com.waycation.repository.BookingRepository;
 import com.waycation.service.HotelService;
+import com.waycation.service.ReviewService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,9 +35,13 @@ public class HotelController {
     private static final String DEFAULT_OWNER_UID = "owner-demo-uid";
 
     private final HotelService hotelService;
+    private final ReviewService reviewService;
+    private final BookingRepository bookingRepository;
 
-    public HotelController(HotelService hotelService) {
+    public HotelController(HotelService hotelService, ReviewService reviewService, BookingRepository bookingRepository) {
         this.hotelService = hotelService;
+        this.reviewService = reviewService;
+        this.bookingRepository = bookingRepository;
     }
 
     /**
@@ -66,11 +75,15 @@ public class HotelController {
     }
 
     /**
-     * Screen 03: Hotel Property Detail, Room Type Selector & Reservation Sidebar.
+     * Screen 03: Hotel Property Detail, Room Type Selector, Reservation Sidebar & Verified Reviews.
      */
     // Public endpoint for viewing detailed hotel information and available rooms
     @GetMapping("/hotels/{id}")
-    public String hotelDetailPage(@PathVariable("id") String id, Model model, RedirectAttributes redirectAttributes) {
+    public String hotelDetailPage(
+            @PathVariable("id") String id,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes) {
         Optional<Hotel> hotelOpt = hotelService.getHotelById(id);
         if (hotelOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "Requested hotel property was not found.");
@@ -80,6 +93,42 @@ public class HotelController {
         model.addAttribute("hotel", hotel);
         model.addAttribute("defaultCheckIn", LocalDate.now().plusDays(1).toString());
         model.addAttribute("defaultCheckOut", LocalDate.now().plusDays(3).toString());
+
+        List<Review> reviews = reviewService != null ? reviewService.getPublishedReviewsForHotel(id) : List.of();
+        double avg = reviews.isEmpty() ? 0.0 : reviews.stream().mapToInt(Review::getRating).average().orElse(0.0);
+        model.addAttribute("reviews", reviews);
+        model.addAttribute("reviewCount", reviews.size());
+        model.addAttribute("averageRating", String.format("%.1f", avg));
+
+        boolean canReview = false;
+        String eligibleBookingId = null;
+        if (session != null) {
+            String uid = null;
+            Object uidAttr = session.getAttribute("uid");
+            if (uidAttr instanceof String s && !s.isBlank()) {
+                uid = s;
+            }
+            if (uid != null && bookingRepository != null) {
+                List<Booking> userBookings = bookingRepository.findByTouristUidOrderByCreatedAtDesc(uid);
+                for (Booking b : userBookings) {
+                    if (id.equals(b.getHotelId())) {
+                        boolean eligibleStatus = b.getStatus() == BookingStatus.COMPLETED
+                                || (b.getStatus() == BookingStatus.CONFIRMED && b.getCheckOut() != null && !b.getCheckOut().isAfter(LocalDate.now()));
+                        if (eligibleStatus) {
+                            boolean alreadyReviewed = reviews.stream().anyMatch(r -> b.getId().equals(r.getBookingId()));
+                            if (!alreadyReviewed) {
+                                canReview = true;
+                                eligibleBookingId = b.getId();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        model.addAttribute("canReview", canReview);
+        model.addAttribute("eligibleBookingId", eligibleBookingId);
+
         return "hotels/detail";
     }
 
@@ -101,7 +150,7 @@ public class HotelController {
     }
 
     /**
-     * Screen 16: New Hotel Listing & Initial Room Type Creation Form.
+     * Screen 16: New Hotel Listing & Room Types Creation Form.
      */
     @GetMapping("/owner/hotels/new")
     public String newHotelForm(HttpSession session, Model model) {
@@ -110,7 +159,7 @@ public class HotelController {
     }
 
     /**
-     * Handles submission of a new hotel listing along with its primary room category.
+     * Handles submission of a new hotel listing along with one or more room categories.
      */
     @PostMapping("/owner/hotels")
     public String createHotelListing(
@@ -122,41 +171,59 @@ public class HotelController {
             @RequestParam(name = "checkInTime", defaultValue = "14:00") String checkInTime,
             @RequestParam(name = "checkOutTime", defaultValue = "11:00") String checkOutTime,
             @RequestParam(name = "cancellationPolicy", required = false) String cancellationPolicy,
-            @RequestParam(name = "roomName", defaultValue = "Deluxe Ocean Suite") String roomName,
-            @RequestParam(name = "roomDescription", required = false) String roomDescription,
-            @RequestParam(name = "roomCapacity", defaultValue = "2") int roomCapacity,
-            @RequestParam(name = "basePrice", defaultValue = "38000") BigDecimal basePrice,
-            @RequestParam(name = "totalRooms", defaultValue = "5") int totalRooms,
+            @RequestParam(name = "roomName", required = false) List<String> roomNames,
+            @RequestParam(name = "roomDescription", required = false) List<String> roomDescriptions,
+            @RequestParam(name = "roomCapacity", required = false) List<Integer> roomCapacities,
+            @RequestParam(name = "basePrice", required = false) List<BigDecimal> basePrices,
+            @RequestParam(name = "totalRooms", required = false) List<Integer> totalRoomsList,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
         String ownerUid = resolveOwnerUid(session);
 
-        Hotel hotel = new Hotel(ownerUid, name, description, address, city, featuredImage);
+        Hotel hotel = new Hotel();
+        hotel.setName(name);
+        hotel.setCity(city);
+        hotel.setAddress(address);
+        hotel.setDescription(description);
+        hotel.setFeaturedImage(featuredImage);
         hotel.setCheckInTime(checkInTime);
         hotel.setCheckOutTime(checkOutTime);
-        hotel.setCancellationPolicy(cancellationPolicy != null && !cancellationPolicy.isBlank()
-                ? cancellationPolicy
-                : "Free cancellation up to 48 hours before check-in.");
+        hotel.setCancellationPolicy(cancellationPolicy);
 
-        RoomType primaryRoom = new RoomType(
-                roomName,
-                roomDescription != null && !roomDescription.isBlank()
-                        ? roomDescription
-                        : "Spacious private suite with modern Sri Lankan hospitality.",
-                roomCapacity,
-                basePrice,
-                totalRooms
-        );
+        List<RoomType> rooms = new ArrayList<>();
+        if (roomNames != null && !roomNames.isEmpty()) {
+            for (int i = 0; i < roomNames.size(); i++) {
+                String rName = roomNames.get(i);
+                if (rName != null && !rName.isBlank()) {
+                    String rDesc = (roomDescriptions != null && roomDescriptions.size() > i && roomDescriptions.get(i) != null)
+                            ? roomDescriptions.get(i)
+                            : "Private sanctuary with modern amenities.";
+                    int rCap = (roomCapacities != null && roomCapacities.size() > i && roomCapacities.get(i) != null)
+                            ? roomCapacities.get(i)
+                            : 2;
+                    BigDecimal rPrice = (basePrices != null && basePrices.size() > i && basePrices.get(i) != null)
+                            ? basePrices.get(i)
+                            : BigDecimal.valueOf(35000);
+                    int rTotal = (totalRoomsList != null && totalRoomsList.size() > i && totalRoomsList.get(i) != null)
+                            ? totalRoomsList.get(i)
+                            : 5;
+                    rooms.add(new RoomType(rName.trim(), rDesc, rCap, rPrice, rTotal));
+                }
+            }
+        }
+        if (rooms.isEmpty()) {
+            rooms.add(new RoomType("Deluxe Ocean Suite", "Spacious private suite with modern Sri Lankan hospitality.", 2, BigDecimal.valueOf(38000), 5));
+        }
 
         List<HotelPhoto> photos = new ArrayList<>();
         if (featuredImage != null && !featuredImage.isBlank()) {
             photos.add(new HotelPhoto(featuredImage, name + " — Main Exterior", 1));
         }
 
-        Hotel saved = hotelService.createHotel(ownerUid, hotel, List.of(primaryRoom), photos);
+        Hotel saved = hotelService.createHotel(ownerUid, hotel, rooms, photos);
         redirectAttributes.addFlashAttribute("successMessage",
-                "Published property '" + saved.getName() + "' with room type '" + primaryRoom.getName() + "'.");
+                "Published property '" + saved.getName() + "' with " + rooms.size() + " room categories.");
         return "redirect:/owner/hotels";
     }
 
@@ -193,10 +260,109 @@ public class HotelController {
         }
         return DEFAULT_OWNER_UID;
     }
+
+    @GetMapping("/owner/hotels/{id}/edit")
+    public String editHotelForm(
+            @PathVariable("id") String id,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        Optional<Hotel> hotelOpt = hotelService.getHotelById(id);
+        if (hotelOpt.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Hotel not found.");
+            return "redirect:/owner/hotels";
+        }
+        Hotel hotel = hotelOpt.get();
+        model.addAttribute("hotel", hotel);
+        model.addAttribute("roomTypes", hotel.getRoomTypes());
+        model.addAttribute("ownerUid", resolveOwnerUid(session));
+        return "owner/hotel-edit";
+    }
+
+    @PostMapping("/owner/hotels/{id}/edit")
+    public String updateHotel(
+            @PathVariable("id") String id,
+            @RequestParam("name") String name,
+            @RequestParam("city") String city,
+            @RequestParam(name = "address", required = false) String address,
+            @RequestParam(name = "description", required = false) String description,
+            @RequestParam(name = "featuredImage", required = false) String featuredImage,
+            @RequestParam(name = "checkInTime", defaultValue = "14:00") String checkInTime,
+            @RequestParam(name = "checkOutTime", defaultValue = "11:00") String checkOutTime,
+            @RequestParam(name = "cancellationPolicy", required = false) String cancellationPolicy,
+            @RequestParam(name = "newRoomName", required = false) List<String> newRoomNames,
+            @RequestParam(name = "newRoomDescription", required = false) List<String> newRoomDescriptions,
+            @RequestParam(name = "newRoomCapacity", required = false) List<Integer> newRoomCapacities,
+            @RequestParam(name = "newBasePrice", required = false) List<BigDecimal> newBasePrices,
+            @RequestParam(name = "newTotalRooms", required = false) List<Integer> newTotalRoomsList,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        try {
+            Optional<Hotel> hotelOpt = hotelService.getHotelById(id);
+            if (hotelOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Hotel not found.");
+                return "redirect:/owner/hotels";
+            }
+            Hotel existing = hotelOpt.get();
+            String callerUid = existing.getOwnerUid();
+
+            Hotel updateData = new Hotel();
+            updateData.setName(name);
+            updateData.setCity(city);
+            updateData.setAddress(address);
+            updateData.setDescription(description);
+            if (featuredImage != null && !featuredImage.isBlank()) {
+                updateData.setFeaturedImage(featuredImage);
+            }
+            updateData.setCheckInTime(checkInTime);
+            updateData.setCheckOutTime(checkOutTime);
+            updateData.setCancellationPolicy(cancellationPolicy);
+
+            List<RoomType> addedRooms = new ArrayList<>();
+            if (newRoomNames != null && !newRoomNames.isEmpty()) {
+                for (int i = 0; i < newRoomNames.size(); i++) {
+                    String rName = newRoomNames.get(i);
+                    if (rName != null && !rName.isBlank()) {
+                        String rDesc = (newRoomDescriptions != null && newRoomDescriptions.size() > i && newRoomDescriptions.get(i) != null)
+                                ? newRoomDescriptions.get(i)
+                                : "Private suite with luxury comforts.";
+                        int rCap = (newRoomCapacities != null && newRoomCapacities.size() > i && newRoomCapacities.get(i) != null)
+                                ? newRoomCapacities.get(i)
+                                : 2;
+                        BigDecimal rPrice = (newBasePrices != null && newBasePrices.size() > i && newBasePrices.get(i) != null)
+                                ? newBasePrices.get(i)
+                                : BigDecimal.valueOf(35000);
+                        int rTotal = (newTotalRoomsList != null && newTotalRoomsList.size() > i && newTotalRoomsList.get(i) != null)
+                                ? newTotalRoomsList.get(i)
+                                : 5;
+                        addedRooms.add(new RoomType(rName.trim(), rDesc, rCap, rPrice, rTotal));
+                    }
+                }
+            }
+
+            hotelService.updateHotelWithRooms(callerUid, id, updateData, addedRooms);
+            redirectAttributes.addFlashAttribute("successMessage", "Property '" + name + "' updated successfully.");
+            return "redirect:/hotels/" + id;
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/owner/hotels/" + id + "/edit";
+        }
+    }
+
+    @PostMapping("/owner/hotels/{hotelId}/rooms/{roomId}/delete")
+    public String deleteRoomCategory(
+            @PathVariable("hotelId") String hotelId,
+            @PathVariable("roomId") String roomId,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        try {
+            Optional<Hotel> hotelOpt = hotelService.getHotelById(hotelId);
+            String callerUid = hotelOpt.map(Hotel::getOwnerUid).orElse(resolveOwnerUid(session));
+            hotelService.deleteRoomType(callerUid, hotelId, roomId);
+            redirectAttributes.addFlashAttribute("successMessage", "Room category removed.");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/owner/hotels/" + hotelId + "/edit";
+    }
 }
-
-
-
-
-
-

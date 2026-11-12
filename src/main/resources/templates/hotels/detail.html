@@ -31,12 +31,12 @@
             <h1 class="font-headline text-3xl sm:text-4xl font-bold tracking-tight text-[var(--text-primary)]" th:text="${hotel.name}">Galle Fort Heritage Villa</h1>
             <p class="font-mono text-xs text-[var(--text-secondary)] mt-1.5 flex items-center gap-1.5">
                 <span class="signal-dot"></span>
-                <span th:text="${(hotel.address != null ? hotel.address + ', ' : '') + hotel.city + ', ' + hotel.country}">Church Street, Galle, Sri Lanka</span>
+                <span th:text="${(hotel.address != null and !hotel.address.isEmpty() ? hotel.address + ', ' : '') + (hotel.city != null ? hotel.city + ', ' : '') + (hotel.country != null ? hotel.country : 'Sri Lanka')}">Church Street, Galle, Sri Lanka</span>
             </p>
         </div>
         <div class="flex items-center gap-4">
             <!-- Edit Accommodation Button: STRICTLY visible only to the property owner or Admin -->
-            <a th:if="${isOwner or (session.role == 'HOTEL_OWNER' and session.uid == hotel.ownerUid)}"
+            <a th:if="${(isOwner != null and isOwner) or (session != null and session.role == 'HOTEL_OWNER' and session.uid == hotel.ownerUid)}"
                th:href="@{/owner/hotels/{id}/edit(id=${hotel.id})}"
                class="px-4 py-2 rounded-full border border-[var(--signal-red)] bg-[var(--signal-red)]/10 text-xs font-headline font-semibold text-[var(--signal-red)] hover:bg-[var(--signal-red)] hover:text-white transition inline-flex items-center gap-1.5 shadow-sm">
                 <span class="material-symbols-outlined text-sm">edit</span>
@@ -47,7 +47,7 @@
             <div class="text-right">
                 <div class="font-mono text-[10px] uppercase text-[var(--text-muted)]">Starting rate</div>
                 <div class="font-mono text-2xl font-bold text-[var(--text-primary)]">
-                    LKR <span th:text="${#numbers.formatDecimal(hotel.startingPrice, 1, 'COMMA', 0, 'POINT')}">35,000</span>
+                    LKR <span th:text="${hotel.startingPrice != null ? #numbers.formatDecimal(hotel.startingPrice, 1, 'COMMA', 0, 'POINT') : '35,000'}">35,000</span>
                     <span class="text-xs font-normal text-[var(--text-muted)]">/ night</span>
                 </div>
             </div>
@@ -116,11 +116,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-[var(--border-subtle)] text-xs font-mono">
                     <div class="p-3.5 rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
                         <span class="text-[10px] uppercase text-[var(--text-muted)] block">Check-In</span>
-                        <span class="text-sm font-bold text-[var(--text-primary)] mt-1 block" th:text="${hotel.checkInTime + ' onwards'}">14:00 onwards</span>
+                        <span class="text-sm font-bold text-[var(--text-primary)] mt-1 block" th:text="${(hotel.checkInTime != null ? hotel.checkInTime : '14:00') + ' onwards'}">14:00 onwards</span>
                     </div>
                     <div class="p-3.5 rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
                         <span class="text-[10px] uppercase text-[var(--text-muted)] block">Check-Out</span>
-                        <span class="text-sm font-bold text-[var(--text-primary)] mt-1 block" th:text="${'Before ' + hotel.checkOutTime}">Before 11:00</span>
+                        <span class="text-sm font-bold text-[var(--text-primary)] mt-1 block" th:text="${'Before ' + (hotel.checkOutTime != null ? hotel.checkOutTime : '11:00')}">Before 11:00</span>
                     </div>
                     <div class="p-3.5 rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
                         <span class="text-[10px] uppercase text-[var(--text-muted)] block">Policy</span>
@@ -158,7 +158,7 @@
                         <div class="sm:text-right shrink-0">
                             <div class="font-mono text-lg font-bold text-[var(--text-primary)]">
                                 <span th:text="${rt.currency}">LKR</span>
-                                <span th:text="${#numbers.formatDecimal(rt.basePrice, 1, 'COMMA', 0, 'POINT')}">38,000</span>
+                                <span th:text="${rt.basePrice != null ? #numbers.formatDecimal(rt.basePrice, 1, 'COMMA', 0, 'POINT') : '38,000'}">38,000</span>
                             </div>
                             <div class="font-mono text-[10px] text-[var(--text-muted)]">Per room / night</div>
                         </div>
@@ -175,12 +175,12 @@
                             <span>VERIFIED FEEDBACK</span>
                         </div>
                         <h2 class="font-headline text-xl font-bold text-[var(--text-primary)]">
-                            Guest Reviews (<span th:text="${reviewCount}">0</span>)
+                            Guest Reviews (<span th:text="${reviewCount != null ? reviewCount : 0}">0</span>)
                         </h2>
                     </div>
                     <div class="flex items-center gap-2 font-mono text-xs">
                         <span class="text-amber-400 font-bold text-sm">★</span>
-                        <span class="font-bold text-[var(--text-primary)] text-sm" th:text="${averageRating}">4.8</span>
+                        <span class="font-bold text-[var(--text-primary)] text-sm" th:text="${averageRating != null ? averageRating : '5.0'}">5.0</span>
                         <span class="text-[var(--text-muted)]">/ 5.0</span>
                     </div>
                 </div>
@@ -232,7 +232,7 @@
                         <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">verified_user</span>
                         <span>Only travelers who completed a stay at this property can publish reviews.</span>
                     </div>
-                    <a th:if="${session.uid == null}" th:href="@{/tourist/sign-in(redirect=@{/hotels/{id}(id=${hotel.id})})}"
+                    <a th:if="${session == null or session.uid == null}" th:href="@{/tourist/sign-in(redirect=@{/hotels/{id}(id=${hotel.id})})}"
                        class="text-[var(--signal-red)] font-bold hover:underline shrink-0">Sign In →</a>
                 </div>
 
@@ -257,10 +257,10 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="font-mono text-xs font-bold text-amber-400">
-                                    <span th:each="i : ${#numbers.sequence(1, rev.rating)}">★</span>
+                                    <span th:each="i : ${#numbers.sequence(1, rev.rating != null and rev.rating > 0 ? rev.rating : 5)}">★</span>
                                 </span>
                                 <!-- Delete Button: Only for the author of this review -->
-                                <form th:if="${session.uid != null and session.uid == rev.touristUid}"
+                                <form th:if="${session != null and session.uid != null and session.uid == rev.touristUid}"
                                       th:action="@{/reviews/{id}/delete(id=${rev.id})}"
                                       method="post"
                                       onsubmit="return confirm('Remove your review?');">
@@ -288,7 +288,7 @@
             <form id="dynamic-booking-form"
                   action="/bookings/create"
                   method="post"
-                  th:attr="data-default-price=${hotel.startingPrice}"
+                  th:attr="data-default-price=${hotel.startingPrice != null ? hotel.startingPrice : 35000}"
                   class="monolith-card p-6 border-2 border-[var(--border-structural)] space-y-4">
 
                 <input type="hidden" name="hotelId" th:value="${hotel.id}"/>
@@ -323,7 +323,7 @@
                                 </div>
                             </span>
                             <span class="font-mono text-xs font-bold text-[var(--text-primary)]">
-                                LKR <span th:text="${#numbers.formatDecimal(rt.basePrice, 1, 'COMMA', 0, 'POINT')}">38,000</span>
+                                LKR <span th:text="${rt.basePrice != null ? #numbers.formatDecimal(rt.basePrice, 1, 'COMMA', 0, 'POINT') : '38,000'}">38,000</span>
                             </span>
                         </label>
                     </div>
@@ -426,6 +426,19 @@
                     </div>
                 </div>
 
+                <!-- Promotional Coupon Input -->
+                <div>
+                    <label for="couponCode" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)] mb-1 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">confirmation_number</span>
+                        <span>Coupon / Promo Code (Optional)</span>
+                    </label>
+                    <input id="couponCode"
+                           name="couponCode"
+                           type="text"
+                           placeholder="e.g. LANKA10, SOUTH5000"
+                           class="monolith-input text-xs font-mono uppercase tracking-wider" />
+                </div>
+
                 <!-- Dynamic Telemetry Price Summary Box -->
                 <div class="p-4 rounded-lg bg-[var(--card-surface-elevated)] border border-[var(--border-structural)] flex items-center justify-between">
                     <div>
@@ -433,17 +446,17 @@
                         <div id="estimated-booking-nights" class="font-mono text-xs text-[var(--signal-red)] font-bold">2 night(s)</div>
                     </div>
                     <div id="estimated-booking-total" class="font-mono text-xl font-bold text-[var(--text-primary)]">
-                        LKR <span th:text="${#numbers.formatDecimal(hotel.startingPrice * 2, 1, 'COMMA', 0, 'POINT')}">70,000</span>
+                        LKR <span th:text="${hotel.startingPrice != null ? #numbers.formatDecimal(hotel.startingPrice.add(hotel.startingPrice), 1, 'COMMA', 0, 'POINT') : '70,000'}">70,000</span>
                     </div>
                 </div>
 
                 <!-- GUEST USER RESERVATION GUARD: Authenticated users can lock reservation; guest users MUST sign up/sign in first -->
-                <button th:if="${session.uid != null}" type="submit" class="w-full btn-monolith-primary py-3 text-xs justify-center font-bold">
+                <button th:if="${session != null and session.uid != null}" type="submit" class="w-full btn-monolith-primary py-3 text-xs justify-center font-bold">
                     <span>Lock Reservation</span>
                     <span class="font-mono text-xs">→</span>
                 </button>
 
-                <div th:unless="${session.uid != null}" class="space-y-2">
+                <div th:unless="${session != null and session.uid != null}" class="space-y-2">
                     <a th:href="@{/sign-up(redirect=@{/hotels/{id}(id=${hotel.id})})}"
                        class="w-full btn-monolith-primary py-3 text-xs justify-center font-bold flex items-center gap-2 text-center">
                         <span class="material-symbols-outlined text-sm">person_add</span>
