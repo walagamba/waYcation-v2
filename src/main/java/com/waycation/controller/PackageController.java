@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-    // MVC web controller for browsing package catalogs, viewing itineraries, and admin management
+// MVC web controller for browsing package catalogs, viewing itineraries, and admin management
 @Controller
 public class PackageController {
 
@@ -66,6 +66,8 @@ public class PackageController {
         model.addAttribute("purchased", purchased);
         model.addAttribute("purchaseCount", purchaseCount);
         model.addAttribute("myPurchases", myPurchases);
+        model.addAttribute("minStartDate", java.time.LocalDate.now().plusDays(1).toString());
+        model.addAttribute("defaultStartDate", java.time.LocalDate.now().plusDays(7).toString());
         return "packages/detail";
     }
 
@@ -73,6 +75,7 @@ public class PackageController {
     public String purchasePackage(
             @PathVariable String id,
             @RequestParam(required = false) String touristUid,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         String effectiveUid = (touristUid != null && !touristUid.isBlank())
@@ -80,7 +83,7 @@ public class PackageController {
                 : resolveSessionUid(session, "tourist-demo-uid");
 
         try {
-            PackagePurchase purchase = packageService.purchasePackage(effectiveUid, id);
+            PackagePurchase purchase = packageService.purchasePackage(effectiveUid, id, startDate);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Immutable package snapshot locked! Confirmation ID: " + purchase.getId());
         } catch (Exception e) {
@@ -183,6 +186,54 @@ public class PackageController {
         return "redirect:/admin/packages";
     }
 
+    @GetMapping("/admin/packages/{id}/edit")
+    public String editPackageGetFallback(@PathVariable String id) {
+        return "redirect:/admin/packages";
+    }
+
+    @PostMapping({"/admin/packages/{id}/edit", "/admin/packages/{id}/update"})
+    public String updatePackage(
+            @PathVariable String id,
+            @RequestParam String title,
+            @RequestParam(required = false) String description,
+            @RequestParam Integer durationDays,
+            @RequestParam BigDecimal priceTotal,
+            @RequestParam(required = false, defaultValue = "PUBLISHED") String status,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        String adminUid = resolveSessionUid(session, "admin-demo-uid");
+        try {
+            packageService.updatePackage(
+                    adminUid,
+                    id,
+                    title,
+                    description,
+                    durationDays,
+                    priceTotal,
+                    PackageStatus.valueOf(status.toUpperCase())
+            );
+            redirectAttributes.addFlashAttribute("successMessage", "Travel package '" + title + "' updated successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/packages";
+    }
+
+    @PostMapping("/admin/packages/{id}/delete")
+    public String deletePackage(
+            @PathVariable String id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        String adminUid = resolveSessionUid(session, "admin-demo-uid");
+        try {
+            packageService.deletePackage(adminUid, id);
+            redirectAttributes.addFlashAttribute("successMessage", "Travel package deleted successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/packages";
+    }
+
     private String resolveSessionUid(HttpSession session, String fallbackUid) {
         if (session != null) {
             Object uidAttr = session.getAttribute("uid");
@@ -197,6 +248,3 @@ public class PackageController {
         return fallbackUid;
     }
 }
-
-
-
