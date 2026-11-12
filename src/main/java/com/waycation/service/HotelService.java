@@ -198,15 +198,11 @@ public class HotelService {
      * Deletes a room type from a hotel after ownership verification.
      */
     public void deleteRoomType(String callerUid, String hotelId, String roomTypeId) {
-        Hotel existing = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new IllegalArgumentException("Hotel not found: " + hotelId));
-
-        if (!existing.getOwnerUid().equals(callerUid)) {
-            throw new SecurityException("Unauthorized: Only property owner can remove room categories.");
-        }
+        Hotel existing = findHotelOrThrow(hotelId);
+        requireOwner(callerUid, existing, "remove its room categories");
 
         RoomType roomType = roomTypeRepository.findById(roomTypeId)
-                .orElseThrow(() -> new IllegalArgumentException("Room category not found: " + roomTypeId));
+                .orElseThrow(() -> new HotelNotFoundException("Room category", roomTypeId));
 
         if (!roomType.getHotel().getId().equals(hotelId)) {
             throw new IllegalArgumentException("Room category does not belong to this property.");
@@ -220,12 +216,8 @@ public class HotelService {
      * Soft-deactivates a hotel by setting its status to INACTIVE, preserving historical booking references.
      */
     public Hotel deactivateHotel(String callerUid, String hotelId) {
-        Hotel existing = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new IllegalArgumentException("Hotel not found: " + hotelId));
-
-        if (callerUid != null && !callerUid.isBlank() && !existing.getOwnerUid().equals(callerUid)) {
-            throw new SecurityException("Unauthorized: Only the property owner can deactivate this hotel.");
-        }
+        Hotel existing = findHotelOrThrow(hotelId);
+        requireOwner(callerUid, existing);
 
         existing.setStatus(HotelStatus.INACTIVE);
         existing.setUpdatedAt(Instant.now());
