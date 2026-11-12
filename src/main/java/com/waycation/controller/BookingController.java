@@ -7,6 +7,7 @@ import com.waycation.model.RoomType;
 import com.waycation.repository.HotelRepository;
 import com.waycation.repository.RoomTypeRepository;
 import com.waycation.service.BookingService;
+import com.waycation.service.CouponService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -35,14 +36,17 @@ public class BookingController {
     private final BookingService bookingService;
     private final HotelRepository hotelRepository;
     private final RoomTypeRepository roomTypeRepository;
+    private final CouponService couponService;
 
     public BookingController(
             BookingService bookingService,
             HotelRepository hotelRepository,
-            RoomTypeRepository roomTypeRepository) {
+            RoomTypeRepository roomTypeRepository,
+            CouponService couponService) {
         this.bookingService = bookingService;
         this.hotelRepository = hotelRepository;
         this.roomTypeRepository = roomTypeRepository;
+        this.couponService = couponService;
     }
 
     /**
@@ -98,6 +102,20 @@ public class BookingController {
         BigDecimal basePrice = roomType != null ? roomType.getBasePrice() : BigDecimal.valueOf(35000);
         BigDecimal subtotal = bookingService.calculateRoomPrice(basePrice, nights, resolvedRooms);
 
+        String touristUid = resolveTouristUid(session);
+        BigDecimal discount = BigDecimal.ZERO;
+        String couponError = null;
+
+        if (couponCode != null && !couponCode.isBlank()) {
+            try {
+                discount = couponService.calculateCouponDiscountPreview(couponCode.trim(), touristUid, subtotal);
+            } catch (Exception e) {
+                couponError = e.getMessage();
+            }
+        }
+
+        BigDecimal total = subtotal.subtract(discount).max(BigDecimal.ZERO);
+
         model.addAttribute("hotel", hotel);
         model.addAttribute("roomType", roomType);
         model.addAttribute("checkIn", resolvedCheckIn);
@@ -106,8 +124,11 @@ public class BookingController {
         model.addAttribute("guests", resolvedGuests);
         model.addAttribute("rooms", resolvedRooms);
         model.addAttribute("subtotal", subtotal);
-        model.addAttribute("couponCode", couponCode != null ? couponCode : "");
-        model.addAttribute("touristUid", resolveTouristUid(session));
+        model.addAttribute("discount", discount);
+        model.addAttribute("total", total);
+        model.addAttribute("couponCode", couponCode != null ? couponCode.trim().toUpperCase() : "");
+        model.addAttribute("couponError", couponError);
+        model.addAttribute("touristUid", touristUid);
         return "bookings/checkout";
     }
 
@@ -139,7 +160,8 @@ public class BookingController {
                     + "&checkIn=" + checkIn
                     + "&checkOut=" + checkOut
                     + "&guests=" + guestCount
-                    + "&rooms=" + roomCount;
+                    + "&rooms=" + roomCount
+                    + (couponCode != null && !couponCode.isBlank() ? "&couponCode=" + couponCode : "");
         }
     }
 
@@ -163,7 +185,6 @@ public class BookingController {
                         .filter(b -> b.getStatus() == targetStatus)
                         .toList();
             } catch (IllegalArgumentException ignored) {
-                // Keep all bookings if invalid filter
             }
         }
 

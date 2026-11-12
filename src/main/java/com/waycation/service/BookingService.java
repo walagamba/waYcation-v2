@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
  * Service handling tourist room reservations, atomic daily inventory allocation,
  * cancellations, rescheduling, and stay completion.
  */
-    // Service layer managing atomic reservations and room inventory decrement
 @Service
 public class BookingService {
 
@@ -36,22 +35,24 @@ public class BookingService {
     private final RoomTypeRepository roomTypeRepository;
     private final RoomInventoryRepository roomInventoryRepository;
     private final HotelRepository hotelRepository;
+    private final CouponService couponService;
 
     public BookingService(
             BookingRepository bookingRepository,
             RoomTypeRepository roomTypeRepository,
             RoomInventoryRepository roomInventoryRepository,
-            HotelRepository hotelRepository) {
+            HotelRepository hotelRepository,
+            CouponService couponService) {
         this.bookingRepository = bookingRepository;
         this.roomTypeRepository = roomTypeRepository;
         this.roomInventoryRepository = roomInventoryRepository;
         this.hotelRepository = hotelRepository;
+        this.couponService = couponService;
     }
 
     /**
      * Calculates the total base room price for a reservation.
      */
-    // Compute total base reservation cost based on nightly price, nights count, and room count
     public BigDecimal calculateRoomPrice(BigDecimal basePrice, long nights, int roomCount) {
         if (nights <= 0) {
             throw new IllegalArgumentException("INVALID_DATES: Stay duration must be at least 1 night");
@@ -59,15 +60,13 @@ public class BookingService {
         if (roomCount <= 0) {
             throw new IllegalArgumentException("INVALID_ROOM_COUNT: Room count must be at least 1");
         }
-        // Calculate total room cost: base nightly rate multiplied by nights and room count
         double raw = (basePrice != null ? basePrice.doubleValue() : 0.0) * nights * roomCount;
         return BigDecimal.valueOf(Math.round(raw));
     }
 
     /**
-     * Atomically creates a confirmed hotel booking and reserves room inventory across each night of the stay.
+     * Atomically creates a confirmed hotel booking, applies promotional coupons, and reserves room inventory.
      */
-    // @Transactional ensures atomic reservation creation and inventory deduction without race conditions
     @Transactional
     public Booking createBooking(
             String touristUid,
@@ -110,10 +109,16 @@ public class BookingService {
 
         allocateInventory(roomType, checkIn, checkOut, roomCount);
 
-        BigDecimal totalPrice = calculateRoomPrice(roomType.getBasePrice(), nights, roomCount);
+        BigDecimal basePriceTotal = calculateRoomPrice(roomType.getBasePrice(), nights, roomCount);
+        BigDecimal discount = BigDecimal.ZERO;
         if (couponCode != null && !couponCode.isBlank()) {
-            totalPrice = applyOptionalCouponDiscount(totalPrice, couponCode.trim());
+            try {
+                discount = couponService.calculateCouponDiscountPreview(couponCode.trim(), touristUid, basePriceTotal);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e.getMessage());
+            }
         }
+        BigDecimal totalPrice = basePriceTotal.subtract(discount).max(BigDecimal.ZERO);
 
         Booking booking = new Booking();
         booking.setTouristUid(touristUid);
@@ -125,7 +130,6 @@ public class BookingService {
         booking.setRoomCount(roomCount);
         booking.setPriceTotal(totalPrice);
         booking.setCurrency(roomType.getCurrency() != null ? roomType.getCurrency() : "LKR");
-        // Mark reservation status as CONFIRMED upon successful inventory deduction
         booking.setStatus(BookingStatus.CONFIRMED);
         booking.setPolicySnapshot(
                 hotel.getCancellationPolicy() != null && !hotel.getCancellationPolicy().isBlank()
@@ -133,6 +137,14 @@ public class BookingService {
                         : "Free cancellation up to 48 hours before check-in. Late cancellations incur a 1-night charge.");
 
         Booking saved = bookingRepository.save(booking);
+
+        if (couponCode != null && !couponCode.isBlank() && discount.compareTo(BigDecimal.ZERO) > 0) {
+            try {
+                couponService.validateAndRedeemCoupon(couponCode.trim(), touristUid, basePriceTotal, saved.getId());
+            } catch (Exception ignored) {
+            }
+        }
+
         enrichBooking(saved, hotel, roomType);
         return saved;
     }
@@ -140,7 +152,6 @@ public class BookingService {
     /**
      * Cancels a confirmed or pending booking and releases its daily room inventory.
      */
-    // @Transactional ensures atomic reservation creation and inventory deduction without race conditions
     @Transactional
     public Booking cancelBooking(String touristUid, String bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
@@ -158,7 +169,6 @@ public class BookingService {
 
         releaseInventory(booking.getRoomTypeId(), booking.getCheckIn(), booking.getCheckOut(), booking.getRoomCount());
 
-        // Update reservation status to CANCELLED
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setCancelledAt(LocalDateTime.now());
         Booking saved = bookingRepository.save(booking);
@@ -170,7 +180,6 @@ public class BookingService {
      * Reschedules an existing confirmed booking to new check-in and check-out dates,
      * releasing old inventory and atomically reserving the new dates.
      */
-    // @Transactional ensures atomic reservation creation and inventory deduction without race conditions
     @Transactional
     public Booking rescheduleBooking(String touristUid, String bookingId, LocalDate newCheckIn, LocalDate newCheckOut) {
         Booking booking = bookingRepository.findById(bookingId)
@@ -209,7 +218,6 @@ public class BookingService {
     /**
      * Marks a confirmed booking as completed so the guest can submit a verified review.
      */
-    // @Transactional ensures atomic reservation creation and inventory deduction without race conditions
     @Transactional
     public Booking markBookingCompleted(String callerUid, String bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
@@ -228,7 +236,6 @@ public class BookingService {
     /**
      * Returns all bookings for a tourist ordered by newest first, enriched with hotel and room details.
      */
-    // @Transactional ensures atomic reservation creation and inventory deduction without race conditions
     @Transactional(readOnly = true)
     public List<Booking> getBookingsForTourist(String touristUid) {
         List<Booking> bookings = bookingRepository.findByTouristUidOrderByCreatedAtDesc(touristUid);
@@ -239,7 +246,6 @@ public class BookingService {
     /**
      * Returns all bookings across hotels owned by the specified owner UID, enriched with hotel and room details.
      */
-    // @Transactional ensures atomic reservation creation and inventory deduction without race conditions
     @Transactional(readOnly = true)
     public List<Booking> getBookingsForOwner(String ownerUid) {
         List<Hotel> ownerHotels = hotelRepository.findByOwnerUidOrderByCreatedAtDesc(ownerUid);
@@ -257,7 +263,6 @@ public class BookingService {
     /**
      * Retrieves a single booking by ID with enriched hotel and room metadata.
      */
-    // @Transactional ensures atomic reservation creation and inventory deduction without race conditions
     @Transactional(readOnly = true)
     public Optional<Booking> getBookingById(String bookingId) {
         Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
@@ -291,17 +296,6 @@ public class BookingService {
                 roomInventoryRepository.save(inventory);
             });
         }
-    }
-
-    private BigDecimal applyOptionalCouponDiscount(BigDecimal totalPrice, String code) {
-        String normalized = code.toUpperCase();
-        if ("LANKA10".equals(normalized) || "WAYCATION10".equals(normalized)) {
-            return BigDecimal.valueOf(Math.round(totalPrice.doubleValue() * 0.90));
-        }
-        if ("SOUTH5000".equals(normalized) || "WELCOME5000".equals(normalized)) {
-            return totalPrice.subtract(BigDecimal.valueOf(5000)).max(BigDecimal.ZERO);
-        }
-        return totalPrice;
     }
 
     private void enrichSingleBooking(Booking booking) {
@@ -346,9 +340,3 @@ public class BookingService {
         }
     }
 }
-
-
-
-
-
-
