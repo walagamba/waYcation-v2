@@ -1,3 +1,405 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Stay Reviews — waYcation 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emeraldDeep: '#00261b',
+                        emeraldRich: '#064e3b',
+                        goldAccent: '#d97706',
+                        goldBright: '#f59e0b',
+                        sandLight: '#faf8f5'
+                    },
+                    fontFamily: {
+                        serif: ['Newsreader', 'Georgia', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-sandLight text-slate-900 font-sans min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-emeraldDeep text-white border-b border-emerald-900/60 sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <a href="/" class="font-serif text-2xl tracking-tight font-semibold text-white flex items-center gap-2">
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-goldBright"></span>
+                    waYcation <span class="text-xs font-sans uppercase tracking-widest text-emerald-300/90 ml-1">Sri Lanka</span>
+                </a>
+                <nav class="hidden md:flex items-center gap-5 text-sm text-emerald-100/80">
+                    <a href="/hotels" class="hover:text-white transition">Explore Stays</a>
+                    <a href="/tourist/bookings" class="hover:text-white transition">My Bookings</a>
+                    <a href="/tourist/reviews" class="text-white font-semibold border-b-2 border-goldBright pb-0.5">My Reviews</a>
+                </nav>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-900/90 text-emerald-200 border border-emerald-700/60"
+                      th:text="'Tourist ID: ' + ${touristUid}">Tourist ID: tourist-demo-001</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        <!-- Hero Header & Summary Metrics -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-200">
+            <div>
+                <p class="text-xs uppercase tracking-widest font-semibold text-emeraldRich mb-2">Screen 14 · Verified Stay Feedback</p>
+                <h1 class="font-serif text-3xl sm:text-4xl font-semibold text-emeraldDeep">Tourist Review Management</h1>
+                <p class="text-slate-600 text-sm sm:text-base mt-1.5 max-w-2xl">
+                    Share authentic reflections from your completed Sri Lankan stays. Every published review is linked to a verified reservation.
+                </p>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="bg-white rounded-xl px-5 py-3.5 shadow-sm border border-slate-200/80 flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-lg bg-amber-50 border border-amber-200/70 flex items-center justify-center text-goldBright">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wider font-medium">Avg Rating Given</p>
+                        <p class="text-xl font-bold text-slate-900" th:text="${averageRating} + ' / 5.0'">4.8 / 5.0</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl px-5 py-3.5 shadow-sm border border-slate-200/80">
+                    <p class="text-xs text-slate-500 uppercase tracking-wider font-medium">Total Reviews</p>
+                    <p class="text-xl font-bold text-emeraldDeep" th:text="${reviewCount}">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Alerts -->
+        <div th:if="${successMessage}" class="mt-6 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3.5 flex items-center justify-between text-emerald-900 text-sm">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span th:text="${successMessage}">Success!</span>
+            </div>
+        </div>
+
+        <div th:if="${errorMessage}" class="mt-6 rounded-xl bg-red-50 border border-red-200 px-4 py-3.5 flex items-center justify-between text-red-900 text-sm">
+            <div class="flex items-center gap-2.5">
+                <svg class="w-5 h-5 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span th:text="${errorMessage}">Error message</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
+
+            <!-- Left Column: Submit New Review for Eligible Completed Stays -->
+            <section class="lg:col-span-5">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-6 sticky top-24">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-serif text-xl font-semibold text-emeraldDeep">Write a Verified Stay Review</h2>
+                        <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emeraldRich border border-emerald-200">
+                            1 Review / Stay
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-5">
+                        Only completed reservations or confirmed stays past their check-out date are eligible for review.
+                    </p>
+
+                    <form th:action="@{/reviews/create}" method="post" class="space-y-4">
+                        <input type="hidden" name="touristUid" th:value="${touristUid}" />
+
+                        <div>
+                            <label for="bookingIdSelect" class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                                Completed Stay Reservation
+                            </label>
+                            <select id="bookingIdSelect" name="bookingId" required
+                                    onchange="syncHotelIdFromBooking(this)"
+                                    class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emeraldRich">
+                                <option value="" disabled selected>Select an eligible booking...</option>
+                                <option th:each="booking : ${eligibleBookings}"
+                                        th:value="${booking.id}"
+                                        th:attr="data-hotel-id=${booking.hotelId}"
+                                        th:text="${(booking.hotelName != null ? booking.hotelName : 'Hotel #' + booking.hotelId) + ' · Check-out ' + booking.checkOut + ' (Ref: ' + booking.id + ')'}">
+                                    Ceylon Tea Trails · Check-out 2026-10-15
+                                </option>
+                            </select>
+                            <input type="hidden" id="createHotelIdInput" name="hotelId" value="" />
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(eligibleBookings)}" class="rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 text-xs text-slate-600">
+                            All of your completed stays have already been reviewed, or you can enter a completed Booking ID manually below.
+                            <div class="mt-2 grid grid-cols-1 gap-2">
+                                <input type="text" name="bookingId" placeholder="Or enter Booking ID manually..."
+                                       disabled id="manualBookingIdFallback"
+                                       class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs" />
+                            </div>
+                        </div>
+
+                        <!-- Interactive 5-Star Selector -->
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                                Overall Rating (1 to 5 Stars)
+                            </label>
+                            <input type="hidden" name="rating" id="createRatingInput" value="5" required />
+                            <div class="flex items-center gap-1.5" id="createStarGroup">
+                                <button type="button" data-star="1" onclick="setCreateRating(1)" class="p-1 text-goldBright hover:scale-110 transition">
+                                    <svg class="w-7 h-7 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                </button>
+                                <button type="button" data-star="2" onclick="setCreateRating(2)" class="p-1 text-goldBright hover:scale-110 transition">
+                                    <svg class="w-7 h-7 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                </button>
+                                <button type="button" data-star="3" onclick="setCreateRating(3)" class="p-1 text-goldBright hover:scale-110 transition">
+                                    <svg class="w-7 h-7 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                </button>
+                                <button type="button" data-star="4" onclick="setCreateRating(4)" class="p-1 text-goldBright hover:scale-110 transition">
+                                    <svg class="w-7 h-7 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                </button>
+                                <button type="button" data-star="5" onclick="setCreateRating(5)" class="p-1 text-goldBright hover:scale-110 transition">
+                                    <svg class="w-7 h-7 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                </button>
+                                <span id="createRatingLabel" class="ml-2 text-xs font-semibold text-amber-700">5 / 5 Stars</span>
+                            </div>
+                        </div>
+
+                        <!-- Review Comment -->
+                        <div>
+                            <label for="commentInput" class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                                Your Experience (Min. 5 characters)
+                            </label>
+                            <textarea id="commentInput" name="comment" rows="4" minlength="5" required
+                                      placeholder="Describe the hospitality, ambiance, dining, and memorable moments of your stay..."
+                                      class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emeraldRich"></textarea>
+                        </div>
+
+                        <button type="submit"
+                                class="w-full rounded-xl bg-emeraldDeep hover:bg-emeraldRich text-white font-semibold py-3 px-4 text-sm shadow-sm transition flex items-center justify-center gap-2">
+                            <span>Publish Verified Review</span>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Right Column: Published & Past Reviews List -->
+            <section class="lg:col-span-7 space-y-5">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-serif text-2xl font-semibold text-emeraldDeep">Your Submitted Reviews</h2>
+                    <span class="text-xs text-slate-500" th:text="${reviewCount} + ' review(s) on record'">0 reviews on record</span>
+                </div>
+
+                <!-- Empty State -->
+                <div th:if="${#lists.isEmpty(reviews)}"
+                     class="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center">
+                    <div class="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 mx-auto flex items-center justify-center text-goldBright mb-3">
+                        <svg class="w-6 h-6 fill-current" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-serif text-lg font-semibold text-slate-800">No Stay Reviews Yet</h3>
+                    <p class="text-sm text-slate-500 max-w-md mx-auto mt-1">
+                        Once you complete a stay at a waYcation sanctuary, select your booking on the left to publish your first verified review.
+                    </p>
+                </div>
+
+                <!-- Review Cards -->
+                <article th:each="review : ${reviews}"
+                         class="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-6 transition hover:shadow-md">
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-slate-100">
+                        <div>
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <h3 class="font-serif text-xl font-semibold text-emeraldDeep"
+                                    th:text="${review.hotelName != null ? review.hotelName : 'Hotel #' + review.hotelId}">
+                                    Heritance Kandalama
+                                </h3>
+                                <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full"
+                                      th:classappend="${review.status.name() == 'PUBLISHED' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}"
+                                      th:text="${review.status}">
+                                    PUBLISHED
+                                </span>
+                            </div>
+
+                            <p class="text-xs text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
+                                <span class="font-medium text-emeraldRich" th:text="'Verified Stay Ref: #' + ${review.bookingId}">
+                                    Verified Stay Ref: #BK-1001
+                                </span>
+                                <span>·</span>
+                                <span th:text="${review.createdAt != null ? #temporals.format(review.createdAt, 'dd MMM yyyy, HH:mm') : ''}">
+                                    12 Oct 2026
+                                </span>
+                            </p>
+                        </div>
+
+                        <!-- 5-Star Gold Rating Visualization -->
+                        <div class="flex items-center gap-1 bg-amber-50/80 border border-amber-200/70 px-3 py-1.5 rounded-xl self-start">
+                            <th:block th:each="star : ${#numbers.sequence(1, 5)}">
+                                <svg class="w-4 h-4 fill-current"
+                                     th:classappend="${star <= review.rating ? 'text-goldBright' : 'text-slate-300'}"
+                                     viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                            </th:block>
+                            <span class="ml-1.5 text-xs font-bold text-amber-900" th:text="${review.rating} + '.0'">5.0</span>
+                        </div>
+                    </div>
+
+                    <p class="text-slate-700 text-sm leading-relaxed mt-4 whitespace-pre-line" th:text="${review.comment}">
+                        An unforgettable architectural sanctuary overlooking the rock fortress.
+                    </p>
+
+                    <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+                        <span class="text-xs text-slate-400"
+                              th:text="${review.updatedAt != null ? 'Last updated ' + #temporals.format(review.updatedAt, 'dd MMM yyyy') : ''}">
+                            Last updated 12 Oct 2026
+                        </span>
+
+                        <div class="flex items-center gap-2.5">
+                            <!-- Edit Review Modal Trigger -->
+                            <button type="button"
+                                    th:attr="data-review-id=${review.id},data-review-rating=${review.rating},data-review-comment=${review.comment},data-review-hotel=${review.hotelName != null ? review.hotelName : 'Hotel #' + review.hotelId}"
+                                    onclick="openEditReviewModal(this)"
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-emeraldDeep bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                Edit Review
+                            </button>
+
+                            <!-- Delete Review Form -->
+                            <form th:action="@{/reviews/{id}/delete(id=${review.id})}" method="post"
+                                  onsubmit="return confirm('Are you sure you want to permanently delete this review?');">
+                                <input type="hidden" name="touristUid" th:value="${touristUid}" />
+                                <button type="submit"
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </div>
+    </main>
+
+    <!-- Edit Review Modal -->
+    <div id="editReviewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div>
+                    <p class="text-xs uppercase tracking-wider font-semibold text-emeraldRich">Update Feedback</p>
+                    <h3 id="editModalHotelTitle" class="font-serif text-xl font-semibold text-emeraldDeep">Edit Stay Review</h3>
+                </div>
+                <button type="button" onclick="closeEditReviewModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="editReviewForm" method="post" class="space-y-4 mt-4">
+                <input type="hidden" name="touristUid" th:value="${touristUid}" />
+
+                <div>
+                    <label for="editRatingSelect" class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                        Updated Star Rating
+                    </label>
+                    <select id="editRatingSelect" name="rating" required
+                            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emeraldRich">
+                        <option value="5">★★★★★ (5 / 5 — Exceptional)</option>
+                        <option value="4">★★★★☆ (4 / 5 — Very Good)</option>
+                        <option value="3">★★★☆☆ (3 / 5 — Good)</option>
+                        <option value="2">★★☆☆☆ (2 / 5 — Fair)</option>
+                        <option value="1">★☆☆☆☆ (1 / 5 — Needs Improvement)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="editCommentTextarea" class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                        Updated Review Comment
+                    </label>
+                    <textarea id="editCommentTextarea" name="comment" rows="4" minlength="5" required
+                              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emeraldRich"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeEditReviewModal()"
+                            class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-5 py-2.5 rounded-xl text-xs font-semibold bg-emeraldDeep hover:bg-emeraldRich text-white shadow-xs transition">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function syncHotelIdFromBooking(selectEl) {
+            const selectedOption = selectEl.options[selectEl.selectedIndex];
+            const hotelIdInput = document.getElementById('createHotelIdInput');
+            if (selectedOption && hotelIdInput) {
+                hotelIdInput.value = selectedOption.getAttribute('data-hotel-id') || '';
+            }
+        }
+
+        function setCreateRating(rating) {
+            document.getElementById('createRatingInput').value = rating;
+            document.getElementById('createRatingLabel').textContent = rating + ' / 5 Stars';
+            const buttons = document.querySelectorAll('#createStarGroup button[data-star]');
+            buttons.forEach(btn => {
+                const starVal = parseInt(btn.getAttribute('data-star'), 10);
+                if (starVal <= rating) {
+                    btn.classList.remove('text-slate-300');
+                    btn.classList.add('text-goldBright');
+                } else {
+                    btn.classList.remove('text-goldBright');
+                    btn.classList.add('text-slate-300');
+                }
+            });
+        }
+
+        function openEditReviewModal(buttonEl) {
+            const reviewId = buttonEl.getAttribute('data-review-id');
+            const rating = buttonEl.getAttribute('data-review-rating');
+            const comment = buttonEl.getAttribute('data-review-comment');
+            const hotelName = buttonEl.getAttribute('data-review-hotel');
+
+            const modal = document.getElementById('editReviewModal');
+            const form = document.getElementById('editReviewForm');
+            form.action = '/reviews/' + encodeURIComponent(reviewId) + '/update';
+
+            document.getElementById('editModalHotelTitle').textContent = 'Edit Review · ' + hotelName;
+            document.getElementById('editRatingSelect').value = rating;
+            document.getElementById('editCommentTextarea').value = comment;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeEditReviewModal() {
+            const modal = document.getElementById('editReviewModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    </script>
+=======
 <!--
   waYcation 2.0 — Tourist Verified Stay Reviews Dashboard (templates/tourist/reviews.html)
   Allows tourists to view, edit (via interactive 1-5 star rating modal), and delete
@@ -319,5 +721,6 @@
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 
+>>>>>>> ccfecd35f648a43b45c360009588d5a435834d49
 </body>
 </html>
