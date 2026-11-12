@@ -1,0 +1,389 @@
+<!--
+  waYcation 2.0 — Admin Promotional Coupons Console (templates/admin/coupons.html)
+  Provides promotional coupon creation, live status filtering, Edit Coupon modal,
+  Pause/Activate lifecycle toggles, permanent deletion, and redemption telemetry.
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin Coupons — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+    <!-- Header & Action -->
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 pb-6 border-b border-[var(--border-structural)]">
+        <div>
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-2">
+                <span class="signal-dot"></span>
+                <span>PROMOTIONS ENGINE</span>
+            </div>
+            <h1 class="font-headline text-3xl font-bold tracking-tight text-[var(--text-primary)]">Admin Coupon Management</h1>
+            <p class="font-body text-xs text-[var(--text-secondary)] mt-1">Configure discount rules, spend thresholds, and track tourist redemptions.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/admin/packages" class="btn-monolith-secondary text-xs py-2 px-3.5">
+                ← Packages Console
+            </a>
+            <button type="button" onclick="document.getElementById('create-coupon-modal').classList.remove('hidden')"
+                    class="btn-monolith-primary text-xs py-2 px-4">
+                + New Promo Code
+            </button>
+        </div>
+    </div>
+
+    <!-- Flash Alerts -->
+    <div th:if="${successMessage}" class="p-3.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs font-mono">
+        <span th:text="${successMessage}">Promo code created successfully.</span>
+    </div>
+    <div th:if="${errorMessage}" class="p-3.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-mono">
+        <span th:text="${errorMessage}">Error processing coupon action.</span>
+    </div>
+
+    <!-- KPI Summary Metrics -->
+    <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
+        <div class="monolith-card p-4">
+            <span class="text-[10px] uppercase text-[var(--text-muted)] block">Active Codes</span>
+            <div class="text-2xl font-bold text-emerald-500 mt-1" th:text="${activeCount != null ? activeCount : 0}">4</div>
+            <span class="text-[10px] text-[var(--text-muted)] mt-1 block">Live at checkout</span>
+        </div>
+        <div class="monolith-card p-4">
+            <span class="text-[10px] uppercase text-[var(--text-muted)] block">Total Campaigns</span>
+            <div class="text-2xl font-bold text-[var(--text-primary)] mt-1" th:text="${totalCoupons != null ? totalCoupons : 0}">6</div>
+            <span class="text-[10px] text-[var(--text-muted)] mt-1 block">Configured campaigns</span>
+        </div>
+        <div class="monolith-card p-4">
+            <span class="text-[10px] uppercase text-[var(--text-muted)] block">Total Redemptions</span>
+            <div class="text-2xl font-bold text-[var(--signal-red)] mt-1" th:text="${totalRedemptions != null ? totalRedemptions : 0}">128</div>
+            <span class="text-[10px] text-[var(--text-muted)] mt-1 block">Applied by tourists</span>
+        </div>
+    </section>
+
+    <!-- Coupons Table Card -->
+    <section class="monolith-card overflow-hidden">
+        <div class="px-6 py-4 border-b border-[var(--border-subtle)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 font-mono text-xs">
+            <div>
+                <h2 class="font-headline text-base font-bold text-[var(--text-primary)]">Promotional Codes Ledger</h2>
+                <p class="font-body text-[11px] text-[var(--text-muted)]">Promo codes normalized to uppercase and validated at reservation lock.</p>
+            </div>
+            <div>
+                <input type="text" id="coupon-filter-input" oninput="filterCoupons(this.value)"
+                       placeholder="Filter by code or status..."
+                       class="monolith-input text-xs py-1.5 w-56 font-mono">
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="monolith-table">
+                <thead>
+                    <tr>
+                        <th>Promo Code</th>
+                        <th>Discount Rule</th>
+                        <th>Eligibility</th>
+                        <th>Window</th>
+                        <th>Usage</th>
+                        <th>Status</th>
+                        <th class="text-right">CRUD Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="coupon-table-body">
+                    <tr th:each="coupon : ${coupons}" class="coupon-row">
+                        <td>
+                            <span class="font-mono font-bold text-[var(--signal-red)] bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] px-2 py-0.5 rounded text-xs"
+                                  th:text="${coupon.code}">SRILANKA25</span>
+                        </td>
+                        <td>
+                            <div th:if="${coupon.discountType.name() == 'PERCENTAGE'}" class="font-mono font-bold text-xs text-[var(--text-primary)]">
+                                <span th:text="${coupon.discountValue}">20</span>% OFF
+                                <span th:if="${coupon.maximumDiscount != null}"
+                                      class="block text-[10px] font-normal text-[var(--text-muted)]"
+                                      th:text="'Max: ' + ${coupon.currency} + ' ' + ${coupon.maximumDiscount}">Max: LKR 15000</span>
+                            </div>
+                            <div th:if="${coupon.discountType.name() == 'FIXED'}" class="font-mono font-bold text-xs text-[var(--text-primary)]">
+                                <span th:text="${coupon.currency + ' ' + coupon.discountValue}">LKR 5000</span> FLAT
+                            </div>
+                        </td>
+                        <td class="font-mono text-xs">
+                            <div>Min: <span class="font-bold text-[var(--text-primary)]" th:text="${coupon.currency + ' ' + coupon.minimumSpend}">LKR 25000</span></div>
+                            <div class="text-[10px] text-[var(--text-muted)]">Per-User: <span th:text="${coupon.perUserLimit}">1</span></div>
+                        </td>
+                        <td class="font-mono text-[11px] text-[var(--text-muted)]">
+                            <div>From: <span th:text="${coupon.startsAt != null ? #temporals.format(coupon.startsAt, 'yyyy-MM-dd') : 'N/A'}">2026-01-01</span></div>
+                            <div>Until: <span th:text="${coupon.expiresAt != null ? #temporals.format(coupon.expiresAt, 'yyyy-MM-dd') : 'N/A'}">2027-01-01</span></div>
+                        </td>
+                        <td class="font-mono text-xs">
+                            <span class="font-bold text-[var(--text-primary)]" th:text="${coupon.redemptionCount}">0</span>
+                            <span class="text-[var(--text-muted)]">/</span>
+                            <span class="text-[var(--text-muted)]" th:text="${coupon.globalUsageLimit}">100</span>
+                        </td>
+                        <td>
+                            <span th:if="${coupon.status.name() == 'ACTIVE'}"
+                                  class="badge-telemetry text-emerald-500 border-emerald-500/30">
+                                ACTIVE
+                            </span>
+                            <span th:if="${coupon.status.name() == 'INACTIVE'}"
+                                  class="badge-telemetry text-zinc-500 border-zinc-700">
+                                INACTIVE
+                            </span>
+                            <span th:if="${coupon.status.name() == 'EXPIRED'}"
+                                  class="badge-telemetry text-amber-500 border-amber-500/30">
+                                EXPIRED
+                            </span>
+                        </td>
+                        <td class="text-right">
+                            <div class="inline-flex items-center justify-end gap-1.5 font-mono text-xs">
+                                <!-- Edit Coupon Button -->
+                                <button type="button"
+                                        th:attr="data-id=${coupon.id},data-code=${coupon.code},data-type=${coupon.discountType.name()},data-val=${coupon.discountValue},data-min=${coupon.minimumSpend},data-max=${coupon.maximumDiscount != null ? coupon.maximumDiscount : ''},data-global=${coupon.globalUsageLimit},data-peruser=${coupon.perUserLimit},data-status=${coupon.status.name()}"
+                                        onclick="openEditCouponModal(this)"
+                                        class="btn-monolith-secondary text-xs py-1 px-2.5">
+                                    Edit
+                                </button>
+
+                                <!-- Deactivate / Activate Toggle -->
+                                <form th:if="${coupon.status.name() == 'ACTIVE'}"
+                                      th:action="@{/admin/coupons/{id}/deactivate(id=${coupon.id})}"
+                                      method="post" class="inline">
+                                    <input type="hidden" name="adminUid" th:value="${adminUid}">
+                                    <button type="submit"
+                                            class="px-2.5 py-1 rounded-full border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 text-xs transition">
+                                        Pause
+                                    </button>
+                                </form>
+                                <form th:if="${coupon.status.name() != 'ACTIVE'}"
+                                      th:action="@{/admin/coupons/{id}/activate(id=${coupon.id})}"
+                                      method="post" class="inline">
+                                    <input type="hidden" name="adminUid" th:value="${adminUid}">
+                                    <button type="submit"
+                                            class="px-2.5 py-1 rounded-full border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 text-xs transition">
+                                        Activate
+                                    </button>
+                                </form>
+
+                                <!-- Delete Coupon Button -->
+                                <form th:action="@{/admin/coupons/{id}/delete(id=${coupon.id})}"
+                                      method="post" class="inline"
+                                      onsubmit="return confirm('Permanently delete this coupon code?');">
+                                    <input type="hidden" name="adminUid" th:value="${adminUid}">
+                                    <button type="submit"
+                                            class="px-2.5 py-1 rounded-full border border-red-500/30 text-red-500 hover:bg-red-500/10 text-xs transition">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(coupons)}">
+                        <td colspan="7" class="py-10 text-center font-mono text-xs text-[var(--text-muted)]">
+                            No promotional coupons configured yet.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<!-- Create Coupon Monolith Modal -->
+<div id="create-coupon-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="modal-content-monolith max-w-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
+            <div>
+                <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">DISCOUNT CONFIGURATION</span>
+                <h3 class="font-headline text-lg font-bold text-[var(--text-primary)]">New Promo Code</h3>
+            </div>
+            <button type="button" onclick="document.getElementById('create-coupon-modal').classList.add('hidden')"
+                    class="text-[var(--text-muted)] hover:text-[var(--text-primary)] font-mono text-lg font-bold">
+                ✕
+            </button>
+        </div>
+
+        <form th:action="@{/admin/coupons/create}" method="post" class="space-y-4">
+            <input type="hidden" name="adminUid" th:value="${adminUid}">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Promo Code *</label>
+                    <input type="text" name="code" required placeholder="LANKASUMMER25"
+                           class="monolith-input text-xs font-mono uppercase">
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Type *</label>
+                    <select name="discountType" required class="monolith-input text-xs font-mono">
+                        <option value="PERCENTAGE">PERCENTAGE (%)</option>
+                        <option value="FIXED">FIXED AMOUNT (LKR)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Discount *</label>
+                    <input type="number" step="0.01" min="1" name="discountValue" required placeholder="20"
+                           class="monolith-input text-xs font-mono">
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Min Spend (LKR)</label>
+                    <input type="number" step="0.01" min="0" name="minimumSpend" value="15000"
+                           class="monolith-input text-xs font-mono">
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Max Cap (LKR)</label>
+                    <input type="number" step="0.01" min="0" name="maximumDiscount" placeholder="Optional"
+                           class="monolith-input text-xs font-mono">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Starts At *</label>
+                    <input type="datetime-local" name="startsAt" required value="2026-10-01T00:00"
+                           class="monolith-input text-xs font-mono">
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Expires At *</label>
+                    <input type="datetime-local" name="expiresAt" required value="2027-06-30T23:59"
+                           class="monolith-input text-xs font-mono">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Global Limit *</label>
+                    <input type="number" min="1" name="globalUsageLimit" value="250" required
+                           class="monolith-input text-xs font-mono">
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Per-User Limit *</label>
+                    <input type="number" min="1" name="perUserLimit" value="1" required
+                           class="monolith-input text-xs font-mono">
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border-subtle)] font-mono">
+                <button type="button" onclick="document.getElementById('create-coupon-modal').classList.add('hidden')"
+                        class="btn-monolith-secondary text-xs py-2 px-3">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="btn-monolith-primary text-xs py-2 px-4">
+                    Launch Code
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Coupon Monolith Modal -->
+<div id="edit-coupon-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="modal-content-monolith max-w-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
+            <div>
+                <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">UPDATE CAMPAIGN</span>
+                <h3 class="font-headline text-lg font-bold text-[var(--text-primary)]">Edit Promo Code</h3>
+            </div>
+            <button type="button" onclick="document.getElementById('edit-coupon-modal').classList.add('hidden')"
+                    class="text-[var(--text-muted)] hover:text-[var(--text-primary)] font-mono text-lg font-bold">
+                ✕
+            </button>
+        </div>
+
+        <form id="edit-coupon-form" method="post" class="space-y-4">
+            <input type="hidden" name="adminUid" th:value="${adminUid}">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Promo Code *</label>
+                    <input type="text" id="edit-coupon-code" name="code" required
+                           class="monolith-input text-xs font-mono uppercase">
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Type *</label>
+                    <select id="edit-coupon-type" name="discountType" required class="monolith-input text-xs font-mono">
+                        <option value="PERCENTAGE">PERCENTAGE (%)</option>
+                        <option value="FIXED">FIXED AMOUNT (LKR)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Discount *</label>
+                    <input type="number" step="0.01" min="1" id="edit-coupon-val" name="discountValue" required
+                           class="monolith-input text-xs font-mono">
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Min Spend (LKR)</label>
+                    <input type="number" step="0.01" min="0" id="edit-coupon-min" name="minimumSpend"
+                           class="monolith-input text-xs font-mono">
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Max Cap (LKR)</label>
+                    <input type="number" step="0.01" min="0" id="edit-coupon-max" name="maximumDiscount" placeholder="Optional"
+                           class="monolith-input text-xs font-mono">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Global Limit *</label>
+                    <input type="number" min="1" id="edit-coupon-global" name="globalUsageLimit" required
+                           class="monolith-input text-xs font-mono">
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Per-User Limit *</label>
+                    <input type="number" min="1" id="edit-coupon-peruser" name="perUserLimit" required
+                           class="monolith-input text-xs font-mono">
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Status</label>
+                    <select id="edit-coupon-status" name="status" class="monolith-input text-xs font-mono">
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="INACTIVE">INACTIVE</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border-subtle)] font-mono">
+                <button type="button" onclick="document.getElementById('edit-coupon-modal').classList.add('hidden')"
+                        class="btn-monolith-secondary text-xs py-2 px-3">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="btn-monolith-primary text-xs py-2 px-4">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function filterCoupons(query) {
+        const normalized = (query || '').trim().toLowerCase();
+        document.querySelectorAll('.coupon-row').forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(normalized) ? '' : 'none';
+        });
+    }
+
+    function openEditCouponModal(btn) {
+        const id = btn.getAttribute('data-id');
+        document.getElementById('edit-coupon-form').action = '/admin/coupons/' + id + '/update';
+        document.getElementById('edit-coupon-code').value = btn.getAttribute('data-code') || '';
+        document.getElementById('edit-coupon-type').value = btn.getAttribute('data-type') || 'PERCENTAGE';
+        document.getElementById('edit-coupon-val').value = btn.getAttribute('data-val') || '';
+        document.getElementById('edit-coupon-min').value = btn.getAttribute('data-min') || '0';
+        document.getElementById('edit-coupon-max').value = btn.getAttribute('data-max') || '';
+        document.getElementById('edit-coupon-global').value = btn.getAttribute('data-global') || '100';
+        document.getElementById('edit-coupon-peruser').value = btn.getAttribute('data-peruser') || '1';
+        document.getElementById('edit-coupon-status').value = btn.getAttribute('data-status') || 'ACTIVE';
+        document.getElementById('edit-coupon-modal').classList.remove('hidden');
+    }
+</script>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

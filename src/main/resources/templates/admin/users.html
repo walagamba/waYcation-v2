@@ -1,0 +1,214 @@
+<!--
+  waYcation 2.0 — Admin User Role Governance Console (templates/admin/users.html)
+  Displays platform user directory, role KPI telemetry cards, search/filter controls,
+  and hierarchical role assignment selector (SUPER_ADMIN, ADMIN, STAFF, HOTEL_OWNER, TOURIST).
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('User Governance — waYcation Admin')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+    <!-- Header Telemetry & Title -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[var(--border-structural)]">
+        <div>
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-2">
+                <span class="signal-dot"></span>
+                <span>PLATFORM GOVERNANCE &amp; ACCESS CONTROL</span>
+            </div>
+            <h1 class="font-headline text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">User &amp; Role Governance</h1>
+            <p class="font-body text-xs text-[var(--text-secondary)] mt-1">Control and audit role permissions across tourists, hoteliers, staff curators, and administrators.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="badge-telemetry text-xs font-mono font-bold"
+                  th:classappend="${callerRole == 'SUPER_ADMIN' ? 'text-rose-400 border-rose-500/30' : 'text-emerald-400 border-emerald-500/30'}"
+                  th:text="${callerRole != null ? callerRole : 'ADMIN'}">ADMIN</span>
+            <a href="/admin/packages" class="btn-monolith-outline py-2 px-4 text-xs font-mono">
+                ← Package Console
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert Banners -->
+    <div th:if="${errorMessage}" class="p-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-xs font-mono"
+         th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-mono"
+         th:text="${successMessage}"></div>
+
+    <!-- Metrics Strip -->
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="monolith-card p-4 space-y-1">
+            <span class="font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Total Users</span>
+            <div class="font-headline text-2xl font-bold text-[var(--text-primary)]" th:text="${totalUsers}">0</div>
+        </div>
+        <div class="monolith-card p-4 space-y-1">
+            <span class="font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Tourists</span>
+            <div class="font-headline text-2xl font-bold text-sky-400" th:text="${touristCount}">0</div>
+        </div>
+        <div class="monolith-card p-4 space-y-1">
+            <span class="font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Hoteliers</span>
+            <div class="font-headline text-2xl font-bold text-amber-400" th:text="${hotelierCount}">0</div>
+        </div>
+        <div class="monolith-card p-4 space-y-1">
+            <span class="font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Staff Curators</span>
+            <div class="font-headline text-2xl font-bold text-purple-400" th:text="${staffCount}">0</div>
+        </div>
+        <div class="monolith-card p-4 space-y-1">
+            <span class="font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Admins</span>
+            <div class="font-headline text-2xl font-bold text-emerald-400" th:text="${adminCount}">0</div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="monolith-card p-4">
+        <form th:action="@{/admin/users}" method="get" class="flex flex-col sm:flex-row items-center gap-3">
+            <div class="relative flex-grow w-full">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-sm text-[var(--text-muted)]">search</span>
+                <input type="text" name="search" th:value="${search}" placeholder="Search users by name or email..."
+                       class="monolith-input pl-9 text-xs font-mono w-full" />
+            </div>
+
+            <div class="w-full sm:w-56">
+                <select name="roleFilter" class="monolith-input text-xs font-mono w-full">
+                    <option value="ALL" th:selected="${roleFilter == 'ALL'}">All Roles</option>
+                    <option value="TOURIST" th:selected="${roleFilter == 'TOURIST'}">Tourists Only</option>
+                    <option value="HOTEL_OWNER" th:selected="${roleFilter == 'HOTEL_OWNER'}">Hoteliers Only</option>
+                    <option value="STAFF" th:selected="${roleFilter == 'STAFF'}">Staff Curators Only</option>
+                    <option value="ADMIN" th:selected="${roleFilter == 'ADMIN'}">Administrators Only</option>
+                    <option value="SUPER_ADMIN" th:selected="${roleFilter == 'SUPER_ADMIN'}">Super Admins Only</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <button type="submit" class="btn-monolith-primary py-2 px-5 text-xs font-bold w-full sm:w-auto">
+                    Apply Filter
+                </button>
+                <a th:if="${(search != null and !search.isBlank()) or (roleFilter != null and roleFilter != 'ALL')}"
+                   href="/admin/users" class="btn-monolith-outline py-2 px-3 text-xs font-mono text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- User Directory Table -->
+    <div class="monolith-card overflow-hidden">
+        <div class="px-6 py-4 border-b border-[var(--border-structural)] flex items-center justify-between">
+            <div>
+                <h2 class="font-headline text-base font-bold text-[var(--text-primary)]">User Directory</h2>
+                <p class="font-mono text-[11px] text-[var(--text-muted)] mt-0.5"
+                   th:text="'Showing ' + ${users.size()} + ' registered accounts matching query.'">Showing accounts.</p>
+            </div>
+            <div class="flex items-center gap-2 text-[11px] font-mono text-[var(--text-muted)]">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Active Database Sync</span>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs font-mono">
+                <thead class="bg-[var(--bg-canvas-subtle)] text-[10px] uppercase tracking-wider text-[var(--text-muted)] border-b border-[var(--border-structural)]">
+                    <tr>
+                        <th class="px-6 py-3.5">User Profile</th>
+                        <th class="px-6 py-3.5">Email Address</th>
+                        <th class="px-6 py-3.5">Current Role</th>
+                        <th class="px-6 py-3.5 text-right">Role Governance Selector</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--border-structural)] text-[var(--text-primary)]">
+                    <tr th:if="${users.empty}">
+                        <td colspan="4" class="px-6 py-12 text-center text-[var(--text-muted)]">
+                            <span class="material-symbols-outlined text-3xl mb-2 text-[var(--text-muted)]">person_search</span>
+                            <p>No user accounts matched the given search or role filter.</p>
+                        </td>
+                    </tr>
+                    <tr th:each="u : ${users}" class="hover:bg-[var(--bg-canvas-subtle)] transition">
+                        <!-- User Name & UID -->
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full border border-[var(--border-structural)] bg-[var(--card-surface)] flex items-center justify-center font-bold text-xs uppercase"
+                                     th:text="${#strings.substring(u.displayName != null and !u.displayName.isBlank() ? u.displayName : 'U', 0, 1)}">
+                                    U
+                                </div>
+                                <div>
+                                    <span class="font-headline font-semibold text-xs text-[var(--text-primary)] block"
+                                          th:text="${u.displayName}">User Name</span>
+                                    <span class="text-[10px] text-[var(--text-muted)] block truncate max-w-xs font-mono"
+                                          th:text="${u.firebaseUid}">uid_123</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Email -->
+                        <td class="px-6 py-4 text-[var(--text-secondary)]" th:text="${u.email}">user@domain.com</td>
+
+                        <!-- Role Badge -->
+                        <td class="px-6 py-4">
+                            <span th:if="${u.role.name() == 'TOURIST'}"
+                                  class="badge-telemetry text-sky-400 border-sky-500/30 font-bold">
+                                TOURIST
+                            </span>
+                            <span th:if="${u.role.name() == 'HOTEL_OWNER'}"
+                                  class="badge-telemetry text-amber-400 border-amber-500/30 font-bold">
+                                HOTEL_OWNER
+                            </span>
+                            <span th:if="${u.role.name() == 'STAFF'}"
+                                  class="badge-telemetry text-purple-400 border-purple-500/30 font-bold">
+                                STAFF CURATOR
+                            </span>
+                            <span th:if="${u.role.name() == 'ADMIN'}"
+                                  class="badge-telemetry text-emerald-400 border-emerald-500/30 font-bold">
+                                ADMIN
+                            </span>
+                            <span th:if="${u.role.name() == 'SUPER_ADMIN'}"
+                                  class="badge-telemetry text-rose-400 border-rose-500/30 font-bold">
+                                SUPER_ADMIN
+                            </span>
+                        </td>
+
+                        <!-- Role Selector Form -->
+                        <td class="px-6 py-4 text-right">
+                            <!-- Super Admin protection for standard Admins -->
+                            <div th:if="${(u.role.name() == 'ADMIN' or u.role.name() == 'SUPER_ADMIN') and callerRole == 'ADMIN'}"
+                                 class="inline-flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] font-mono">
+                                <span class="material-symbols-outlined text-sm text-rose-500">lock</span>
+                                <span>Super Admin Protected</span>
+                            </div>
+
+                            <!-- Editable Role Selector -->
+                            <form th:unless="${(u.role.name() == 'ADMIN' or u.role.name() == 'SUPER_ADMIN') and callerRole == 'ADMIN'}"
+                                  th:action="@{/admin/users/{id}/role(id=${u.id})}" method="post"
+                                  class="inline-flex items-center gap-2"
+                                  onsubmit="return confirm('Confirm role change for this user?');">
+                                
+                                <input type="hidden" name="search" th:value="${search}" />
+                                <input type="hidden" name="roleFilter" th:value="${roleFilter}" />
+
+                                <select name="role" class="monolith-input text-xs font-mono py-1 px-2.5 bg-[var(--bg-canvas)]">
+                                    <option value="TOURIST" th:selected="${u.role.name() == 'TOURIST'}">Tourist</option>
+                                    <option value="HOTEL_OWNER" th:selected="${u.role.name() == 'HOTEL_OWNER'}">Hotelier</option>
+                                    <option value="STAFF" th:selected="${u.role.name() == 'STAFF'}">Staff Curator</option>
+                                    <option th:if="${callerRole == 'SUPER_ADMIN'}" value="ADMIN" th:selected="${u.role.name() == 'ADMIN'}">Platform Admin</option>
+                                    <option th:if="${callerRole == 'SUPER_ADMIN'}" value="SUPER_ADMIN" th:selected="${u.role.name() == 'SUPER_ADMIN'}">Super Admin</option>
+                                </select>
+
+                                <button type="submit"
+                                        class="btn-monolith-primary py-1 px-3 text-xs font-bold whitespace-nowrap">
+                                    Assign
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

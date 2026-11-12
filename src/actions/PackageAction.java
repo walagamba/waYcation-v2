@@ -1,4 +1,4 @@
-package com.waycation.actions;
+﻿package com.waycation.actions;
 
 import com.waycation.model.PackageHotel;
 import com.waycation.model.PackagePurchase;
@@ -14,6 +14,7 @@ import java.util.List;
  * archiving bundles, recording immutable tourist package purchases, and querying itineraries.
  */
 @Component
+    // Facade Design Pattern: wraps travel package workflows into clean action methods
 public class PackageAction {
 
     private final PackageService packageService;
@@ -46,3 +47,4 @@ public class PackageAction {
         return packageService.getPackagePurchasesForTourist(touristUid);
     }
 }
+

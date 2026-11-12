@@ -1,4 +1,4 @@
-package com.waycation.controller;
+﻿package com.waycation.controller;
 
 import com.waycation.model.Hotel;
 import com.waycation.model.PackageHotel;
@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+    // MVC web controller for browsing package catalogs, viewing itineraries, and admin management
 @Controller
 public class PackageController {
 
@@ -39,6 +40,7 @@ public class PackageController {
         this.packagePurchaseRepository = packagePurchaseRepository;
     }
 
+    // View catalog of curated vacation packages
     @GetMapping("/packages")
     public String viewCatalog(Model model) {
         List<TravelPackage> packages = packageService.getPackages(true);
@@ -46,6 +48,7 @@ public class PackageController {
         return "packages/catalog";
     }
 
+    // View package itinerary, bundled hotels, and pricing detail
     @GetMapping("/packages/{id}")
     public String viewPackageDetail(
             @PathVariable String id,
@@ -180,39 +183,6 @@ public class PackageController {
         return "redirect:/admin/packages";
     }
 
-    @GetMapping("/owner/packages")
-    public String viewOwnerPackages(Model model) {
-        return viewAdminPackages(model);
-    }
-
-    @PostMapping("/admin/packages/{id}/edit")
-    public String editPackage(
-            @PathVariable String id,
-            @RequestParam String title,
-            @RequestParam(required = false) String description,
-            @RequestParam Integer durationDays,
-            @RequestParam BigDecimal priceTotal,
-            @RequestParam(required = false, defaultValue = "PUBLISHED") String status,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
-        String userUid = resolveSessionUid(session, "admin-demo-uid");
-        try {
-            packageService.updatePackage(userUid, id, title, description, durationDays, priceTotal, PackageStatus.valueOf(status.toUpperCase()));
-            redirectAttributes.addFlashAttribute("successMessage", "Travel package '" + title + "' updated successfully.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/admin/packages";
-    }
-
-    @PostMapping({"/admin/packages/{id}/delete", "/owner/packages/{id}/delete"})
-    public String deletePackage(
-            @PathVariable String id,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
-        return archivePackage(id, session, redirectAttributes);
-    }
-
     private String resolveSessionUid(HttpSession session, String fallbackUid) {
         if (session != null) {
             Object uidAttr = session.getAttribute("uid");
@@ -227,3 +197,6 @@ public class PackageController {
         return fallbackUid;
     }
 }
+
+
+

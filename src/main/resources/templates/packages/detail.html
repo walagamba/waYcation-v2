@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -228,6 +229,234 @@
         </div>
 
     </main>
+=======
+<!--
+  waYcation 2.0 — Travel Package Itinerary Timeline & Starting-Day Checkout (templates/packages/detail.html)
+  Shows ordered day-by-day hotel stops and allows tourists to choose their preferred
+  trip starting date (startDate) with live end-date calculation before ordering.
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pkg.title} + ' — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<!-- Flash / Purchase Feedback -->
+<div th:if="${purchased or successMessage != null}" class="border-b border-emerald-500/30 bg-emerald-500/10 py-3.5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+        <div class="flex items-center gap-2 text-emerald-500">
+            <span class="signal-dot bg-emerald-500"></span>
+            <span class="font-bold">IMMUTABLE SNAPSHOT PURCHASE CONFIRMED</span>
+            <span class="text-[var(--text-secondary)] font-normal" th:text="${successMessage != null ? '— ' + successMessage : '— Bundle price and stops are permanently locked.'}"></span>
+        </div>
+        <span class="badge-telemetry border-emerald-500/30 text-emerald-500">STATUS: CONFIRMED</span>
+    </div>
+</div>
+
+<div th:if="${errorMessage != null}" class="border-b border-red-500/30 bg-red-500/10 py-3.5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs font-mono text-red-500" th:text="${errorMessage}"></div>
+</div>
+
+<!-- Package Hero Frame -->
+<section class="relative border-b border-[var(--border-structural)] overflow-hidden">
+    <div class="h-80 md:h-96 w-full relative bg-zinc-900">
+        <img th:src="${pkg.coverImage != null and !pkg.coverImage.isEmpty() ? pkg.coverImage : 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?auto=format&amp;fit=crop&amp;w=1400&amp;q=80'}"
+             th:alt="${pkg.title}"
+             class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+        <div class="absolute bottom-0 inset-x-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+                <span class="badge-telemetry bg-black/80 text-white border-zinc-700" th:text="${pkg.status}">PUBLISHED</span>
+                <span class="badge-telemetry bg-black/80 text-zinc-300 border-zinc-700" th:text="${pkg.durationDays + ' Days Duration'}">7 Days Duration</span>
+                <span class="badge-telemetry bg-black/80 text-zinc-300 border-zinc-700" th:text="${(pkg.hotels != null ? pkg.hotels.size() : 0) + ' Boutique Stops'}">3 Boutique Stops</span>
+            </div>
+            <h1 class="font-headline text-3xl md:text-5xl font-bold text-white tracking-tight" th:text="${pkg.title}">
+                Ceylon Heritage &amp; Southern Coast Circuit
+            </h1>
+        </div>
+    </div>
+</section>
+
+<!-- Main Grid: Timeline (Left) & Instant Purchase Pod (Right) -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1 w-full">
+
+    <!-- Left 2 Columns: Itinerary & Sequence -->
+    <div class="lg:col-span-2 space-y-8">
+
+        <!-- Overview -->
+        <div class="monolith-card p-6">
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-3">
+                <span class="signal-dot"></span>
+                <span>CIRCUIT OVERVIEW</span>
+            </div>
+            <h2 class="font-headline text-lg font-bold text-[var(--text-primary)] mb-2">Curated Circuit Details</h2>
+            <p class="font-body text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed"
+               th:text="${pkg.description != null ? pkg.description : 'Discover Sri Lanka through an expertly sequenced multi-hotel itinerary with guaranteed room allocations and locked bundle pricing.'}">
+            </p>
+        </div>
+
+        <!-- Ordered Multi-Hotel Itinerary Timeline -->
+        <div class="monolith-card p-6">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border-subtle)]">
+                <div>
+                    <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">STOP SEQUENCE</span>
+                    <h2 class="font-headline text-xl font-bold text-[var(--text-primary)] mt-0.5">Ordered Itinerary Timeline</h2>
+                </div>
+                <span class="badge-telemetry" th:text="${pkg.hotels != null ? pkg.hotels.size() + ' Stops' : '0 Stops'}">3 Stops</span>
+            </div>
+
+            <div class="relative pl-6 border-l-2 border-[var(--border-structural)] space-y-6">
+                <div th:each="stop, iterStat : ${pkg.hotels}" class="relative group">
+                    <!-- Marker -->
+                    <div class="absolute -left-[33px] top-1 w-6 h-6 rounded-full bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] font-mono font-bold text-xs flex items-center justify-center border-2 border-[var(--bg-canvas)]"
+                         th:text="${stop.stopOrder}">
+                        1
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2 font-mono text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-[var(--text-primary)]" th:text="'Stop #' + ${stop.stopOrder}">Stop #1</span>
+                                <span class="text-[var(--text-muted)]">·</span>
+                                <span class="text-[var(--text-secondary)]" th:text="${stop.city != null ? stop.city : 'Sri Lanka'}">Kandy</span>
+                            </div>
+                            <span class="badge-telemetry" th:text="${stop.nights + (stop.nights == 1 ? ' Night' : ' Nights')}">2 Nights</span>
+                        </div>
+
+                        <h3 class="font-headline text-base font-bold text-[var(--text-primary)]"
+                            th:text="${stop.hotelName != null ? stop.hotelName : ('Hotel ID: ' + stop.hotelId)}">
+                            Kings Pavilion Boutique Resort
+                        </h3>
+
+                        <div class="mt-3 flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-[var(--border-subtle)] text-xs font-mono text-[var(--text-muted)]">
+                            <span>Ref: <code class="text-[var(--text-primary)]" th:text="${stop.hotelId}">hotel-1</code></span>
+                            <a th:href="@{/hotels/{id}(id=${stop.hotelId})}" class="text-[var(--text-primary)] hover:text-[var(--signal-red)] transition font-bold flex items-center gap-1">
+                                <span>Inspect Stay</span>
+                                <span>→</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tourist Snapshot Purchases -->
+        <div th:if="${myPurchases != null and !myPurchases.isEmpty()}" class="monolith-card p-6">
+            <h3 class="font-headline text-base font-bold text-[var(--text-primary)] mb-4">Your Locked Purchase Snapshots</h3>
+            <div class="space-y-3">
+                <div th:each="p : ${myPurchases}" class="p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] text-xs font-mono space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-[var(--signal-red)]" th:text="'Purchase #' + ${p.id.substring(0, 8).toUpperCase()}">Purchase #1</span>
+                        <span class="badge-telemetry" th:text="${p.status}">CONFIRMED</span>
+                    </div>
+                    <div class="text-[var(--text-secondary)]" th:if="${p.startDate != null}">
+                        Starting Day: <strong class="text-[var(--text-primary)]" th:text="${#temporals.format(p.startDate, 'dd MMMM yyyy')}">15 October 2026</strong>
+                    </div>
+                    <div class="text-[var(--text-secondary)]">
+                        Locked Price: <strong class="text-[var(--text-primary)]" th:text="${p.currency + ' ' + #numbers.formatDecimal(p.priceSnapshot, 1, 'COMMA', 2, 'POINT')}">LKR 245,000.00</strong>
+                    </div>
+                    <pre class="text-[11px] font-mono text-[var(--text-muted)] bg-[var(--card-surface)] p-3 rounded-lg overflow-x-auto border border-[var(--border-structural)]" th:text="${p.packageSnapshot}"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Checkout Monolith Card -->
+    <div class="lg:col-span-1">
+        <div class="sticky top-24 monolith-card p-6 border-2 border-[var(--border-structural)] space-y-5">
+            <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
+                <div>
+                    <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">PACKAGE CHECKOUT</span>
+                    <h3 class="font-headline text-lg font-bold text-[var(--text-primary)] mt-0.5">Snapshot Lock</h3>
+                </div>
+                <span class="badge-telemetry" th:text="${pkg.durationDays + 'D'}">7D</span>
+            </div>
+
+            <div>
+                <div class="font-mono text-[10px] uppercase text-[var(--text-muted)]">Total Locked Price</div>
+                <div class="flex items-baseline gap-1.5 mt-1 font-mono">
+                    <span class="text-xs text-[var(--text-muted)]" th:text="${pkg.currency}">LKR</span>
+                    <span class="text-3xl font-bold text-[var(--text-primary)]"
+                          th:text="${#numbers.formatDecimal(pkg.priceTotal, 1, 'COMMA', 2, 'POINT')}">245,000.00</span>
+                </div>
+                <p class="font-body text-xs text-[var(--text-secondary)] mt-2 leading-relaxed">
+                    Purchasing generates an immutable snapshot of package itinerary and pricing. Your confirmed terms remain fixed regardless of subsequent edits.
+                </p>
+            </div>
+
+            <!-- Summary Metrics -->
+            <div class="rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] p-4 space-y-2 text-xs font-mono">
+                <div class="flex justify-between">
+                    <span class="text-[var(--text-muted)]">Included Stops</span>
+                    <span class="font-bold text-[var(--text-primary)]" th:text="${pkg.hotels != null ? pkg.hotels.size() + ' Stays' : '0'}">3 Stays</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-[var(--text-muted)]">Duration</span>
+                    <span class="font-bold text-[var(--text-primary)]" th:text="${pkg.durationDays + ' Days'}">7 Days</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-[var(--text-muted)]">Confirmed Orders</span>
+                    <span class="font-bold text-[var(--signal-red)]" th:text="${purchaseCount + ' Booked'}">0 Booked</span>
+                </div>
+            </div>
+
+            <!-- Purchase Form with Starting Day Selector -->
+            <form th:if="${pkg.status.name() == 'PUBLISHED'}"
+                  th:action="@{/packages/{id}/purchase(id=${pkg.id})}"
+                  method="post"
+                  class="space-y-4">
+
+                <!-- 1. Starting Day Selector -->
+                <div>
+                    <label for="startDate" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">calendar_today</span>
+                        <span>Choose Starting Day *</span>
+                    </label>
+                    <input id="startDate"
+                           name="startDate"
+                           type="date"
+                           required
+                           th:min="${minStartDate}"
+                           th:value="${defaultStartDate}"
+                           class="monolith-input text-xs font-mono" />
+                    <p class="font-mono text-[10px] text-[var(--text-muted)] mt-1">
+                        Select when you wish to start this multi-hotel Sri Lanka itinerary.
+                    </p>
+                </div>
+
+                <!-- 2. Authentication Gate: Authenticated users can lock; Guest users are prompted to sign up -->
+                <button th:if="${session.uid != null}" type="submit"
+                        class="w-full btn-monolith-primary py-3 text-xs justify-center font-bold">
+                    <span>Lock Package Snapshot</span>
+                    <span class="font-mono text-xs">→</span>
+                </button>
+
+                <div th:unless="${session.uid != null}" class="space-y-2">
+                    <a th:href="@{/sign-up(redirect=@{/packages/{id}(id=${pkg.id})})}"
+                       class="w-full btn-monolith-primary py-3 text-xs justify-center font-bold flex items-center gap-2 text-center">
+                        <span class="material-symbols-outlined text-sm">person_add</span>
+                        <span>Sign Up to Order Package</span>
+                        <span class="font-mono text-xs">→</span>
+                    </a>
+                    <div class="text-center font-mono text-[11px] text-[var(--text-muted)]">
+                        Already have an account? 
+                        <a th:href="@{/tourist/sign-in(redirect=@{/packages/{id}(id=${pkg.id})})}" class="text-[var(--signal-red)] hover:underline font-bold">Sign In</a>
+                    </div>
+                </div>
+            </form>
+
+            <div th:if="${pkg.status.name() != 'PUBLISHED'}"
+                 class="p-4 rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] text-xs font-mono text-[var(--text-muted)] text-center">
+                This package is <span class="font-bold text-[var(--text-primary)]" th:text="${pkg.status}">ARCHIVED</span>.
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+>>>>>>> ccfecd35f648a43b45c360009588d5a435834d49
 
 </body>
 </html>

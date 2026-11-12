@@ -1,0 +1,323 @@
+<!--
+  waYcation 2.0 — Tourist Verified Stay Reviews Dashboard (templates/tourist/reviews.html)
+  Allows tourists to view, edit (via interactive 1-5 star rating modal), and delete
+  their submitted accommodation reviews.
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My Verified Reviews — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Header Telemetry & Summary Metrics -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-[var(--border-structural)]">
+        <div>
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-2">
+                <span class="signal-dot"></span>
+                <span>VERIFIED FEEDBACK</span>
+            </div>
+            <h1 class="font-headline text-3xl sm:text-4xl font-bold tracking-tight text-[var(--text-primary)]">Tourist Review Management</h1>
+            <p class="font-body text-xs sm:text-sm text-[var(--text-secondary)] mt-1.5 max-w-2xl leading-relaxed">
+                Authentic reflections from completed Sri Lankan stays. Every review is strictly linked to a confirmed stay reservation.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-4 font-mono text-xs">
+            <div class="monolith-card px-4 py-3 flex items-center gap-3">
+                <span class="text-[var(--signal-red)] text-base font-bold">★</span>
+                <div>
+                    <span class="text-[10px] uppercase text-[var(--text-muted)] block">Avg Rating</span>
+                    <span class="text-base font-bold text-[var(--text-primary)]" th:text="${averageRating} + ' / 5.0'">4.8 / 5.0</span>
+                </div>
+            </div>
+
+            <div class="monolith-card px-4 py-3">
+                <span class="text-[10px] uppercase text-[var(--text-muted)] block">Total Reviews</span>
+                <span class="text-base font-bold text-[var(--text-primary)]" th:text="${reviewCount}">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash Alerts -->
+    <div th:if="${successMessage}" class="mt-6 rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-3.5 text-xs font-mono text-emerald-500">
+        <span th:text="${successMessage}">Success!</span>
+    </div>
+
+    <div th:if="${errorMessage}" class="mt-6 rounded-lg bg-red-500/10 border border-red-500/30 p-3.5 text-xs font-mono text-red-500">
+        <span th:text="${errorMessage}">Error message</span>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
+
+        <!-- Left Column: Submit New Review -->
+        <section class="lg:col-span-5">
+            <div class="monolith-card p-6 sticky top-24 space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+                    <div>
+                        <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">FEEDBACK INPUT</span>
+                        <h2 class="font-headline text-lg font-bold text-[var(--text-primary)]">Write a Stay Review</h2>
+                    </div>
+                    <span class="badge-telemetry">1 / STAY</span>
+                </div>
+                <p class="font-body text-xs text-[var(--text-secondary)]">
+                    Only confirmed stays past checkout date are eligible for review generation.
+                </p>
+
+                <form th:action="@{/reviews/create}" method="post" class="space-y-4">
+                    <input type="hidden" name="touristUid" th:value="${touristUid}" />
+
+                    <div>
+                        <label for="bookingIdSelect" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">
+                            Eligible Completed Reservation
+                        </label>
+                        <select id="bookingIdSelect" name="bookingId" required
+                                onchange="syncHotelIdFromBooking(this)"
+                                class="monolith-input text-xs font-mono">
+                            <option value="" disabled selected>Select completed stay...</option>
+                            <option th:each="booking : ${eligibleBookings}"
+                                    th:value="${booking.id}"
+                                    th:attr="data-hotel-id=${booking.hotelId}"
+                                    th:text="${(booking.hotelName != null ? booking.hotelName : 'Hotel #' + booking.hotelId) + ' · Out: ' + booking.checkOut + ' (Ref: ' + booking.id + ')'}">
+                                Ceylon Tea Trails · Check-out 2026-10-15
+                            </option>
+                        </select>
+                        <input type="hidden" id="createHotelIdInput" name="hotelId" value="" />
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(eligibleBookings)}" class="rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] p-3 text-xs font-mono text-[var(--text-muted)]">
+                        All completed stays are reviewed, or enter a Booking ID manually:
+                        <input type="text" name="bookingId" placeholder="Manual Booking ID..."
+                               disabled id="manualBookingIdFallback"
+                               class="monolith-input mt-2 text-xs" />
+                    </div>
+
+                    <!-- Interactive Star Selector -->
+                    <div>
+                        <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1.5">
+                            Rating Allocation (1–5)
+                        </label>
+                        <input type="hidden" name="rating" id="createRatingInput" value="5" required />
+                        <div class="flex items-center gap-2" id="createStarGroup">
+                            <button type="button" data-star="1" onclick="setCreateRating(1)" class="font-mono text-base text-[var(--text-primary)] hover:text-[var(--signal-red)] transition">★</button>
+                            <button type="button" data-star="2" onclick="setCreateRating(2)" class="font-mono text-base text-[var(--text-primary)] hover:text-[var(--signal-red)] transition">★</button>
+                            <button type="button" data-star="3" onclick="setCreateRating(3)" class="font-mono text-base text-[var(--text-primary)] hover:text-[var(--signal-red)] transition">★</button>
+                            <button type="button" data-star="4" onclick="setCreateRating(4)" class="font-mono text-base text-[var(--text-primary)] hover:text-[var(--signal-red)] transition">★</button>
+                            <button type="button" data-star="5" onclick="setCreateRating(5)" class="font-mono text-base text-[var(--signal-red)] hover:text-[var(--signal-red)] transition">★</button>
+                            <span id="createRatingLabel" class="ml-2 font-mono text-xs text-[var(--signal-red)]">5 / 5 Stars</span>
+                        </div>
+                    </div>
+
+                    <!-- Review Comment -->
+                    <div>
+                        <label for="commentInput" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">
+                            Experience Details (Min. 5 chars)
+                        </label>
+                        <textarea id="commentInput" name="comment" rows="4" minlength="5" required
+                                  placeholder="Describe the hospitality, architectural design, dining..."
+                                  class="monolith-input text-xs font-mono"></textarea>
+                    </div>
+
+                    <button type="submit"
+                            class="w-full btn-monolith-primary py-3 text-xs justify-center font-bold">
+                        <span>Publish Review</span>
+                        <span class="font-mono text-xs">→</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Right Column: Submitted Reviews List -->
+        <section class="lg:col-span-7 space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-[var(--border-structural)]">
+                <h2 class="font-headline text-xl font-bold text-[var(--text-primary)]">Your Published Reviews</h2>
+                <span class="font-mono text-xs text-[var(--text-muted)]" th:text="${reviewCount} + ' on record'">0 on record</span>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(reviews)}"
+                 class="monolith-card p-10 text-center">
+                <div class="inline-flex items-center gap-2 badge-telemetry mb-3">
+                    <span class="signal-dot"></span>
+                    <span>NO REVIEWS</span>
+                </div>
+                <h3 class="font-headline text-base font-bold text-[var(--text-primary)]">No Stay Reviews Published Yet</h3>
+                <p class="font-body text-xs text-[var(--text-secondary)] max-w-sm mx-auto mt-1">
+                    Once you complete a boutique stay, choose your booking to record your reflection.
+                </p>
+            </div>
+
+            <!-- Review Cards -->
+            <article th:each="review : ${reviews}"
+                     class="monolith-card p-5 space-y-3 animate-fade-up">
+                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-[var(--border-subtle)]">
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 class="font-headline text-base font-bold text-[var(--text-primary)]"
+                                th:text="${review.hotelName != null ? review.hotelName : 'Hotel #' + review.hotelId}">
+                                Heritance Kandalama
+                            </h3>
+                            <span class="badge-telemetry text-emerald-500 border-emerald-500/30"
+                                  th:text="${review.status}">
+                                PUBLISHED
+                            </span>
+                        </div>
+
+                        <p class="font-mono text-xs text-[var(--text-muted)] mt-1 flex items-center gap-2 flex-wrap">
+                            <span th:text="'Ref: #' + ${review.bookingId}">Stay Ref: #BK-1001</span>
+                            <span>·</span>
+                            <span th:text="${review.createdAt != null ? #temporals.format(review.createdAt, 'dd MMM yyyy') : ''}">12 Oct 2026</span>
+                        </p>
+                    </div>
+
+                    <!-- Monospace Rating -->
+                    <div class="font-mono text-xs font-bold text-[var(--signal-red)] bg-[var(--bg-canvas-subtle)] px-2.5 py-1 rounded-md border border-[var(--border-structural)]">
+                        ★ <span th:text="${review.rating} + '.0'">5.0</span>
+                    </div>
+                </div>
+
+                <p class="font-body text-xs text-[var(--text-secondary)] leading-relaxed whitespace-pre-line" th:text="${review.comment}">
+                    An unforgettable architectural sanctuary overlooking the rock fortress.
+                </p>
+
+                <div class="pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between gap-3 font-mono text-xs">
+                    <span class="text-[10px] text-[var(--text-muted)]"
+                          th:text="${review.updatedAt != null ? 'Updated ' + #temporals.format(review.updatedAt, 'dd MMM yyyy') : ''}">
+                        Updated 12 Oct 2026
+                    </span>
+
+                    <div class="flex items-center gap-2">
+                        <!-- Edit Button -->
+                        <button type="button"
+                                th:attr="data-review-id=${review.id},data-review-rating=${review.rating},data-review-comment=${review.comment},data-review-hotel=${review.hotelName != null ? review.hotelName : 'Hotel #' + review.hotelId}"
+                                onclick="openEditReviewModal(this)"
+                                class="btn-monolith-secondary text-xs py-1 px-2.5">
+                            Edit
+                        </button>
+
+                        <!-- Delete Button -->
+                        <form th:action="@{/reviews/{id}/delete(id=${review.id})}" method="post"
+                              onsubmit="return confirm('Permanently delete this verified review?');">
+                            <input type="hidden" name="touristUid" th:value="${touristUid}" />
+                            <button type="submit"
+                                    class="px-2.5 py-1 rounded-full border border-red-500/30 text-red-500 hover:bg-red-500/10 text-xs transition">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+        </section>
+    </div>
+</main>
+
+<!-- Edit Review Monolith Modal -->
+<div id="editReviewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="modal-content-monolith space-y-4">
+        <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
+            <div>
+                <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">FEEDBACK EDIT</span>
+                <h3 id="editModalHotelTitle" class="font-headline text-lg font-bold text-[var(--text-primary)]">Edit Stay Review</h3>
+            </div>
+            <button type="button" onclick="closeEditReviewModal()" class="text-[var(--text-muted)] hover:text-[var(--text-primary)] font-mono text-lg font-bold">✕</button>
+        </div>
+
+        <form id="editReviewForm" method="post" class="space-y-4">
+            <input type="hidden" name="touristUid" th:value="${touristUid}" />
+
+            <div>
+                <label for="editRatingSelect" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">
+                    Updated Rating
+                </label>
+                <select id="editRatingSelect" name="rating" required
+                        class="monolith-input text-xs font-mono">
+                    <option value="5">★★★★★ (5 / 5 — Exceptional)</option>
+                    <option value="4">★★★★☆ (4 / 5 — Very Good)</option>
+                    <option value="3">★★★☆☆ (3 / 5 — Good)</option>
+                    <option value="2">★★☆☆☆ (2 / 5 — Fair)</option>
+                    <option value="1">★☆☆☆☆ (1 / 5 — Needs Improvement)</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="editCommentTextarea" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">
+                    Updated Comment
+                </label>
+                <textarea id="editCommentTextarea" name="comment" rows="4" minlength="5" required
+                          class="monolith-input text-xs font-mono"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="closeEditReviewModal()"
+                        class="btn-monolith-secondary text-xs py-2 px-3">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="btn-monolith-primary text-xs py-2 px-4">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function syncHotelIdFromBooking(select) {
+        const option = select.options[select.selectedIndex];
+        const hotelId = option ? option.getAttribute('data-hotel-id') : '';
+        const target = document.getElementById('createHotelIdInput');
+        if (target) target.value = hotelId || '';
+    }
+
+    function setCreateRating(rating) {
+        const input = document.getElementById('createRatingInput');
+        if (input) input.value = rating;
+        const label = document.getElementById('createRatingLabel');
+        if (label) label.textContent = rating + ' / 5 Stars';
+        const buttons = document.querySelectorAll('#createStarGroup button');
+        buttons.forEach((btn, idx) => {
+            if (idx < rating) {
+                btn.classList.add('text-[var(--signal-red)]');
+            } else {
+                btn.classList.remove('text-[var(--signal-red)]');
+            }
+        });
+    }
+
+    function openEditReviewModal(button) {
+        const reviewId = button.getAttribute('data-review-id');
+        const rating = button.getAttribute('data-review-rating');
+        const comment = button.getAttribute('data-review-comment');
+        const hotelName = button.getAttribute('data-review-hotel');
+
+        const form = document.getElementById('editReviewForm');
+        if (form) form.action = '/reviews/' + reviewId + '/update';
+        const ratingSelect = document.getElementById('editRatingSelect');
+        if (ratingSelect) ratingSelect.value = rating || '5';
+        const commentArea = document.getElementById('editCommentTextarea');
+        if (commentArea) commentArea.value = comment || '';
+        const titleEl = document.getElementById('editModalHotelTitle');
+        if (titleEl) titleEl.textContent = hotelName || 'Edit Stay Review';
+
+        const modal = document.getElementById('editReviewModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+    }
+
+    function closeEditReviewModal() {
+        const modal = document.getElementById('editReviewModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    }
+</script>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>
