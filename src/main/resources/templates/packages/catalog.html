@@ -1,0 +1,146 @@
+<!--
+  waYcation 2.0 — Public Curated Travel Packages Catalog (templates/packages/catalog.html)
+  Displays published multi-hotel travel circuits with duration, stop count, and bundle pricing.
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Curated Multi-Hotel Packages — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<!-- Header Telemetry Strip -->
+<section class="py-10 border-b border-[var(--border-structural)] bg-[var(--bg-canvas-subtle)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+                <div class="inline-flex items-center gap-2 badge-telemetry mb-3">
+                    <span class="signal-dot"></span>
+                    <span>MULTI-PROPERTY CIRCUITS</span>
+                </div>
+                <h1 class="font-headline text-3xl md:text-4xl font-bold tracking-tight text-[var(--text-primary)]">
+                    Curated Travel Packages
+                </h1>
+                <p class="font-body text-xs sm:text-sm text-[var(--text-secondary)] mt-1 max-w-2xl leading-relaxed">
+                    Sequenced multi-stop Sri Lankan circuits connecting coastal villas, highland tea estates, and heritage sanctums into locked-price itineraries.
+                </p>
+            </div>
+            <div class="flex items-center gap-4 p-4 rounded-xl monolith-card text-xs font-mono">
+                <div>
+                    <div class="text-[10px] uppercase text-[var(--text-muted)]">SNAPSHOT GUARANTEE</div>
+                    <div class="font-bold text-[var(--text-primary)]">Immutable Lock</div>
+                </div>
+                <div class="h-6 w-px bg-[var(--border-structural)]"></div>
+                <div>
+                    <div class="text-[10px] uppercase text-[var(--text-muted)]">ACTIVE CIRCUITS</div>
+                    <div class="font-bold text-[var(--signal-red)]" th:text="${packages != null ? packages.size() + ' Bundles' : '0 Bundles'}">3 Bundles</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Package Catalog Main Content -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-1 w-full">
+
+    <!-- Empty State -->
+    <div th:if="${packages == null or packages.isEmpty()}" class="monolith-card p-12 text-center">
+        <div class="inline-flex items-center gap-2 badge-telemetry mb-4">
+            <span class="signal-dot"></span>
+            <span>NO PACKAGES</span>
+        </div>
+        <h2 class="font-headline text-xl font-bold text-[var(--text-primary)] mb-2">No Published Itineraries Available</h2>
+        <p class="font-body text-xs text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
+            Platform administrators and hoteliers can assemble multi-stop itineraries from the Package Builder console.
+        </p>
+        <a th:if="${session.role == 'ADMIN' or session.role == 'SUPER_ADMIN' or session.role == 'HOTEL_OWNER'}"
+           href="/admin/packages" class="btn-monolith-primary text-xs">
+            Open Package Builder
+        </a>
+    </div>
+
+    <!-- 2-Column Grid -->
+    <div th:if="${packages != null and !packages.isEmpty()}" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <article th:each="pkg : ${packages}"
+                 class="monolith-card overflow-hidden flex flex-col group border border-[var(--border-structural)] hover:border-[var(--border-active)] transition duration-200 animate-fade-up">
+
+            <!-- Cover Image + Telemetry Badges -->
+            <div class="relative h-64 overflow-hidden bg-zinc-900">
+                <img th:src="${pkg.coverImage != null and !pkg.coverImage.isEmpty() ? pkg.coverImage : 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?auto=format&amp;fit=crop&amp;w=1200&amp;q=80'}"
+                     th:alt="${pkg.title}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent"></div>
+
+                <div class="absolute top-4 left-4 flex items-center gap-2">
+                    <span class="badge-telemetry bg-black/80 border-zinc-700 text-white"
+                          th:text="${pkg.durationDays + ' Days / ' + (pkg.durationDays > 1 ? (pkg.durationDays - 1) : 1) + ' Nights'}">
+                        7 Days / 6 Nights
+                    </span>
+                    <span class="badge-telemetry bg-black/80 border-zinc-700 text-zinc-300"
+                          th:text="${pkg.hotels != null ? pkg.hotels.size() + ' Hotel Stops' : 'Multi-Hotel'}">
+                        3 Hotel Stops
+                    </span>
+                </div>
+
+                <div class="absolute bottom-4 left-4 right-4">
+                    <h2 class="font-headline text-xl sm:text-2xl font-bold text-white tracking-tight" th:text="${pkg.title}">
+                        Southern Coast &amp; Hill Country Odyssey
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6 flex-1 flex flex-col justify-between space-y-6">
+                <div class="space-y-4">
+                    <p class="font-body text-xs text-[var(--text-secondary)] leading-relaxed line-clamp-2"
+                       th:text="${pkg.description != null ? pkg.description : 'Experience an unforgettable multi-stop Sri Lankan circuit across hand-picked heritage and coastal properties.'}">
+                        Experience an unforgettable multi-stop Sri Lankan circuit across hand-picked heritage and coastal properties.
+                    </p>
+
+                    <!-- Ordered Stop Badges -->
+                    <div>
+                        <div class="font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)] mb-2.5">
+                            Ordered Multi-Hotel Sequence
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <th:block th:each="stop, iterStat : ${pkg.hotels}">
+                                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] text-xs font-mono">
+                                    <span class="w-4 h-4 rounded-full bg-[var(--card-surface)] border border-[var(--border-structural)] text-[var(--text-primary)] font-bold flex items-center justify-center text-[10px]"
+                                          th:text="${stop.stopOrder}">1</span>
+                                    <span class="font-semibold text-[var(--text-primary)]" th:text="${stop.hotelName != null ? stop.hotelName : stop.hotelId}">Ceylon Tea Trails</span>
+                                    <span class="text-[var(--text-muted)]" th:if="${stop.city != null}" th:text="'(' + ${stop.city} + ')'">(Hatton)</span>
+                                    <span class="px-1.5 py-0.5 rounded bg-[var(--card-surface)] border border-[var(--border-structural)] text-[var(--signal-red)] font-bold text-[10px]"
+                                          th:text="${stop.nights + 'N'}">2N</span>
+                                </div>
+                                <span th:if="${!iterStat.last}" class="text-[var(--text-muted)] font-mono text-xs">→</span>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing & Action Footer -->
+                <div class="pt-5 border-t border-[var(--border-subtle)] flex items-center justify-between gap-4">
+                    <div>
+                        <div class="font-mono text-[10px] text-[var(--text-muted)] uppercase">All-Inclusive Bundle</div>
+                        <div class="flex items-baseline gap-1 mt-0.5">
+                            <span class="font-mono text-xs text-[var(--text-muted)]" th:text="${pkg.currency}">LKR</span>
+                            <span class="font-mono text-2xl font-bold text-[var(--text-primary)]"
+                                  th:text="${#numbers.formatDecimal(pkg.priceTotal, 1, 'COMMA', 2, 'POINT')}">245,000.00</span>
+                        </div>
+                    </div>
+
+                    <a th:href="@{/packages/{id}(id=${pkg.id})}"
+                       class="btn-monolith-primary py-2.5 px-5 text-xs">
+                        <span>View Itinerary</span>
+                        <span class="font-mono text-xs">→</span>
+                    </a>
+                </div>
+            </div>
+        </article>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

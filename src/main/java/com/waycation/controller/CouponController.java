@@ -210,6 +210,43 @@ public class CouponController {
         return "redirect:/admin/coupons";
     }
 
+    /**
+     * REST endpoint for live promo code verification on Checkout and Stay detail screens.
+     */
+    @GetMapping("/api/coupons/validate")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public org.springframework.http.ResponseEntity<Map<String, Object>> validateCouponLive(
+            @RequestParam("code") String code,
+            @RequestParam("amount") BigDecimal amount,
+            jakarta.servlet.http.HttpSession session) {
+        String touristUid = null;
+        if (session != null) {
+            Object uid = session.getAttribute("uid");
+            if (uid != null) touristUid = uid.toString();
+        }
+        if (touristUid == null || touristUid.isBlank()) {
+            touristUid = "tourist_uid_demo_1";
+        }
+        Map<String, Object> response = new java.util.HashMap<>();
+        try {
+            BigDecimal discount = couponService.calculateCouponDiscountPreview(code, touristUid, amount);
+            BigDecimal newTotal = amount.subtract(discount).max(BigDecimal.ZERO);
+            response.put("valid", true);
+            response.put("code", code.trim().toUpperCase());
+            response.put("discount", discount);
+            response.put("newTotal", newTotal);
+            response.put("message", "Promo code applied successfully!");
+            return org.springframework.http.ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("valid", false);
+            response.put("code", code != null ? code.trim().toUpperCase() : "");
+            response.put("discount", BigDecimal.ZERO);
+            response.put("newTotal", amount);
+            response.put("message", e.getMessage() != null ? e.getMessage() : "Invalid promotional code.");
+            return org.springframework.http.ResponseEntity.ok(response);
+        }
+    }
+
     @GetMapping("/tourist/trips")
     public String showTouristTrips(Model model) {
         List<Map<String, Object>> activeSessions = List.of(

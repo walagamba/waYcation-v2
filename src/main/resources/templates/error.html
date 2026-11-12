@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Destination Not Found · waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20">
+    <div class="max-w-md w-full text-center space-y-6 animate-fade-up">
+        <!-- Telemetry Badge -->
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--border-structural)] bg-[var(--card-surface)] text-xs font-mono">
+            <span class="signal-dot signal-dot-pulse"></span>
+            <span class="text-[var(--signal-red)] font-bold" th:text="${statusCode != null ? statusCode : '404'}">404</span>
+            <span class="text-[var(--text-muted)]">·</span>
+            <span class="text-[var(--text-secondary)] uppercase tracking-wider">ROUTING EXCEPTION</span>
+        </div>
+
+        <!-- Monumental Error Code -->
+        <h1 class="font-headline text-6xl sm:text-7xl font-bold tracking-tight text-[var(--text-primary)]">
+            <span th:text="${statusCode != null ? statusCode : '404'}">404</span><span class="text-[var(--signal-red)]">.</span>
+        </h1>
+
+        <!-- Title -->
+        <h2 class="font-headline text-xl sm:text-2xl font-bold text-[var(--text-primary)]"
+            th:text="${statusTitle != null ? statusTitle : 'Signal Lost · Page Not Found'}">
+            Signal Lost · Page Not Found
+        </h2>
+
+        <!-- Explanatory Copy -->
+        <p class="font-body text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed max-w-sm mx-auto"
+           th:text="${statusMessage != null ? statusMessage : 'The requested destination or coordinate could not be located in our verified registry.'}">
+            The requested destination or coordinate could not be located in our verified registry.
+        </p>
+
+        <!-- URI diagnostic info if available -->
+        <div th:if="${requestedUri != null and !requestedUri.isEmpty()}"
+             class="font-mono text-[11px] text-[var(--text-muted)] bg-[var(--bg-canvas-subtle)] p-2 rounded border border-[var(--border-structural)]">
+            <span>Requested Path: </span><span class="text-[var(--text-primary)]" th:text="${requestedUri}">/path</span>
+        </div>
+
+        <!-- Action Matrix -->
+        <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a href="/" class="btn-monolith-primary w-full sm:w-auto text-xs py-2 px-5">
+                <span class="material-symbols-outlined text-sm">home</span>
+                <span>Return to Home</span>
+            </a>
+            <a href="/hotels" class="btn-monolith-secondary w-full sm:w-auto text-xs py-2 px-5">
+                <span class="material-symbols-outlined text-sm">travel_explore</span>
+                <span>Explore Stays</span>
+            </a>
+            <a href="/packages" class="btn-monolith-secondary w-full sm:w-auto text-xs py-2 px-5">
+                <span class="material-symbols-outlined text-sm">hiking</span>
+                <span>View Packages</span>
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-﻿package com.waycation.repository;
+package com.waycation.repository;
 
 import com.waycation.model.Coupon;
 import org.springframework.data.jpa.repository.JpaRepository;
