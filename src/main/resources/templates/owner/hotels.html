@@ -1,0 +1,131 @@
+<!--
+  waYcation 2.0 — Hotelier Property Portfolio Console (templates/owner/hotels.html)
+  Lists all accommodations owned by the authenticated hotelier with inline room creation,
+  property Edit link, soft Deactivate, and Reactivate controls.
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Owner Portfolio — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<!-- Owner Console Header Banner -->
+<section class="py-10 border-b border-[var(--border-structural)] bg-[var(--bg-canvas-subtle)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-2">
+                <span class="signal-dot"></span>
+                <span>HOTELIER DASHBOARD</span>
+            </div>
+            <h1 class="font-headline text-3xl font-bold tracking-tight text-[var(--text-primary)]">Property Portfolio &amp; Inventory</h1>
+            <p class="font-body text-xs text-[var(--text-secondary)] mt-1">
+                Manage your boutique stays, room categories, nightly rates, and status deactivations.
+            </p>
+        </div>
+        <div class="flex flex-wrap gap-2.5">
+            <a href="/owner/bookings" class="btn-monolith-secondary text-xs py-2 px-3.5">
+                Guest Reservations
+            </a>
+            <a href="/owner/hotels/new" class="btn-monolith-primary text-xs py-2 px-4">
+                + List Property
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Flash Alerts -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6" th:if="${successMessage != null or errorMessage != null}">
+    <div th:if="${successMessage != null}" class="p-3.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs font-mono" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage != null}" class="p-3.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-mono" th:text="${errorMessage}"></div>
+</div>
+
+<!-- Owner Properties Grid -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" th:if="${hotels != null and !hotels.isEmpty()}">
+        <article th:each="hotel : ${hotels}" class="monolith-card overflow-hidden flex flex-col justify-between animate-fade-up">
+            <div>
+                <div class="relative h-48 bg-zinc-900 overflow-hidden">
+                    <img th:src="${hotel.featuredImage != null ? hotel.featuredImage : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&amp;fit=crop&amp;w=900&amp;q=80'}"
+                         th:alt="${hotel.name}"
+                         class="w-full h-full object-cover"/>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                    <span class="absolute top-3 left-3 badge-telemetry bg-black/80 text-white border-zinc-700"
+                          th:classappend="${hotel.status.name() == 'ACTIVE' ? 'text-emerald-400' : 'text-zinc-400'}"
+                          th:text="${hotel.status}">ACTIVE</span>
+                    <span class="absolute bottom-3 right-3 badge-telemetry bg-black/80 text-white border-zinc-700"
+                          th:text="${hotel.city}">Galle</span>
+                </div>
+
+                <div class="p-5">
+                    <h2 class="font-headline text-lg font-bold text-[var(--text-primary)] mb-1" th:text="${hotel.name}">Galle Fort Heritage Villa</h2>
+                    <p class="font-mono text-xs text-[var(--text-muted)] mb-3" th:text="${hotel.address != null ? hotel.address : hotel.city}">Church Street, Galle</p>
+
+                    <div class="grid grid-cols-2 gap-2 p-3 rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] font-mono text-xs mb-2">
+                        <div>
+                            <span class="text-[10px] uppercase text-[var(--text-muted)] block">Room Types</span>
+                            <span class="font-bold text-[var(--text-primary)]" th:text="${hotel.roomTypes != null ? hotel.roomTypes.size() : 0}">2</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase text-[var(--text-muted)] block">Starting Rate</span>
+                            <span class="font-bold text-[var(--text-primary)]">
+                                LKR <span th:text="${#numbers.formatDecimal(hotel.startingPrice, 1, 'COMMA', 0, 'POINT')}">35,000</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-5 pb-5 pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between gap-2 font-mono text-xs">
+                <a th:href="@{/hotels/{id}(id=${hotel.id})}" class="font-bold text-[var(--text-primary)] hover:text-[var(--signal-red)] transition">
+                    View Live →
+                </a>
+
+                <div class="flex items-center gap-2">
+                    <a th:href="@{/owner/hotels/{id}/edit(id=${hotel.id})}"
+                       class="px-3 py-1 rounded-full border border-[var(--border-structural)] text-[var(--text-primary)] hover:border-[var(--signal-red)] hover:text-[var(--signal-red)] transition inline-flex items-center gap-1 font-mono text-[11px]">
+                        <span class="material-symbols-outlined text-xs">edit</span>
+                        <span>Edit</span>
+                    </a>
+
+                    <form th:if="${hotel.status.name() == 'ACTIVE'}"
+                          th:action="@{/owner/hotels/{id}/deactivate(id=${hotel.id})}"
+                          method="post">
+                        <button type="submit"
+                                onclick="return confirm('Are you sure you want to set this accommodation to INACTIVE?');"
+                                class="px-2.5 py-1 rounded-full border border-red-500/30 text-red-500 hover:bg-red-500/10 transition">
+                            Deactivate
+                        </button>
+                    </form>
+                    <form th:if="${hotel.status.name() != 'ACTIVE'}"
+                          th:action="@{/owner/hotels/{id}/activate(id=${hotel.id})}"
+                          method="post">
+                        <button type="submit"
+                                class="px-2.5 py-1 rounded-full border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 transition">
+                            Reactivate
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <div th:if="${hotels == null or hotels.isEmpty()}" class="monolith-card p-12 text-center">
+        <div class="inline-flex items-center gap-2 badge-telemetry mb-3">
+            <span class="signal-dot"></span>
+            <span>PORTFOLIO EMPTY</span>
+        </div>
+        <h2 class="font-headline text-xl font-bold text-[var(--text-primary)] mb-2">No Properties Listed Yet</h2>
+        <p class="font-body text-xs text-[var(--text-secondary)] mb-6 max-w-md mx-auto">
+            You do not currently have any active hotel listings under your owner profile.
+        </p>
+        <a href="/owner/hotels/new" class="btn-monolith-primary text-xs py-2.5 px-5">
+            + Publish Your First Accommodation
+        </a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

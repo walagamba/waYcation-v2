@@ -1,4 +1,4 @@
-package com.waycation.controller;
+﻿package com.waycation.controller;
 
 import com.waycation.model.Booking;
 import com.waycation.model.BookingStatus;
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+    // Web controller for submitting guest reviews and browsing feedback
 @Controller
 public class ReviewController {
 
@@ -45,6 +46,7 @@ public class ReviewController {
         this.reviewRepository = reviewRepository;
     }
 
+    // Display all reviews authored by the authenticated tourist
     @GetMapping("/tourist/reviews")
     public String viewTouristReviews(
             @RequestParam(value = "uid", required = false) String uidParam,
@@ -181,3 +183,5 @@ public class ReviewController {
         return DEFAULT_TOURIST_UID;
     }
 }
+
+

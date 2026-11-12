@@ -1,0 +1,253 @@
+<!--
+  waYcation 2.0 — Hotelier New Accommodation Onboarding View (templates/owner/hotel-new.html)
+  Supports listing a new property with initial room category, cancellation policy,
+  multipart image file uploads (featured + gallery photos) with live client-side previews.
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('List New Property — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
+    <div class="mb-6 flex items-center justify-between pb-4 border-b border-[var(--border-structural)]">
+        <div>
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-2">
+                <span class="signal-dot"></span>
+                <span>ONBOARDING</span>
+            </div>
+            <h1 class="font-headline text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">Publish Stay &amp; Room Pool</h1>
+            <p class="font-body text-xs text-[var(--text-secondary)] mt-1">
+                Configure your Sri Lankan property profile, upload high-resolution imagery, and set your primary bookable category.
+            </p>
+        </div>
+        <a href="/owner/hotels" class="btn-monolith-secondary text-xs py-2 px-3">← Back to Portfolio</a>
+    </div>
+
+    <!-- Flash Alerts -->
+    <div class="mb-6" th:if="${successMessage != null or errorMessage != null}">
+        <div th:if="${successMessage != null}" class="p-3.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs font-mono" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage != null}" class="p-3.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-mono" th:text="${errorMessage}"></div>
+    </div>
+
+    <form action="/owner/hotels" method="post" enctype="multipart/form-data"
+          class="monolith-card p-6 sm:p-8 space-y-8 border-2 border-[var(--border-structural)]">
+        <!-- Section 1: Property Metadata -->
+        <div>
+            <h2 class="font-headline text-base font-bold text-[var(--text-primary)] pb-2 border-b border-[var(--border-subtle)] mb-4">1. Property Profile &amp; Location</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label for="name" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Hotel / Villa Name *</label>
+                    <input id="name" name="name" type="text" required placeholder="Cinnamon Wild Yala Sanctuary"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div>
+                    <label for="city" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">City / Region *</label>
+                    <input id="city" name="city" type="text" required placeholder="Galle, Ella, Kandy, Mirissa..."
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div>
+                    <label for="address" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Street Address</label>
+                    <input id="address" name="address" type="text" placeholder="Lighthouse Street, Fort"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="description" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Property Description</label>
+                    <textarea id="description" name="description" rows="3"
+                              placeholder="Describe colonial ramparts, tea plantations, culinary offerings..."
+                              class="monolith-input text-xs font-mono"></textarea>
+                </div>
+
+                <div>
+                    <label for="checkInTime" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Check-In Time</label>
+                    <input id="checkInTime" name="checkInTime" type="text" value="14:00"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div>
+                    <label for="checkOutTime" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Check-Out Time</label>
+                    <input id="checkOutTime" name="checkOutTime" type="text" value="11:00"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="cancellationPolicy" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Cancellation Policy</label>
+                    <input id="cancellationPolicy" name="cancellationPolicy" type="text"
+                           value="Free cancellation up to 48 hours before check-in."
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Accommodation Images & Gallery Upload -->
+        <div>
+            <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)] mb-4">
+                <h2 class="font-headline text-base font-bold text-[var(--text-primary)]">2. Property Imagery &amp; Photo Gallery</h2>
+                <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">JPG / PNG / WEBP · UP TO 10MB</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- Featured Cover Photo Upload -->
+                <div class="space-y-3 p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                    <div class="flex items-center justify-between">
+                        <label for="featuredImageFile" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-primary)] font-bold">
+                            Upload Primary Cover Photo
+                        </label>
+                        <span class="badge-telemetry text-[9px]">MAIN HERO</span>
+                    </div>
+                    <input id="featuredImageFile" name="featuredImageFile" type="file"
+                           accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                           onchange="previewSingleImage(this, 'featuredPreviewBox', 'featuredPreviewImg')"
+                           class="block w-full text-xs font-mono text-[var(--text-secondary)]
+                                  file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border file:border-[var(--border-structural)]
+                                  file:text-xs file:font-mono file:font-bold file:bg-[var(--card-surface)] file:text-[var(--text-primary)]
+                                  hover:file:border-[var(--signal-red)] cursor-pointer"/>
+
+                    <!-- Live Preview Container -->
+                    <div id="featuredPreviewBox" class="hidden relative h-40 rounded-lg overflow-hidden border border-[var(--border-structural)] bg-zinc-900">
+                        <img id="featuredPreviewImg" src="" alt="Cover Preview" class="w-full h-full object-cover"/>
+                        <span class="absolute bottom-2 left-2 badge-telemetry bg-black/80 text-emerald-400 text-[10px]">Ready to Upload</span>
+                    </div>
+
+                    <div class="pt-2 border-t border-[var(--border-subtle)]">
+                        <label for="featuredImage" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">
+                            Or Paste Cover Image URL (Optional Fallback)
+                        </label>
+                        <input id="featuredImage" name="featuredImage" type="url"
+                               placeholder="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"
+                               class="monolith-input text-xs font-mono"/>
+                    </div>
+                </div>
+
+                <!-- Additional Gallery Photos Upload (Multiple) -->
+                <div class="space-y-3 p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                    <div class="flex items-center justify-between">
+                        <label for="galleryFiles" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-primary)] font-bold">
+                            Upload Gallery Photos (Multiple)
+                        </label>
+                        <span class="badge-telemetry text-[9px]">MOSAIC GALLERY</span>
+                    </div>
+                    <input id="galleryFiles" name="galleryFiles" type="file" multiple
+                           accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                           onchange="previewGalleryImages(this, 'galleryPreviewGrid')"
+                           class="block w-full text-xs font-mono text-[var(--text-secondary)]
+                                  file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border file:border-[var(--border-structural)]
+                                  file:text-xs file:font-mono file:font-bold file:bg-[var(--card-surface)] file:text-[var(--text-primary)]
+                                  hover:file:border-[var(--signal-red)] cursor-pointer"/>
+                    <p class="font-mono text-[10px] text-[var(--text-muted)]">
+                        Select multiple interior, pool, dining, or suite photos at once.
+                    </p>
+
+                    <!-- Multi-Image Thumbnail Preview Grid -->
+                    <div id="galleryPreviewGrid" class="hidden grid grid-cols-3 gap-2 pt-1"></div>
+
+                    <div class="pt-2 border-t border-[var(--border-subtle)] space-y-2">
+                        <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)]">
+                            Or Add Additional Gallery Image URLs (Optional)
+                        </label>
+                        <input name="galleryUrls" type="url"
+                               placeholder="https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&amp;fit=crop&amp;w=800&amp;q=80"
+                               class="monolith-input text-xs font-mono"/>
+                        <input name="galleryUrls" type="url"
+                               placeholder="https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&amp;fit=crop&amp;w=800&amp;q=80"
+                               class="monolith-input text-xs font-mono"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Room Category & Inventory Pool -->
+        <div>
+            <h2 class="font-headline text-base font-bold text-[var(--text-primary)] pb-2 border-b border-[var(--border-subtle)] mb-4">3. Room Category &amp; Daily Allocation</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-2">
+                    <label for="roomName" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Category Title *</label>
+                    <input id="roomName" name="roomName" type="text" required value="Deluxe Ocean Suite"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div>
+                    <label for="roomCapacity" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Max Guests *</label>
+                    <input id="roomCapacity" name="roomCapacity" type="number" min="1" max="12" value="2" required
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div>
+                    <label for="basePrice" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Nightly Rate (LKR) *</label>
+                    <input id="basePrice" name="basePrice" type="number" step="500" min="1000" value="38000" required
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div>
+                    <label for="totalRooms" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Daily Pool *</label>
+                    <input id="totalRooms" name="totalRooms" type="number" min="1" max="100" value="5" required
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div class="sm:col-span-3">
+                    <label for="roomDescription" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Amenities Specification</label>
+                    <input id="roomDescription" name="roomDescription" type="text"
+                           placeholder="Four-poster bed, ocean terrace, Ceylon breakfast..."
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-4 border-t border-[var(--border-subtle)] flex items-center justify-end gap-3 font-mono">
+            <a href="/owner/hotels" class="btn-monolith-secondary text-xs py-2.5 px-4">Cancel</a>
+            <button type="submit" class="btn-monolith-primary text-xs py-2.5 px-5 font-bold">
+                <span>Publish Inventory &amp; Photos</span>
+                <span>→</span>
+            </button>
+        </div>
+    </form>
+</main>
+
+<script>
+    function previewSingleImage(input, boxId, imgId) {
+        const box = document.getElementById(boxId);
+        const img = document.getElementById(imgId);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                box.classList.remove('hidden');
+            };
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            box.classList.add('hidden');
+        }
+    }
+
+    function previewGalleryImages(input, gridId) {
+        const grid = document.getElementById(gridId);
+        grid.innerHTML = '';
+        if (input.files && input.files.length > 0) {
+            grid.classList.remove('hidden');
+            Array.from(input.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'relative h-20 rounded-lg overflow-hidden border border-[var(--border-structural)] bg-zinc-900';
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-full h-full object-cover';
+                    wrapper.appendChild(img);
+                    grid.appendChild(wrapper);
+                };
+                reader.readAsDataURL(file);
+            });
+        } else {
+            grid.classList.add('hidden');
+        }
+    }
+</script>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

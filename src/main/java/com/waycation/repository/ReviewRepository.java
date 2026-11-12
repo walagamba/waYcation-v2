@@ -1,4 +1,4 @@
-package com.waycation.repository;
+﻿package com.waycation.repository;
 
 import com.waycation.model.Review;
 import com.waycation.model.ReviewStatus;
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+    // Spring Data JPA repository for saving and querying hotel reviews
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, String> {
 
@@ -17,3 +18,4 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
 
     List<Review> findByHotelIdAndStatusOrderByCreatedAtDesc(String hotelId, ReviewStatus status);
 }
+

@@ -1,85 +1,156 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:fragment="head(pageTitle)">
+<head th:fragment="head(title)">
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title th:text="${pageTitle != null ? pageTitle + ' — waYcation 2.0' : 'waYcation 2.0 — Sri Lanka Travel & Hotel Platform'}">waYcation 2.0</title>
+    <title th:text="${title}">waYcation</title>
+    <!-- Google Fonts: Space Grotesk (Headlines), Inter (Body), JetBrains Mono (Telemetry/Metadata) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Material Symbols Outlined -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <!-- Tailwind CSS (Play CDN with waYcation Architectural Minimalist Config) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        headline: ['"Space Grotesk"', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        'signal-red': '#E11D48',
+                        'charcoal-obsidian': '#0D0E12',
+                        'raw-concrete': '#F4F4F6',
+                        'pure-canvas': '#FFFFFF',
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" th:href="@{/css/waycation.css}" href="/css/waycation.css"/>
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
 
-<!-- Shared Global Navigation Bar -->
-<header th:fragment="navbar" class="bg-[#003580] text-white shadow-md sticky top-0 z-40">
+<!-- Shared Global Navigation Bar (Monolith Minimalist) -->
+<header th:fragment="navbar" class="sticky top-0 z-40 bg-[var(--nav-bg)] backdrop-blur-md border-b border-[var(--border-structural)]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div class="flex items-center gap-8">
-            <a href="/" class="text-2xl font-black tracking-tight flex items-center gap-1">
-                <span>waYcation</span><span class="text-[#febb02]">.</span>
+            <a href="/" class="text-xl font-headline font-bold tracking-tight text-[var(--text-primary)] flex items-center gap-1.5 lowercase">
+                <span>waycation</span><span class="signal-dot signal-dot-pulse"></span>
             </a>
-            <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-blue-100">
-                <a href="/hotels" class="hover:text-white transition">Hotels</a>
-                <a href="/packages" class="hover:text-white transition">Travel Packages</a>
-                <a href="/tourist/trips" class="hover:text-[#febb02] transition flex items-center gap-1">
-                    <span>✨ Group Voting</span>
+            <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-[var(--text-secondary)]">
+                <a href="/hotels" class="hover:text-[var(--text-primary)] transition">Stays</a>
+                <a href="/packages" class="hover:text-[var(--text-primary)] transition">Packages</a>
+                
+                <!-- Tourist-only links -->
+                <a th:if="${session.uid != null and session.role != 'HOTEL_OWNER' and session.role != 'ADMIN' and session.role != 'SUPER_ADMIN' and session.role != 'STAFF'}" 
+                   href="/tourist/bookings" class="hover:text-[var(--text-primary)] transition">My Bookings</a>
+                <a th:if="${session.uid != null and session.role != 'HOTEL_OWNER' and session.role != 'ADMIN' and session.role != 'SUPER_ADMIN' and session.role != 'STAFF'}" 
+                   href="/tourist/reviews" class="hover:text-[var(--text-primary)] transition">My Reviews</a>
+                
+                <!-- Hotel Owner Console (Only for HOTEL_OWNER or ADMIN/SUPER_ADMIN) -->
+                <a th:if="${session.role == 'HOTEL_OWNER' or session.role == 'ADMIN' or session.role == 'SUPER_ADMIN'}" 
+                   href="/owner/hotels" class="hover:text-[var(--text-primary)] transition text-[var(--signal-red)] font-semibold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">domain</span>
+                    <span>Owner Portal</span>
                 </a>
-                <a href="/tourist/bookings" class="hover:text-white transition">My Bookings</a>
-                <a href="/owner/hotels" class="hover:text-white transition">Owner Portal</a>
-                <a href="/admin/packages" class="hover:text-white transition">Admin Console</a>
+                
+                <!-- Staff & Admin Package Console -->
+                <a th:if="${session.role == 'ADMIN' or session.role == 'SUPER_ADMIN' or session.role == 'STAFF'}" 
+                   href="/admin/packages" class="hover:text-[var(--text-primary)] transition text-emerald-500 font-semibold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">admin_panel_settings</span>
+                    <span th:text="${session.role == 'STAFF' ? 'Curations' : 'Admin'}">Admin</span>
+                </a>
+
+                <!-- User Governance Console (Strictly visible ONLY to ADMIN or SUPER_ADMIN) -->
+                <a th:if="${session.role == 'ADMIN' or session.role == 'SUPER_ADMIN'}" 
+                   href="/admin/users" class="hover:text-[var(--text-primary)] transition text-indigo-400 font-semibold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">manage_accounts</span>
+                    <span>Users</span>
+                </a>
             </nav>
         </div>
 
         <div class="flex items-center gap-3">
-            <button type="button" data-theme-toggle class="px-3 py-1.5 rounded-lg bg-blue-900/60 hover:bg-blue-800 text-xs font-bold uppercase tracking-wider">
-                Theme
+            <!-- Theme Toggle Pill Button -->
+            <button type="button" data-theme-toggle class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--border-structural)] bg-[var(--card-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-active)] text-xs font-mono tracking-wider uppercase transition">
+                <span class="w-2 h-2 rounded-full border border-current"></span>
+                <span>Mode</span>
             </button>
-            <a href="/account" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold">
-                Account
-            </a>
-            <a href="/tourist/sign-in" class="px-3.5 py-1.5 rounded-lg border border-blue-300/40 hover:bg-white/10 text-xs font-bold">
-                Sign In
-            </a>
-            <a href="/sign-up" class="px-4 py-1.5 rounded-lg bg-[#febb02] hover:bg-[#e5a800] text-slate-900 text-xs font-extrabold">
-                Register
-            </a>
+
+            <!-- Authenticated User Menu -->
+            <div th:if="${session.uid != null}" class="flex items-center gap-2">
+                <a href="/account" class="px-3.5 py-1.5 rounded-full border border-[var(--border-structural)] text-xs font-headline font-medium text-[var(--text-primary)] hover:border-[var(--border-active)] transition inline-flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-xs text-[var(--signal-red)]">person</span>
+                    <span th:text="${session.displayName != null ? session.displayName : 'Account'}">Account</span>
+                    <span th:if="${session.role != null}" 
+                          class="font-mono text-[9px] uppercase px-1.5 py-0.5 rounded bg-[var(--bg-canvas-subtle)] text-[var(--text-muted)] border border-[var(--border-structural)]"
+                          th:text="${session.role}">TOURIST</span>
+                </a>
+                <a href="/sign-out" class="px-3 py-1.5 rounded-full text-xs font-mono text-[var(--text-muted)] hover:text-[var(--signal-red)] transition">
+                    Sign Out
+                </a>
+            </div>
+
+            <!-- Guest / Unauthenticated Actions -->
+            <div th:unless="${session.uid != null}" class="flex items-center gap-2">
+                <a href="/tourist/sign-in" class="px-3.5 py-1.5 rounded-full text-xs font-headline font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
+                    Sign In
+                </a>
+                <a href="/sign-up" class="btn-monolith-primary py-1.5 px-4 text-xs">
+                    Register
+                </a>
+            </div>
         </div>
     </div>
 </header>
 
-<!-- Shared Global Footer -->
-<footer th:fragment="footer" class="bg-slate-900 text-slate-400 py-12 mt-auto border-t border-slate-800">
+<!-- Shared Global Footer (Monolith Telemetry) -->
+<footer th:fragment="footer" class="bg-[var(--footer-bg)] text-[var(--footer-text)] py-12 mt-auto border-t border-[var(--border-structural)]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
-            <div class="text-xl font-black text-white mb-2">waYcation<span class="text-[#febb02]">.</span></div>
-            <p class="text-sm text-slate-400">
-                Curated Sri Lankan boutique accommodations, atomic room reservation locks, and group decision voting.
+            <div class="text-lg font-headline font-bold text-white mb-2 flex items-center gap-1.5 lowercase">
+                <span>waycation</span><span class="signal-dot"></span>
+            </div>
+            <p class="text-xs text-[var(--footer-text)] leading-relaxed">
+                Handpicked boutique stays and curated multi-hotel travel itineraries across Sri Lanka with instant reservation guarantees.
             </p>
         </div>
         <div>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-3">Discovery</h4>
-            <ul class="space-y-2 text-sm">
-                <li><a href="/hotels" class="hover:text-white">Browse Hotels</a></li>
-                <li><a href="/packages" class="hover:text-white">Curated Travel Packages</a></li>
-                <li><a href="/tourist/trips" class="hover:text-white">Group Decision Hub</a></li>
+            <h4 class="text-[11px] font-mono uppercase tracking-widest text-zinc-400 mb-3">Discovery</h4>
+            <ul class="space-y-2 text-xs font-mono">
+                <li><a href="/hotels" class="hover:text-white transition">Browse Stays</a></li>
+                <li><a href="/packages" class="hover:text-white transition">Curated Packages</a></li>
+                <li th:if="${session.uid != null}"><a href="/tourist/bookings" class="hover:text-white transition">My Reservations</a></li>
             </ul>
         </div>
         <div>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-3">Role Portals</h4>
-            <ul class="space-y-2 text-sm">
-                <li><a href="/tourist/sign-in" class="hover:text-white">Tourist Sign-In</a></li>
-                <li><a href="/owner/sign-in" class="hover:text-white">Hotel Owner Console</a></li>
-                <li><a href="/admin/sign-in" class="hover:text-white">Platform Admin</a></li>
+            <h4 class="text-[11px] font-mono uppercase tracking-widest text-zinc-400 mb-3">Portals</h4>
+            <ul class="space-y-2 text-xs font-mono">
+                <li><a href="/tourist/sign-in" class="hover:text-white transition">Tourist Access</a></li>
+                <li><a href="/owner/sign-in" class="hover:text-white transition">Hotelier Console</a></li>
+                <li th:if="${session.role == 'ADMIN' or session.role == 'SUPER_ADMIN'}"><a href="/admin/packages" class="hover:text-white transition">Platform Admin</a></li>
+                <li th:if="${session.role == 'ADMIN' or session.role == 'SUPER_ADMIN'}"><a href="/admin/users" class="hover:text-white transition">User Governance</a></li>
             </ul>
         </div>
         <div>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-3">Platform Guarantees</h4>
-            <p class="text-xs text-slate-400 leading-relaxed">
-                ✓ PostgreSQL ACID Transactional Locks<br/>
-                ✓ Verified-Stay Guest Reviews<br/>
-                ✓ Role-Based Access Control
+            <h4 class="text-[11px] font-mono uppercase tracking-widest text-zinc-400 mb-3">Platform Standards</h4>
+            <p class="text-xs font-mono text-[var(--footer-text)] leading-relaxed space-y-1">
+                <span>[01] Instant Reservation Guarantee</span><br/>
+                <span>[02] Verified Guest Feedback</span><br/>
+                <span>[03] Protected Host Payments</span>
             </p>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 mt-8 border-t border-zinc-800/60 flex flex-col sm:flex-row justify-between items-center text-[11px] font-mono text-zinc-500 gap-4">
+        <div>&copy; 2026 waYcation. Architectural Minimalist Platform.</div>
+        <div class="flex items-center gap-4">
+            <span class="inline-flex items-center gap-1.5"><span class="signal-dot"></span> System Live</span>
+            <span>Sri Lanka (Asia/Colombo)</span>
         </div>
     </div>
     <script th:src="@{/js/ui-enhancements.js}" src="/js/ui-enhancements.js"></script>
