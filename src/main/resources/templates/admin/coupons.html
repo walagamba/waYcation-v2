@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Coupon Management | waYcation 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800/80 bg-slate-900/75 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="/" class="flex items-center gap-2.5">
+                    <span class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-extrabold text-lg shadow-lg shadow-emerald-500/20">W</span>
+                    <div>
+                        <span class="font-extrabold tracking-tight text-lg text-white">waYcation</span>
+                        <span class="text-xs font-semibold uppercase tracking-widest text-emerald-400 ml-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">Admin Portal</span>
+                    </div>
+                </a>
+            </div>
+            <nav class="flex items-center gap-6 text-sm font-medium text-slate-300">
+                <a href="/admin/coupons" class="text-emerald-400 font-semibold border-b-2 border-emerald-400 pb-1">Coupons &amp; Promotions</a>
+                <a href="/tourist/trips" class="hover:text-white transition">Group Trips Hub</a>
+                <button type="button" onclick="document.getElementById('create-coupon-modal').classList.remove('hidden')"
+                        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 transition">
+                    <span>+ New Promo Code</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Hero Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <p class="text-xs uppercase tracking-widest font-bold text-emerald-400">Screen 19 &bull; Promotions Engine</p>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Admin Coupon &amp; Promotions Dashboard</h1>
+                <p class="text-sm text-slate-400 mt-1">Create percentage or fixed-amount promotional codes, enforce minimum spend thresholds, and track real-time tourist redemptions.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="document.getElementById('create-coupon-modal').classList.remove('hidden')"
+                        class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/25 transition">
+                    Create Promotional Coupon
+                </button>
+            </div>
+        </div>
+
+        <!-- Flash Banners -->
+        <div th:if="${successMessage}" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm font-medium flex items-center justify-between">
+            <span th:text="${successMessage}">Promo code created successfully.</span>
+        </div>
+        <div th:if="${errorMessage}" class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm font-medium flex items-center justify-between">
+            <span th:text="${errorMessage}">Error processing coupon action.</span>
+        </div>
+
+        <!-- KPI Metrics Row -->
+        <section class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div class="p-5 rounded-2xl bg-slate-900/90 border border-slate-800">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Active Promo Codes</p>
+                <p class="text-3xl font-extrabold text-emerald-400 mt-2" th:text="${activeCount != null ? activeCount : 0}">4</p>
+                <p class="text-xs text-slate-500 mt-1">Currently redeemable at checkout</p>
+            </div>
+            <div class="p-5 rounded-2xl bg-slate-900/90 border border-slate-800">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Configured Campaigns</p>
+                <p class="text-3xl font-extrabold text-white mt-2" th:text="${totalCoupons != null ? totalCoupons : 0}">6</p>
+                <p class="text-xs text-slate-500 mt-1">Across seasonal &amp; partner campaigns</p>
+            </div>
+            <div class="p-5 rounded-2xl bg-slate-900/90 border border-slate-800">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Redemptions</p>
+                <p class="text-3xl font-extrabold text-amber-400 mt-2" th:text="${totalRedemptions != null ? totalRedemptions : 0}">128</p>
+                <p class="text-xs text-slate-500 mt-1">Verified tourist checkout applications</p>
+            </div>
+        </section>
+
+        <!-- Coupons Table Card -->
+        <section class="rounded-2xl bg-slate-900/90 border border-slate-800 overflow-hidden shadow-xl">
+            <div class="px-6 py-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <h2 class="text-base font-bold text-white">Promotional Codes Ledger</h2>
+                    <p class="text-xs text-slate-400">All promo codes are normalized to uppercase and validated against start/expiry windows and per-user caps.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="coupon-filter-input" oninput="filterCoupons(this.value)"
+                           placeholder="Filter by code or status..."
+                           class="px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-slate-950/50">
+                            <th class="py-3.5 px-6">Promo Code</th>
+                            <th class="py-3.5 px-6">Discount Rule</th>
+                            <th class="py-3.5 px-6">Eligibility &amp; Caps</th>
+                            <th class="py-3.5 px-6">Promotion Window</th>
+                            <th class="py-3.5 px-6">Usage Counter</th>
+                            <th class="py-3.5 px-6">Status</th>
+                            <th class="py-3.5 px-6 text-right">Live Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/70 text-sm" id="coupon-table-body">
+                        <tr th:each="coupon : ${coupons}" class="hover:bg-slate-800/40 transition coupon-row">
+                            <td class="py-4 px-6">
+                                <span class="font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg text-xs"
+                                      th:text="${coupon.code}">SRILANKA25</span>
+                            </td>
+                            <td class="py-4 px-6">
+                                <div th:if="${coupon.discountType.name() == 'PERCENTAGE'}" class="font-bold text-white">
+                                    <span th:text="${coupon.discountValue}">20</span>% OFF
+                                    <span th:if="${coupon.maximumDiscount != null}"
+                                          class="block text-xs font-normal text-slate-400"
+                                          th:text="'Max Cap: ' + ${coupon.currency} + ' ' + ${coupon.maximumDiscount}">Max Cap: LKR 15000</span>
+                                </div>
+                                <div th:if="${coupon.discountType.name() == 'FIXED'}" class="font-bold text-white">
+                                    <span th:text="${coupon.currency + ' ' + coupon.discountValue}">LKR 5000</span> FLAT OFF
+                                </div>
+                            </td>
+                            <td class="py-4 px-6 text-xs text-slate-300">
+                                <div>Min Spend: <span class="font-semibold text-white" th:text="${coupon.currency + ' ' + coupon.minimumSpend}">LKR 25000</span></div>
+                                <div class="text-slate-400 mt-0.5">Per-Tourist Limit: <span class="font-semibold text-slate-200" th:text="${coupon.perUserLimit}">1</span></div>
+                            </td>
+                            <td class="py-4 px-6 text-xs text-slate-300">
+                                <div>Starts: <span class="text-slate-200" th:text="${#temporals.format(coupon.startsAt, 'yyyy-MM-dd HH:mm')}">2026-01-01 00:00</span></div>
+                                <div class="text-slate-400 mt-0.5">Expires: <span class="text-slate-200" th:text="${#temporals.format(coupon.expiresAt, 'yyyy-MM-dd HH:mm')}">2027-01-01 23:59</span></div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-white" th:text="${coupon.redemptionCount}">0</span>
+                                    <span class="text-slate-500">/</span>
+                                    <span class="text-slate-400" th:text="${coupon.globalUsageLimit}">100</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <span th:if="${coupon.status.name() == 'ACTIVE'}"
+                                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ACTIVE
+                                </span>
+                                <span th:if="${coupon.status.name() == 'INACTIVE'}"
+                                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                                    INACTIVE
+                                </span>
+                                <span th:if="${coupon.status.name() == 'EXPIRED'}"
+                                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                                    EXPIRED
+                                </span>
+                            </td>
+                            <td class="py-4 px-6 text-right">
+                                <form th:if="${coupon.status.name() == 'ACTIVE'}"
+                                      th:action="@{/admin/coupons/{id}/deactivate(id=${coupon.id})}"
+                                      method="post" class="inline">
+                                    <input type="hidden" name="adminUid" th:value="${adminUid}">
+                                    <button type="submit"
+                                            class="px-3 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold transition">
+                                        Deactivate
+                                    </button>
+                                </form>
+                                <span th:if="${coupon.status.name() != 'ACTIVE'}" class="text-xs text-slate-500 italic">Deactivated</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(coupons)}">
+                            <td colspan="7" class="py-12 px-6 text-center text-slate-400">
+                                <p class="font-semibold text-slate-300">No promotional coupons configured yet.</p>
+                                <p class="text-xs text-slate-500 mt-1">Click "Create Promotional Coupon" above to launch your first discount campaign.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Create Coupon Modal -->
+    <div id="create-coupon-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <h3 class="text-lg font-extrabold text-white">Create Promotional Coupon</h3>
+                    <p class="text-xs text-slate-400">Configure discount rules, validity dates, and redemption limits.</p>
+                </div>
+                <button type="button" onclick="document.getElementById('create-coupon-modal').classList.add('hidden')"
+                        class="text-slate-400 hover:text-white text-sm font-bold px-2.5 py-1 rounded-lg bg-slate-800">
+                    ✕
+                </button>
+            </div>
+
+            <form th:action="@{/admin/coupons/create}" method="post" class="space-y-4">
+                <input type="hidden" name="adminUid" th:value="${adminUid}">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Promo Code *</label>
+                        <input type="text" name="code" required placeholder="e.g. LANKASUMMER25"
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white uppercase font-mono focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Discount Type *</label>
+                        <select name="discountType" required
+                                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500">
+                            <option value="PERCENTAGE">PERCENTAGE (%)</option>
+                            <option value="FIXED">FIXED AMOUNT (LKR)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Discount Value *</label>
+                        <input type="number" step="0.01" min="1" name="discountValue" required placeholder="20"
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Min Spend (LKR)</label>
+                        <input type="number" step="0.01" min="0" name="minimumSpend" value="15000"
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Max Discount Cap</label>
+                        <input type="number" step="0.01" min="0" name="maximumDiscount" placeholder="Optional"
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Starts At *</label>
+                        <input type="datetime-local" name="startsAt" required value="2026-11-01T00:00"
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Expires At *</label>
+                        <input type="datetime-local" name="expiresAt" required value="2027-03-31T23:59"
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Global Usage Limit *</label>
+                        <input type="number" min="1" name="globalUsageLimit" value="250" required
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Per-Tourist Limit *</label>
+                        <input type="number" min="1" name="perUserLimit" value="1" required
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                    <button type="button" onclick="document.getElementById('create-coupon-modal').classList.add('hidden')"
+                            class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold shadow-lg shadow-emerald-500/25 transition">
+                        Launch Promo Code
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function filterCoupons(query) {
+            const normalized = (query || '').trim().toLowerCase();
+            document.querySelectorAll('.coupon-row').forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(normalized) ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

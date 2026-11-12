@@ -1,4 +1,4 @@
-package com.waycation.model;
+﻿package com.waycation.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +18,7 @@ import java.util.UUID;
  * Promotional coupon entity representing configurable discount rules,
  * validity windows, and usage caps across waYcation 2.0 bookings.
  */
+    // JPA Entity representing promotional discount vouchers in 'coupons' table
 @Entity
 @Table(name = "coupons")
 public class Coupon {
@@ -27,6 +28,7 @@ public class Coupon {
     private String id;
 
     @Column(name = "code", unique = true, nullable = false, length = 64)
+    // Unique promo code string (e.g. SUMMER2026)
     private String code;
 
     @Enumerated(EnumType.STRING)
@@ -233,3 +235,5 @@ public class Coupon {
         this.redemptionCount = redemptionCount;
     }
 }
+
+

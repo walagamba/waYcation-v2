@@ -1,4 +1,4 @@
-package com.waycation.actions;
+﻿package com.waycation.actions;
 
 import com.waycation.model.Coupon;
 import com.waycation.service.CouponService;
@@ -14,6 +14,7 @@ import java.util.Optional;
  * deactivating coupons, querying admin redemption analytics, and verifying promo eligibility.
  */
 @Component
+    // Facade Design Pattern: wraps coupon and discount operations into clean action methods
 public class CouponAction {
 
     private final CouponService couponService;
@@ -47,3 +48,4 @@ public class CouponAction {
         return couponService.validateAndRedeemCoupon(code, touristUid, orderAmount, bookingId);
     }
 }
+
