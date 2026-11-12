@@ -5,10 +5,12 @@ import com.waycation.model.HotelPhoto;
 import com.waycation.model.HotelStatus;
 import com.waycation.model.RoomType;
 import com.waycation.repository.HotelRepository;
+import com.waycation.repository.RoomTypeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,9 +24,11 @@ import java.util.stream.Collectors;
 public class HotelService {
 
     private final HotelRepository hotelRepository;
+    private final RoomTypeRepository roomTypeRepository;
 
-    public HotelService(HotelRepository hotelRepository) {
+    public HotelService(HotelRepository hotelRepository, RoomTypeRepository roomTypeRepository) {
         this.hotelRepository = hotelRepository;
+        this.roomTypeRepository = roomTypeRepository;
     }
 
     /**
@@ -58,9 +62,11 @@ public class HotelService {
             hotelData.setFeaturedImage("https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80");
         }
 
-        if (roomTypes != null) {
+        if (roomTypes != null && !roomTypes.isEmpty()) {
             for (RoomType rt : roomTypes) {
-                hotelData.addRoomType(rt);
+                if (rt != null && rt.getName() != null && !rt.getName().isBlank()) {
+                    hotelData.addRoomType(rt);
+                }
             }
         }
 
@@ -123,6 +129,13 @@ public class HotelService {
      * Updates mutable fields of an existing hotel after verifying ownership.
      */
     public Hotel updateHotel(String callerUid, String hotelId, Hotel updatedFields) {
+        return updateHotelWithRooms(callerUid, hotelId, updatedFields, null);
+    }
+
+    /**
+     * Updates mutable fields of an existing hotel and appends or updates its room categories.
+     */
+    public Hotel updateHotelWithRooms(String callerUid, String hotelId, Hotel updatedFields, List<RoomType> newRoomTypes) {
         Hotel existing = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new IllegalArgumentException("Hotel not found: " + hotelId));
 
@@ -167,8 +180,38 @@ public class HotelService {
             existing.setStatus(updatedFields.getStatus());
         }
 
+        if (newRoomTypes != null && !newRoomTypes.isEmpty()) {
+            for (RoomType rt : newRoomTypes) {
+                if (rt != null && rt.getName() != null && !rt.getName().isBlank()) {
+                    existing.addRoomType(rt);
+                }
+            }
+        }
+
         existing.setUpdatedAt(Instant.now());
         return hotelRepository.save(existing);
+    }
+
+    /**
+     * Deletes a room type from a hotel after ownership verification.
+     */
+    public void deleteRoomType(String callerUid, String hotelId, String roomTypeId) {
+        Hotel existing = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new IllegalArgumentException("Hotel not found: " + hotelId));
+
+        if (!existing.getOwnerUid().equals(callerUid)) {
+            throw new SecurityException("Unauthorized: Only property owner can remove room categories.");
+        }
+
+        RoomType roomType = roomTypeRepository.findById(roomTypeId)
+                .orElseThrow(() -> new IllegalArgumentException("Room category not found: " + roomTypeId));
+
+        if (!roomType.getHotel().getId().equals(hotelId)) {
+            throw new IllegalArgumentException("Room category does not belong to this property.");
+        }
+
+        existing.getRoomTypes().remove(roomType);
+        roomTypeRepository.delete(roomType);
     }
 
     /**
@@ -187,6 +230,3 @@ public class HotelService {
         return hotelRepository.save(existing);
     }
 }
-
-// Soft delete: sets status to INACTIVE instead of deleting, so old bookings still point to a real hotel.
-
