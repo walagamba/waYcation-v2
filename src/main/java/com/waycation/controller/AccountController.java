@@ -1,4 +1,4 @@
-package com.waycation.controller;
+﻿package com.waycation.controller;
 
 import com.waycation.model.Profile;
 import com.waycation.model.Role;
@@ -14,6 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 /**
  * Web controller handling portal sign-in, self-registration, and account settings views.
  */
+    // Spring MVC Web Controller handling incoming HTTP requests and returning views
 @Controller
 public class AccountController {
 
@@ -23,6 +24,7 @@ public class AccountController {
         this.accountService = accountService;
     }
 
+    // Route HTTP GET request for tourist sign-in view
     @GetMapping("/tourist/sign-in")
     public String touristSignInPage(Model model) {
         model.addAttribute("portalRole", Role.TOURIST.name());
@@ -41,6 +43,7 @@ public class AccountController {
         return "auth/sign-in";
     }
 
+    // Route HTTP POST request for authenticating user credentials
     @PostMapping("/auth/sign-in")
     public String authenticate(
             @RequestParam("email") String email,
@@ -57,16 +60,20 @@ public class AccountController {
 
         try {
             Profile profile = accountService.authenticateUser(email, password, expectedRole);
+            // Save authenticated user UID into HTTP session for access control
             session.setAttribute("uid", profile.getFirebaseUid());
+            // Save user role into HTTP session for authorization checks
             session.setAttribute("role", profile.getRole().name());
             session.setAttribute("displayName", profile.getDisplayName());
 
+            // Redirect user to their role-specific dashboard upon successful sign-in
             return switch (profile.getRole()) {
                 case HOTEL_OWNER -> "redirect:/owner/dashboard";
                 case ADMIN, SUPER_ADMIN -> "redirect:/admin/dashboard";
                 default -> "redirect:/account";
             };
         } catch (Exception ex) {
+            // Flash message: survives redirect (Post/Redirect/Get pattern) to show alert banner
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
             return switch (expectedRole) {
                 case HOTEL_OWNER -> "redirect:/owner/sign-in";
@@ -93,12 +100,15 @@ public class AccountController {
         try {
             Role role = Role.valueOf(roleStr.toUpperCase());
             Profile profile = accountService.registerUserAccount(displayName, email, password, role);
+            // Save authenticated user UID into HTTP session for access control
             session.setAttribute("uid", profile.getFirebaseUid());
+            // Save user role into HTTP session for authorization checks
             session.setAttribute("role", profile.getRole().name());
             session.setAttribute("displayName", profile.getDisplayName());
             redirectAttributes.addFlashAttribute("successMessage", "Welcome to waYcation, " + profile.getDisplayName() + "!");
             return role == Role.HOTEL_OWNER ? "redirect:/owner/dashboard" : "redirect:/account";
         } catch (Exception ex) {
+            // Flash message: survives redirect (Post/Redirect/Get pattern) to show alert banner
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
             return "redirect:/sign-up?role=" + roleStr;
         }
@@ -116,7 +126,8 @@ public class AccountController {
             model.addAttribute("profile", profile);
             return "auth/account";
         } catch (Exception ex) {
-            session.invalidate();
+            // Invalidate and terminate current HTTP session on user sign-out
+        session.invalidate();
             return "redirect:/tourist/sign-in";
         }
     }
@@ -136,6 +147,7 @@ public class AccountController {
             session.setAttribute("displayName", updated.getDisplayName());
             redirectAttributes.addFlashAttribute("successMessage", "Profile updated successfully.");
         } catch (Exception ex) {
+            // Flash message: survives redirect (Post/Redirect/Get pattern) to show alert banner
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
         return "redirect:/account";
@@ -146,9 +158,18 @@ public class AccountController {
         String uid = (String) session.getAttribute("uid");
         if (uid != null && !uid.isBlank()) {
             accountService.requestAccountDeletion(uid);
-            session.invalidate();
+            // Invalidate and terminate current HTTP session on user sign-out
+        session.invalidate();
         }
         redirectAttributes.addFlashAttribute("successMessage", "Your account has been anonymized and signed out.");
         return "redirect:/tourist/sign-in";
     }
 }
+
+
+
+
+
+
+
+

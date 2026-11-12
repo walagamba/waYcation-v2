@@ -1,4 +1,4 @@
-package com.waycation.model;
+﻿package com.waycation.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,10 +14,12 @@ import java.util.UUID;
 /**
  * Represents a user profile mapped to the profiles table.
  */
+    // Marks this class as a persistent JPA Entity mapped to a database table
 @Entity
 @Table(name = "profiles")
 public class Profile {
 
+    // Primary key for the profiles table
     @Id
     @Column(name = "id", nullable = false, updatable = false)
     private String id;
@@ -31,6 +33,7 @@ public class Profile {
     @Column(name = "display_name", nullable = false)
     private String displayName;
 
+    // Store enum name as a VARCHAR string in database instead of ordinal number
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role = Role.TOURIST;
@@ -56,6 +59,7 @@ public class Profile {
         this.avatarUrl = avatarUrl;
     }
 
+    // Lifecycle callback: automatically set timestamp before initial insert
     @PrePersist
     protected void onCreate() {
         if (this.id == null || this.id.isBlank()) {
@@ -69,6 +73,7 @@ public class Profile {
         this.updatedAt = now;
     }
 
+    // Lifecycle callback: automatically update timestamp before modification
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = Instant.now();
@@ -138,3 +143,8 @@ public class Profile {
         this.updatedAt = updatedAt;
     }
 }
+
+
+
+
+
