@@ -140,9 +140,7 @@ public class HotelController {
     public String ownerHotelsDashboard(HttpSession session, Model model) {
         String ownerUid = resolveOwnerUid(session);
         List<Hotel> ownerHotels = hotelService.getHotelsForOwner(ownerUid);
-        if (ownerHotels.isEmpty()) {
-            ownerHotels = hotelService.getHotels(null, null);
-        }
+
         // Pass filtered list of hotels to Thymeleaf template context
         model.addAttribute("hotels", ownerHotels);
         model.addAttribute("ownerUid", ownerUid);
@@ -236,8 +234,7 @@ public class HotelController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
-            Optional<Hotel> target = hotelService.getHotelById(id);
-            String callerUid = target.map(Hotel::getOwnerUid).orElse(resolveOwnerUid(session));
+            String callerUid = resolveOwnerUid(session);   // who is logged in, not who owns the hotel
             Hotel updated = hotelService.deactivateHotel(callerUid, id);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Property '" + updated.getName() + "' has been set to INACTIVE.");
@@ -364,8 +361,7 @@ public class HotelController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
-            Optional<Hotel> hotelOpt = hotelService.getHotelById(hotelId);
-            String callerUid = hotelOpt.map(Hotel::getOwnerUid).orElse(resolveOwnerUid(session));
+            String callerUid = resolveOwnerUid(session);   // who is logged in, not who owns the hotel
             hotelService.deleteRoomType(callerUid, hotelId, roomId);
             redirectAttributes.addFlashAttribute("successMessage", "Room category removed.");
         } catch (Exception ex) {
