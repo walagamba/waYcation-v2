@@ -17,6 +17,7 @@ import java.util.UUID;
 /**
  * JPA entity representing a bookable room category within a hotel.
  */
+    // JPA Entity representing room categories (Deluxe, Suite, etc.) for a hotel
 @Entity
 @Table(name = "room_types")
 public class RoomType {
@@ -171,3 +172,4 @@ public class RoomType {
         this.updatedAt = updatedAt;
     }
 }
+

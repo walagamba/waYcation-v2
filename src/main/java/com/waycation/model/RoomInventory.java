@@ -12,6 +12,7 @@ import java.util.UUID;
 /**
  * JPA entity tracking daily room allocation and booked counts per room type.
  */
+    // JPA Entity tracking date-specific room inventory quotas for booking checks
 @Entity
 @Table(name = "room_inventory")
 public class RoomInventory {
@@ -95,3 +96,4 @@ public class RoomInventory {
         this.bookedCount = bookedCount;
     }
 }
+

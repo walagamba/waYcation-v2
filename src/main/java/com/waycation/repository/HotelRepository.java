@@ -10,6 +10,7 @@ import java.util.List;
 /**
  * Spring Data JPA repository for {@link Hotel} entities.
  */
+    // Spring Data JPA Repository for querying hotel records
 @Repository
 public interface HotelRepository extends JpaRepository<Hotel, String> {
 
@@ -19,3 +20,4 @@ public interface HotelRepository extends JpaRepository<Hotel, String> {
 
     List<Hotel> findByOwnerUidOrderByCreatedAtDesc(String ownerUid);
 }
+

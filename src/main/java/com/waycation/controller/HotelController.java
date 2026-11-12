@@ -23,6 +23,7 @@ import java.util.Optional;
  * Spring MVC controller handling public hotel discovery, detail pages,
  * and the Hotel Owner property management console.
  */
+    // Spring MVC controller serving catalog search, property details, and owner dashboards
 @Controller
 public class HotelController {
 
@@ -49,21 +50,25 @@ public class HotelController {
     /**
      * Screen 02: Hotel Catalog & Live Search with optional city and capacity query filters.
      */
+    // Public endpoint for searching and browsing hotel listings
     @GetMapping("/hotels")
     public String catalogPage(
             @RequestParam(name = "city", required = false) String city,
             @RequestParam(name = "minCapacity", required = false) Integer minCapacity,
             Model model) {
         List<Hotel> hotels = hotelService.getHotels(city, minCapacity);
+        // Pass filtered list of hotels to Thymeleaf template context
         model.addAttribute("hotels", hotels);
         model.addAttribute("cityFilter", city != null ? city : "");
         model.addAttribute("minCapacity", minCapacity);
+        // Render hotels catalog Thymeleaf view
         return "hotels/catalog";
     }
 
     /**
      * Screen 03: Hotel Property Detail, Room Type Selector & Reservation Sidebar.
      */
+    // Public endpoint for viewing detailed hotel information and available rooms
     @GetMapping("/hotels/{id}")
     public String hotelDetailPage(@PathVariable("id") String id, Model model, RedirectAttributes redirectAttributes) {
         Optional<Hotel> hotelOpt = hotelService.getHotelById(id);
@@ -81,6 +86,7 @@ public class HotelController {
     /**
      * Screen 15: Hotel Owner Properties Management Dashboard.
      */
+    // Owner dashboard endpoint to view their registered properties
     @GetMapping("/owner/hotels")
     public String ownerHotelsDashboard(HttpSession session, Model model) {
         String ownerUid = resolveOwnerUid(session);
@@ -88,6 +94,7 @@ public class HotelController {
         if (ownerHotels.isEmpty()) {
             ownerHotels = hotelService.getHotels(null, null);
         }
+        // Pass filtered list of hotels to Thymeleaf template context
         model.addAttribute("hotels", ownerHotels);
         model.addAttribute("ownerUid", ownerUid);
         return "owner/hotels";
@@ -188,4 +195,8 @@ public class HotelController {
     }
 }
 
-// Reads the owner id from the session; falls back to a demo id until login (Module 1) exists.
+
+
+
+
+

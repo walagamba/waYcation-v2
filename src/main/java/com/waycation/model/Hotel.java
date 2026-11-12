@@ -23,15 +23,18 @@ import java.util.UUID;
 /**
  * JPA entity representing a hotel property listing in waYcation 2.0.
  */
+    // JPA Entity representing the 'hotels' database table
 @Entity
 @Table(name = "hotels")
 public class Hotel {
 
+    // Primary key for hotel record
     @Id
     @Column(name = "id", nullable = false, updatable = false)
     private String id;
 
     @Column(name = "owner_uid", nullable = false)
+    // Foreign reference to the hotel owner's profile UID
     private String ownerUid;
 
     @Column(name = "name", nullable = false)
@@ -300,3 +303,6 @@ public class Hotel {
         this.photos = photos;
     }
 }
+
+
+

@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
  * Domain service managing hotel property listings, room types, photo galleries,
  * and owner lifecycle operations.
  */
+    // Business logic service managing hotel onboarding, room types, and photos
 @Service
 @Transactional
 public class HotelService {
@@ -41,7 +42,9 @@ public class HotelService {
             throw new IllegalArgumentException("Hotel city is required.");
         }
 
+        // Bind newly created hotel to the currently authenticated owner's UID
         hotelData.setOwnerUid(ownerUid);
+        // Set hotel status to ACTIVE upon creation
         if (hotelData.getStatus() == null) {
             hotelData.setStatus(HotelStatus.ACTIVE);
         }
@@ -188,5 +191,5 @@ public class HotelService {
     }
 }
 
-// Soft delete: sets status to INACTIVE instead of deleting, so old bookings still point to a real hotel.
+
 
