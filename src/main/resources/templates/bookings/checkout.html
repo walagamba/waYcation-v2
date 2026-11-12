@@ -1,23 +1,28 @@
+<!--
+  waYcation 2.0 — Reservation Checkout & Promo Redemption View (templates/bookings/checkout.html)
+  Displays itemized per-night room pricing, guest/room counts, cancellation policy snapshot,
+  and promotional coupon code application prior to atomic booking confirmation.
+-->
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('Reservation Checkout')}"></head>
-<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+<head th:replace="~{fragments/layout :: head('Reservation Checkout — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
 
 <header th:replace="~{fragments/layout :: navbar}"></header>
 
 <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
 
     <!-- Breadcrumb -->
-    <nav class="text-xs font-semibold text-slate-500 mb-6 flex items-center gap-2">
-        <a href="/hotels" class="hover:text-[#003580]">Browse Hotels</a>
+    <nav class="font-mono text-xs text-[var(--text-muted)] mb-6 flex items-center gap-2">
+        <a href="/hotels" class="hover:text-[var(--text-primary)] transition">Stays</a>
         <span>/</span>
-        <span class="text-slate-800">Atomic Reservation Checkout</span>
+        <span class="text-[var(--text-primary)]">Reservation Checkout</span>
     </nav>
 
     <!-- Error / Flash Alert -->
-    <div th:if="${errorMessage}" class="mb-6 rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-700 font-semibold flex items-center justify-between">
+    <div th:if="${errorMessage}" class="mb-6 p-3.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-mono flex items-center justify-between">
         <span th:text="${errorMessage}">SOLD_OUT: No rooms available</span>
-        <a href="/hotels" class="text-xs underline font-bold">Select alternate dates</a>
+        <a href="/hotels" class="underline font-bold">Select alternate dates</a>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -25,158 +30,175 @@
         <!-- Left 2 Columns: Reservation Details & Form -->
         <div class="lg:col-span-2 space-y-6">
 
-            <!-- Atomic Inventory Lock Banner -->
-            <div class="rounded-2xl bg-gradient-to-r from-[#003580] to-blue-800 text-white p-6 shadow-md">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#febb02] text-slate-950 text-xs font-extrabold uppercase tracking-wider mb-2">
-                            ⚡ PostgreSQL Atomic Lock Ready
-                        </span>
-                        <h1 class="text-2xl font-black tracking-tight">Confirm Your Boutique Stay</h1>
-                        <p class="text-sm text-blue-100 mt-1">
-                            Daily room inventory is verified and locked atomically across every night of your stay to prevent double-booking.
-                        </p>
-                    </div>
+            <!-- Reservation Guarantee Banner -->
+            <div class="monolith-card p-6 border-2 border-[var(--border-structural)]">
+                <div class="inline-flex items-center gap-2 badge-telemetry mb-3">
+                    <span class="signal-dot"></span>
+                    <span>INSTANT CONFIRMATION</span>
                 </div>
+                <h1 class="font-headline text-2xl font-bold tracking-tight text-[var(--text-primary)]">Confirm Your Boutique Stay</h1>
+                <p class="font-body text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
+                    Daily room allocations are verified in real time across every night to guarantee zero overbooking.
+                </p>
             </div>
 
             <!-- Selected Property Card -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm" th:if="${hotel != null}">
+            <div class="monolith-card p-6" th:if="${hotel != null}">
                 <div class="flex flex-col sm:flex-row gap-5">
-                    <img th:src="${hotel.featuredImage != null ? hotel.featuredImage : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80'}"
+                    <img th:src="${hotel.featuredImage != null ? hotel.featuredImage : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&amp;fit=crop&amp;w=800&amp;q=80'}"
                          alt="Hotel preview"
-                         class="w-full sm:w-44 h-32 object-cover rounded-xl border border-slate-100"/>
+                         class="w-full sm:w-44 h-32 object-cover rounded-lg border border-[var(--border-structural)]"/>
                     <div class="flex-1">
-                        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-700">
+                        <div class="flex items-center gap-2 font-mono text-[11px] text-[var(--signal-red)]">
                             <span th:text="${hotel.city}">Galle</span>
-                            <span>•</span>
+                            <span>·</span>
                             <span th:text="${hotel.country}">Sri Lanka</span>
                         </div>
-                        <h2 class="text-xl font-extrabold text-slate-900 mt-1" th:text="${hotel.name}">Amangalla Heritage Fort Resort</h2>
-                        <p class="text-xs text-slate-500 mt-1" th:text="${hotel.address}">Church Street, Galle Fort</p>
+                        <h2 class="font-headline text-xl font-bold text-[var(--text-primary)] mt-1" th:text="${hotel.name}">Amangalla Heritage Fort Resort</h2>
+                        <p class="font-mono text-xs text-[var(--text-muted)] mt-1" th:text="${hotel.address}">Church Street, Galle Fort</p>
 
-                        <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-700" th:if="${roomType != null}">
-                            <span class="px-2.5 py-1 rounded-md bg-blue-50 text-blue-800 font-bold" th:text="${roomType.name}">Heritage Suite</span>
-                            <span>Max Capacity: <strong th:text="${roomType.capacity + ' Guests / Room'}">2 Guests / Room</strong></span>
-                            <span>Check-in: <strong th:text="${hotel.checkInTime}">14:00</strong></span>
-                            <span>Check-out: <strong th:text="${hotel.checkOutTime}">11:00</strong></span>
+                        <div class="mt-3 pt-3 border-t border-[var(--border-subtle)] flex flex-wrap items-center gap-3 font-mono text-xs text-[var(--text-secondary)]" th:if="${roomType != null}">
+                            <span class="badge-telemetry" th:text="${roomType.name}">Heritage Suite</span>
+                            <span>Max: <strong class="text-[var(--text-primary)]" th:text="${roomType.capacity + ' Guests'}">2 Guests</strong></span>
+                            <span>In: <strong class="text-[var(--text-primary)]" th:text="${hotel.checkInTime}">14:00</strong></span>
+                            <span>Out: <strong class="text-[var(--text-primary)]" th:text="${hotel.checkOutTime}">11:00</strong></span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Booking Form -->
-            <form method="post" action="/bookings/create" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+            <form method="post" action="/bookings/create" class="monolith-card p-6 space-y-5">
                 <input type="hidden" name="roomTypeId" th:value="${roomType != null ? roomType.id : ''}"/>
 
-                <h3 class="text-lg font-extrabold text-slate-900 border-b border-slate-100 pb-3">
-                    Stay Configuration &amp; Dates
+                <h3 class="font-headline text-base font-bold text-[var(--text-primary)] border-b border-[var(--border-subtle)] pb-3">
+                    Stay Parameters &amp; Dates
                 </h3>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Check-In Date</label>
+                        <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Check-In Date</label>
                         <input type="date" name="checkIn" th:value="${checkIn}" required
-                               class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:border-[#003580] focus:outline-none"/>
+                               class="monolith-input text-xs font-mono"/>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Check-Out Date</label>
+                        <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Check-Out Date</label>
                         <input type="date" name="checkOut" th:value="${checkOut}" required
-                               class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:border-[#003580] focus:outline-none"/>
+                               class="monolith-input text-xs font-mono"/>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Rooms</label>
+                        <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Rooms</label>
                         <input type="number" name="roomCount" min="1" max="10" th:value="${rooms}" required
-                               class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:border-[#003580] focus:outline-none"/>
+                               class="monolith-input text-xs font-mono"/>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Total Guests</label>
+                        <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Total Guests</label>
                         <input type="number" name="guestCount" min="1" max="20" th:value="${guests}" required
-                               class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-semibold focus:border-[#003580] focus:outline-none"/>
+                               class="monolith-input text-xs font-mono"/>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Promo / Coupon Code</label>
-                        <input type="text" name="couponCode" th:value="${couponCode}" placeholder="e.g. LANKA10"
-                               class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-semibold uppercase focus:border-[#003580] focus:outline-none"/>
+                        <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Promo / Coupon Code</label>
+                        <input type="text" name="couponCode" th:value="${couponCode}" placeholder="LANKA10"
+                               class="monolith-input text-xs font-mono uppercase"/>
+                        <span th:if="${couponError != null}" class="text-[10px] font-mono text-red-500 mt-1 block" th:text="${couponError}"></span>
+                        <span th:if="${discount != null and discount > 0}" class="text-[10px] font-mono text-emerald-500 mt-1 block">Coupon Applied Successfully!</span>
                     </div>
                 </div>
 
                 <!-- Cancellation Policy Snapshot Preview -->
-                <div class="rounded-xl bg-amber-50/80 border border-amber-200 p-4">
-                    <div class="text-xs font-extrabold uppercase tracking-wider text-amber-900 mb-1">
-                        Immutable Cancellation Policy Snapshot
+                <div class="rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] p-3 font-mono text-xs">
+                    <div class="font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1">
+                        Cancellation Policy Snapshot:
                     </div>
-                    <p class="text-xs text-amber-800 leading-relaxed"
-                       th:text="${hotel != null && hotel.cancellationPolicy != null ? hotel.cancellationPolicy : 'Free cancellation up to 48 hours before check-in. Late cancellations incur a 1-night charge.'}">
+                    <p class="text-[var(--text-secondary)] leading-relaxed"
+                       th:text="${hotel != null &amp;&amp; hotel.cancellationPolicy != null ? hotel.cancellationPolicy : 'Free cancellation up to 48 hours before check-in.'}">
                         Free cancellation up to 48 hours before check-in.
                     </p>
                 </div>
 
-                <div class="pt-2 flex flex-col sm:flex-row items-center justify-end gap-3">
-                    <a href="/hotels" class="w-full sm:w-auto text-center px-5 py-3 rounded-xl border border-slate-300 text-sm font-bold text-slate-700 hover:bg-slate-100">
-                        Back to Hotels
+                <div class="pt-2 flex flex-col sm:flex-row items-center justify-end gap-3 font-mono">
+                    <a href="/hotels" class="btn-monolith-secondary text-xs py-2.5 px-4 w-full sm:w-auto text-center">
+                        Back to Stays
                     </a>
-                    <button type="submit"
-                            class="w-full sm:w-auto px-7 py-3 rounded-xl bg-[#003580] hover:bg-blue-900 text-white text-sm font-extrabold shadow-md transition">
-                        Lock Inventory &amp; Confirm Booking →
+                    <!-- GUEST USER RESERVATION GUARD: Lock button only for authenticated users; Sign Up link for guests -->
+                    <button th:if="${session.uid != null}" type="submit"
+                            class="btn-monolith-primary text-xs py-2.5 px-5 w-full sm:w-auto font-bold">
+                        <span>Lock &amp; Confirm Stay</span>
+                        <span>→</span>
                     </button>
+                    <a th:unless="${session.uid != null}"
+                       th:href="@{/sign-up(redirect=@{/checkout(hotelId=${hotel != null ? hotel.id : ''},roomTypeId=${roomType != null ? roomType.id : ''},checkIn=${checkIn},checkOut=${checkOut},guests=${guests},rooms=${rooms})})}"
+                       class="btn-monolith-primary text-xs py-2.5 px-5 w-full sm:w-auto font-bold text-center">
+                        <span>Sign Up to Lock Stay →</span>
+                    </a>
                 </div>
             </form>
         </div>
 
         <!-- Right Column: Price Breakdown Summary -->
         <div class="space-y-6">
-            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm sticky top-24">
-                <h3 class="text-base font-extrabold text-slate-900 mb-4">Price Breakdown</h3>
+            <div class="monolith-card p-6 sticky top-24 space-y-4">
+                <h3 class="font-headline text-base font-bold text-[var(--text-primary)] pb-2 border-b border-[var(--border-subtle)]">Telemetry Breakdown</h3>
 
-                <div class="space-y-3 text-sm border-b border-slate-100 pb-4">
-                    <div class="flex justify-between text-slate-600">
-                        <span>Nightly Rate</span>
-                        <span class="font-bold text-slate-900"
+                <div class="space-y-2.5 font-mono text-xs border-b border-[var(--border-subtle)] pb-4">
+                    <div class="flex justify-between text-[var(--text-secondary)]">
+                        <span>Nightly Base</span>
+                        <span class="font-bold text-[var(--text-primary)]"
                               th:text="${'LKR ' + #numbers.formatDecimal(roomType != null ? roomType.basePrice : 35000, 1, 'COMMA', 0, 'POINT')}">
                             LKR 35,000
                         </span>
                     </div>
-                    <div class="flex justify-between text-slate-600">
+                    <div class="flex justify-between text-[var(--text-secondary)]">
                         <span>Duration</span>
-                        <span class="font-bold text-slate-900" th:text="${nights + (nights == 1 ? ' Night' : ' Nights')}">3 Nights</span>
+                        <span class="font-bold text-[var(--text-primary)]" th:text="${nights + (nights == 1 ? ' Night' : ' Nights')}">3 Nights</span>
                     </div>
-                    <div class="flex justify-between text-slate-600">
-                        <span>Rooms Reserved</span>
-                        <span class="font-bold text-slate-900" th:text="${rooms + (rooms == 1 ? ' Room' : ' Rooms')}">1 Room</span>
+                    <div class="flex justify-between text-[var(--text-secondary)]">
+                        <span>Rooms</span>
+                        <span class="font-bold text-[var(--text-primary)]" th:text="${rooms + (rooms == 1 ? ' Room' : ' Rooms')}">1 Room</span>
                     </div>
-                    <div class="flex justify-between text-slate-600">
-                        <span>Guests</span>
-                        <span class="font-bold text-slate-900" th:text="${guests + (guests == 1 ? ' Guest' : ' Guests')}">2 Guests</span>
+                    <div class="flex justify-between text-[var(--text-secondary)]">
+                        <span>Occupants</span>
+                        <span class="font-bold text-[var(--text-primary)]" th:text="${guests + (guests == 1 ? ' Guest' : ' Guests')}">2 Guests</span>
+                    </div>
+                    <div class="flex justify-between text-[var(--text-secondary)]">
+                        <span>Subtotal</span>
+                        <span class="font-bold text-[var(--text-primary)]"
+                              th:text="${'LKR ' + #numbers.formatDecimal(subtotal, 1, 'COMMA', 0, 'POINT')}">
+                            LKR 105,000
+                        </span>
+                    </div>
+                    <div th:if="${discount != null and discount > 0}" class="flex justify-between text-emerald-500 font-bold">
+                        <span>Coupon Discount</span>
+                        <span th:text="${'- LKR ' + #numbers.formatDecimal(discount, 1, 'COMMA', 0, 'POINT')}">- LKR 10,500</span>
                     </div>
                 </div>
 
-                <div class="pt-4 flex items-baseline justify-between">
-                    <span class="text-sm font-extrabold text-slate-900">Estimated Total</span>
-                    <span class="text-2xl font-black text-[#003580]"
-                          th:text="${'LKR ' + #numbers.formatDecimal(subtotal, 1, 'COMMA', 0, 'POINT')}">
+                <div class="pt-2 flex items-baseline justify-between font-mono">
+                    <span class="text-xs uppercase text-[var(--text-muted)]">Total Payable</span>
+                    <span class="text-xl font-bold text-[var(--text-primary)]"
+                          th:text="${'LKR ' + #numbers.formatDecimal(total != null ? total : subtotal, 1, 'COMMA', 0, 'POINT')}">
                         LKR 105,000
                     </span>
                 </div>
-                <p class="text-[11px] text-slate-400 mt-1">
-                    Includes all Sri Lanka Tourism Development Authority (SLTDA) levies and service charges.
+                <p class="font-mono text-[10px] text-[var(--text-muted)]">
+                    Includes all SLTDA statutory tourism levies.
                 </p>
 
-                <div class="mt-6 pt-4 border-t border-slate-100 space-y-2 text-xs text-slate-600">
-                    <div class="flex items-center gap-2">
-                        <span class="text-emerald-600 font-bold">✓</span>
-                        <span>Instant confirmation code issued</span>
+                <div class="mt-4 pt-4 border-t border-[var(--border-subtle)] space-y-1.5 font-mono text-xs text-[var(--text-secondary)]">
+                    <div class="flex items-center gap-1.5">
+                        <span class="signal-dot"></span>
+                        <span>Instant reservation lock</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-emerald-600 font-bold">✓</span>
-                        <span>Self-service date rescheduling</span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="signal-dot"></span>
+                        <span>Flexible date rescheduling</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-emerald-600 font-bold">✓</span>
-                        <span>Verified guest review badge after stay</span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="signal-dot"></span>
+                        <span>Verified stay review eligibility</span>
                     </div>
                 </div>
             </div>
