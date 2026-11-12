@@ -1,4 +1,4 @@
-package com.waycation.model;
+﻿package com.waycation.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+    // JPA Entity representing curated vacation packages in 'travel_packages' table
 @Entity
 @Table(name = "packages")
 public class TravelPackage {
@@ -21,6 +22,7 @@ public class TravelPackage {
     private String description;
 
     @Column(name = "duration_days", nullable = false)
+    // Total trip duration in days
     private Integer durationDays;
 
     @Column(name = "price_total", nullable = false)
@@ -171,3 +173,5 @@ public class TravelPackage {
         this.hotels = hotels;
     }
 }
+
+

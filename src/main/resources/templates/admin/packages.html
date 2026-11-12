@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -266,5 +267,368 @@
             container.appendChild(firstRow);
         }
     </script>
+=======
+<!--
+  waYcation 2.0 — Admin & Staff Curated Travel Packages Console (templates/admin/packages.html)
+  Allows ADMIN, SUPER_ADMIN, and STAFF users to create multi-hotel travel bundles,
+  configure ordered hotel itinerary stops, edit package details via modal, archive, or delete packages.
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin Curated Packages — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<!-- Flash Feedback -->
+<div th:if="${successMessage != null}" class="border-b border-emerald-500/30 bg-emerald-500/10 py-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs font-mono text-emerald-500" th:text="${successMessage}"></div>
+</div>
+<div th:if="${errorMessage != null}" class="border-b border-red-500/30 bg-red-500/10 py-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs font-mono text-red-500" th:text="${errorMessage}"></div>
+</div>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full space-y-8">
+
+    <!-- Header & Telemetry Metrics Strip -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[var(--border-structural)]">
+        <div>
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-2">
+                <span class="signal-dot"></span>
+                <span>OPERATIONS &amp; PLATFORM CONSOLE</span>
+            </div>
+            <h1 class="font-headline text-3xl font-bold tracking-tight text-[var(--text-primary)]">Curated Multi-Hotel Packages</h1>
+            <p class="font-body text-xs text-[var(--text-secondary)] mt-1">
+                Assemble multi-stop Sri Lankan hotel itineraries (min. 2 stops) with immutable price snapshots.
+            </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5">
+            <a th:if="${session.role == 'ADMIN' or session.role == 'SUPER_ADMIN'}"
+               href="/admin/users" class="btn-monolith-outline text-xs py-2 px-3.5 flex items-center gap-1.5 text-indigo-400">
+                <span class="material-symbols-outlined text-sm">manage_accounts</span>
+                <span>User Governance</span>
+            </a>
+            <a href="/admin/coupons" class="btn-monolith-outline text-xs py-2 px-3.5">
+                Coupons
+            </a>
+            <a href="/packages" class="btn-monolith-secondary text-xs py-2 px-3.5">
+                View Catalog
+            </a>
+            <button type="button"
+                    onclick="document.getElementById('createPackageModal').classList.remove('hidden')"
+                    class="btn-monolith-primary text-xs py-2 px-4">
+                + Create Package
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
+        <div class="monolith-card p-4">
+            <span class="text-[10px] uppercase text-[var(--text-muted)] block">Total Packages</span>
+            <div class="text-2xl font-bold text-[var(--text-primary)] mt-1" th:text="${totalPackages}">0</div>
+        </div>
+        <div class="monolith-card p-4">
+            <span class="text-[10px] uppercase text-[var(--text-muted)] block">Published Circuits</span>
+            <div class="text-2xl font-bold text-emerald-500 mt-1" th:text="${publishedCount}">0</div>
+        </div>
+        <div class="monolith-card p-4">
+            <span class="text-[10px] uppercase text-[var(--text-muted)] block">Locked Purchases</span>
+            <div class="text-2xl font-bold text-[var(--signal-red)] mt-1" th:text="${totalPurchases}">0</div>
+        </div>
+    </div>
+
+    <!-- Packages List -->
+    <div class="space-y-4">
+        <div th:if="${packages == null or packages.isEmpty()}" class="monolith-card p-12 text-center">
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-3">
+                <span class="signal-dot"></span>
+                <span>NO PACKAGES</span>
+            </div>
+            <h2 class="font-headline text-lg font-bold text-[var(--text-primary)] mb-1">No Travel Packages Created</h2>
+            <p class="font-body text-xs text-[var(--text-secondary)] mb-6">Click "+ Create Package" to build a multi-hotel circuit.</p>
+        </div>
+
+        <div th:each="pkg : ${packages}"
+             class="monolith-card p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div class="space-y-2.5 flex-1">
+                <div class="flex flex-wrap items-center gap-2 font-mono text-xs">
+                    <span class="badge-telemetry"
+                          th:classappend="${pkg.status.name() == 'PUBLISHED' ? 'text-emerald-500 border-emerald-500/30' : 'text-zinc-400'}"
+                          th:text="${pkg.status}">PUBLISHED</span>
+                    <span class="text-[var(--text-muted)]" th:text="${pkg.durationDays + ' Days'}">7 Days</span>
+                    <span class="font-bold text-[var(--text-primary)]"
+                          th:text="${pkg.currency + ' ' + #numbers.formatDecimal(pkg.priceTotal, 1, 'COMMA', 2, 'POINT')}">LKR 245,000.00</span>
+                    <span class="badge-telemetry"
+                          th:text="${(purchaseCounts != null and purchaseCounts.containsKey(pkg.id) ? purchaseCounts.get(pkg.id) : 0) + ' Purchases'}">0 Purchases</span>
+                </div>
+
+                <h3 class="font-headline text-xl font-bold text-[var(--text-primary)]" th:text="${pkg.title}">Southern Coast &amp; Tea Country Circuit</h3>
+                <p class="font-body text-xs text-[var(--text-secondary)] line-clamp-2" th:text="${pkg.description}"></p>
+
+                <!-- Stops -->
+                <div class="flex flex-wrap items-center gap-2 pt-1 font-mono text-xs">
+                    <th:block th:each="stop, iterStat : ${pkg.hotels}">
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                            <span class="w-3.5 h-3.5 rounded-full bg-[var(--card-surface)] text-[var(--text-primary)] text-[10px] font-bold flex items-center justify-center"
+                                  th:text="${stop.stopOrder}">1</span>
+                            <span class="font-semibold text-[var(--text-primary)]" th:text="${stop.hotelName != null ? stop.hotelName : stop.hotelId}">Hotel</span>
+                            <span class="text-[var(--signal-red)] font-bold text-[10px]" th:text="'(' + ${stop.nights} + 'N)'">(2N)</span>
+                        </div>
+                        <span th:if="${!iterStat.last}" class="text-[var(--text-muted)]">→</span>
+                    </th:block>
+                </div>
+            </div>
+
+            <!-- CRUD Actions -->
+            <div class="flex flex-wrap items-center gap-2 shrink-0 font-mono text-xs">
+                <a th:href="@{/packages/{id}(id=${pkg.id})}"
+                   class="btn-monolith-secondary text-xs py-1.5 px-3">
+                    Preview
+                </a>
+                <button type="button"
+                        th:attr="data-id=${pkg.id},data-title=${pkg.title},data-desc=${pkg.description},data-days=${pkg.durationDays},data-price=${pkg.priceTotal},data-status=${pkg.status.name()}"
+                        onclick="openEditPackageModal(this)"
+                        class="btn-monolith-secondary text-xs py-1.5 px-3">
+                    Edit
+                </button>
+                <form th:if="${pkg.status.name() != 'ARCHIVED'}"
+                      th:action="@{/admin/packages/{id}/archive(id=${pkg.id})}"
+                      method="post">
+                    <button type="submit"
+                            class="px-3 py-1.5 rounded-full border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 text-xs transition">
+                        Archive
+                    </button>
+                </form>
+                <form th:action="@{/admin/packages/{id}/delete(id=${pkg.id})}"
+                      method="post"
+                      onsubmit="return confirm('Delete this travel package?');">
+                    <button type="submit"
+                            class="px-3 py-1.5 rounded-full border border-red-500/30 text-red-500 hover:bg-red-500/10 text-xs transition">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Create Package Monolith Modal -->
+<div id="createPackageModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="modal-content-monolith max-w-2xl space-y-4 my-8">
+        <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
+            <div>
+                <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">ITINERARY CREATOR (&ge; 2 STOPS)</span>
+                <h2 class="font-headline text-lg font-bold text-[var(--text-primary)]">Assemble Travel Package</h2>
+            </div>
+            <button type="button"
+                    onclick="document.getElementById('createPackageModal').classList.add('hidden')"
+                    class="text-[var(--text-muted)] hover:text-[var(--text-primary)] font-mono text-lg font-bold">
+                ✕
+            </button>
+        </div>
+
+        <form action="/admin/packages/create" method="post" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Package Title *</label>
+                    <input type="text" name="title" required
+                           placeholder="Ceylon Tea Trails &amp; Galle Fort Odyssey"
+                           class="monolith-input text-xs font-mono">
+                </div>
+
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Duration (Days) *</label>
+                    <input type="number" name="durationDays" min="2" value="5" required
+                           class="monolith-input text-xs font-mono">
+                </div>
+
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Bundle Total Price (LKR) *</label>
+                    <input type="number" step="0.01" name="priceTotal" min="1000" value="185000" required
+                           class="monolith-input text-xs font-mono">
+                </div>
+
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Cover Image URL</label>
+                    <input type="url" name="coverImage"
+                           placeholder="https://images.unsplash.com/..."
+                           class="monolith-input text-xs font-mono">
+                </div>
+
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Status</label>
+                    <select name="status" class="monolith-input text-xs font-mono">
+                        <option value="PUBLISHED">PUBLISHED</option>
+                        <option value="DRAFT">DRAFT</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Itinerary Description</label>
+                    <textarea name="description" rows="2"
+                              placeholder="Describe route stops, experiences, inclusions..."
+                              class="monolith-input text-xs font-mono"></textarea>
+                </div>
+            </div>
+
+            <!-- Ordered Stops -->
+            <div class="pt-3 border-t border-[var(--border-subtle)]">
+                <div class="flex items-center justify-between mb-3">
+                    <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">Ordered Hotel Stops (&ge; 2 Stops)</label>
+                    <button type="button" onclick="addHotelStopRow()"
+                            class="btn-monolith-secondary text-xs py-1 px-2.5">
+                        + Add Stop
+                    </button>
+                </div>
+
+                <div id="hotelStopsContainer" class="space-y-2.5 font-mono text-xs">
+                    <!-- Stop 1 -->
+                    <div class="flex items-center gap-2.5 p-2.5 rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                        <span class="font-bold text-[var(--text-primary)] w-14">Stop #1</span>
+                        <div class="flex-1">
+                            <input th:if="${hotels == null or hotels.isEmpty()}"
+                                   type="text" name="hotelIds" required placeholder="Hotel ID..."
+                                   class="monolith-input text-xs py-1.5">
+                            <select th:if="${hotels != null and !hotels.isEmpty()}"
+                                    name="hotelIds" required
+                                    class="monolith-input text-xs py-1.5">
+                                <option th:each="h : ${hotels}" th:value="${h.id}" th:text="${h.name + ' (' + h.city + ')'}"></option>
+                            </select>
+                        </div>
+                        <div class="w-28 flex items-center gap-1.5">
+                            <input type="number" name="nights" min="1" value="2" required
+                                   class="monolith-input text-xs py-1.5 text-center w-14">
+                            <span class="text-[10px] text-[var(--text-muted)]">Nights</span>
+                        </div>
+                    </div>
+
+                    <!-- Stop 2 -->
+                    <div class="flex items-center gap-2.5 p-2.5 rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                        <span class="font-bold text-[var(--text-primary)] w-14">Stop #2</span>
+                        <div class="flex-1">
+                            <input th:if="${hotels == null or hotels.isEmpty()}"
+                                   type="text" name="hotelIds" required placeholder="Hotel ID..."
+                                   class="monolith-input text-xs py-1.5">
+                            <select th:if="${hotels != null and !hotels.isEmpty()}"
+                                    name="hotelIds" required
+                                    class="monolith-input text-xs py-1.5">
+                                <option th:each="h, stat : ${hotels}" th:value="${h.id}" th:selected="${stat.index == 1}" th:text="${h.name + ' (' + h.city + ')'}"></option>
+                            </select>
+                        </div>
+                        <div class="w-28 flex items-center gap-1.5">
+                            <input type="number" name="nights" min="1" value="3" required
+                                   class="monolith-input text-xs py-1.5 text-center w-14">
+                            <span class="text-[10px] text-[var(--text-muted)]">Nights</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border-subtle)] font-mono">
+                <button type="button"
+                        onclick="document.getElementById('createPackageModal').classList.add('hidden')"
+                        class="btn-monolith-secondary text-xs py-2 px-3">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="btn-monolith-primary text-xs py-2 px-4">
+                    Publish Package
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Package Monolith Modal -->
+<div id="editPackageModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="modal-content-monolith max-w-xl space-y-4 my-8">
+        <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
+            <div>
+                <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">UPDATE ITINERARY</span>
+                <h2 class="font-headline text-lg font-bold text-[var(--text-primary)]">Edit Travel Package</h2>
+            </div>
+            <button type="button"
+                    onclick="document.getElementById('editPackageModal').classList.add('hidden')"
+                    class="text-[var(--text-muted)] hover:text-[var(--text-primary)] font-mono text-lg font-bold">
+                ✕
+            </button>
+        </div>
+
+        <form id="editPackageForm" method="post" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Package Title *</label>
+                    <input type="text" id="editPkgTitle" name="title" required
+                           class="monolith-input text-xs font-mono">
+                </div>
+
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Duration (Days) *</label>
+                    <input type="number" id="editPkgDays" name="durationDays" min="2" required
+                           class="monolith-input text-xs font-mono">
+                </div>
+
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Bundle Total Price (LKR) *</label>
+                    <input type="number" step="0.01" id="editPkgPrice" name="priceTotal" min="1000" required
+                           class="monolith-input text-xs font-mono">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Status</label>
+                    <select id="editPkgStatus" name="status" class="monolith-input text-xs font-mono">
+                        <option value="PUBLISHED">PUBLISHED</option>
+                        <option value="DRAFT">DRAFT</option>
+                        <option value="ARCHIVED">ARCHIVED</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Itinerary Description</label>
+                    <textarea id="editPkgDesc" name="description" rows="3"
+                              class="monolith-input text-xs font-mono"></textarea>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border-subtle)] font-mono">
+                <button type="button"
+                        onclick="document.getElementById('editPackageModal').classList.add('hidden')"
+                        class="btn-monolith-secondary text-xs py-2 px-3">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="btn-monolith-primary text-xs py-2 px-4">
+                    Save Package Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function addHotelStopRow() {
+        const container = document.getElementById('hotelStopsContainer');
+        const stopCount = container.children.length + 1;
+        const firstRow = container.children[0].cloneNode(true);
+        firstRow.querySelector('span').textContent = 'Stop #' + stopCount;
+        container.appendChild(firstRow);
+    }
+
+    function openEditPackageModal(btn) {
+        const id = btn.getAttribute('data-id');
+        document.getElementById('editPackageForm').action = '/admin/packages/' + id + '/edit';
+        document.getElementById('editPkgTitle').value = btn.getAttribute('data-title') || '';
+        document.getElementById('editPkgDesc').value = btn.getAttribute('data-desc') || '';
+        document.getElementById('editPkgDays').value = btn.getAttribute('data-days') || '5';
+        document.getElementById('editPkgPrice').value = btn.getAttribute('data-price') || '';
+        document.getElementById('editPkgStatus').value = btn.getAttribute('data-status') || 'PUBLISHED';
+        document.getElementById('editPackageModal').classList.remove('hidden');
+    }
+</script>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+>>>>>>> ccfecd35f648a43b45c360009588d5a435834d49
 </body>
 </html>

@@ -1,10 +1,11 @@
-package com.waycation.model;
+﻿package com.waycation.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+    // JPA Entity tracking tourist package purchase orders in 'package_purchases' table
 @Entity
 @Table(name = "package_purchases")
 public class PackagePurchase {
@@ -116,3 +117,4 @@ public class PackagePurchase {
         this.createdAt = createdAt;
     }
 }
+

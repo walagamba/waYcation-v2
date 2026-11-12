@@ -1,4 +1,4 @@
-package com.waycation.repository;
+﻿package com.waycation.repository;
 
 import com.waycation.model.PackageStatus;
 import com.waycation.model.TravelPackage;
@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+    // Spring Data JPA repository for package search and filtering
 @Repository
 public interface TravelPackageRepository extends JpaRepository<TravelPackage, String> {
 
@@ -14,3 +15,4 @@ public interface TravelPackageRepository extends JpaRepository<TravelPackage, St
 
     List<TravelPackage> findAllByOrderByCreatedAtDesc();
 }
+

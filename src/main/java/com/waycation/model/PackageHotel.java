@@ -1,9 +1,10 @@
-package com.waycation.model;
+﻿package com.waycation.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+    // JPA join entity mapping partner hotels included in the package itinerary
 @Entity
 @Table(name = "package_hotels")
 public class PackageHotel {
@@ -120,3 +121,4 @@ public class PackageHotel {
         this.city = city;
     }
 }
+

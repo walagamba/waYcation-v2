@@ -1,4 +1,4 @@
-package com.waycation.service;
+﻿package com.waycation.service;
 
 import com.waycation.model.Hotel;
 import com.waycation.model.PackageHotel;
@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+    // Service layer managing curated package creation, partner hotel mapping, and purchases
 @Service
 public class PackageService {
 
@@ -60,7 +61,8 @@ public class PackageService {
 
         pkg.setCreatedByUid(adminUid);
         if (pkg.getStatus() == null) {
-            pkg.setStatus(PackageStatus.PUBLISHED);
+            // Set vacation package status to PUBLISHED for catalog listing
+        pkg.setStatus(PackageStatus.PUBLISHED);
         }
         if (pkg.getCurrency() == null || pkg.getCurrency().isBlank()) {
             pkg.setCurrency("LKR");
@@ -90,6 +92,7 @@ public class PackageService {
         linkedStops.sort(Comparator.comparingInt(PackageHotel::getStopOrder));
         pkg.setHotels(linkedStops);
 
+        // Persist new travel package entity to database
         TravelPackage saved = travelPackageRepository.save(pkg);
         enrichPackageStops(saved);
         return saved;
@@ -128,6 +131,7 @@ public class PackageService {
 
         String snapshotJson = buildPackageSnapshotJson(pkg);
 
+        // Instantiate purchase record for tourist package order
         PackagePurchase purchase = new PackagePurchase();
         purchase.setPackageId(pkg.getId());
         purchase.setTouristUid(touristUid);
@@ -147,6 +151,7 @@ public class PackageService {
                 .orElseThrow(() -> new IllegalArgumentException("Travel package not found: " + packageId));
         pkg.setStatus(PackageStatus.ARCHIVED);
         pkg.setUpdatedAt(LocalDateTime.now());
+        // Persist new travel package entity to database
         TravelPackage saved = travelPackageRepository.save(pkg);
         enrichPackageStops(saved);
         return saved;
@@ -182,6 +187,7 @@ public class PackageService {
         }
         pkg.setUpdatedAt(LocalDateTime.now());
 
+        // Persist new travel package entity to database
         TravelPackage saved = travelPackageRepository.save(pkg);
         enrichPackageStops(saved);
         return saved;
@@ -202,8 +208,8 @@ public class PackageService {
         }
         if (profileOpt.isPresent()) {
             Role role = profileOpt.get().getRole();
-            if (role != Role.ADMIN && role != Role.SUPER_ADMIN && role != Role.HOTEL_OWNER) {
-                throw new SecurityException("Only Administrators and Hotel Owners can manage travel packages.");
+            if (role != Role.ADMIN && role != Role.SUPER_ADMIN) {
+                throw new SecurityException("Only ADMIN or SUPER_ADMIN users can manage travel packages.");
             }
         }
     }
@@ -270,3 +276,7 @@ public class PackageService {
                 .replace("\r", "\\r");
     }
 }
+
+
+
+
