@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Decision Swipe Room | waYcation 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .swipe-card-transition { transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.28s ease; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Top Navigation -->
+    <header class="border-b border-slate-800/80 bg-slate-900/75 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="/tourist/trips" class="text-xs font-bold text-slate-300 hover:text-white px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 transition">
+                    &larr; Back to Trips Hub
+                </a>
+                <div>
+                    <h1 class="text-sm sm:text-base font-extrabold text-white" th:text="${sessionTitle}">Sri Lanka Group Escape</h1>
+                    <p class="text-[11px] text-teal-400 font-mono" th:text="'Invite Token: ' + ${token}">Invite Token: SOUTH-SURF-2026</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                    5 Squad Members Online
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Interactive Voting Room -->
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- Left / Center Column: Tinder-Style Swipe Deck -->
+        <section class="lg:col-span-7 flex flex-col items-center">
+            <div class="w-full flex items-center justify-between mb-3">
+                <span class="text-xs font-bold uppercase tracking-widest text-teal-400">Screen 07 &bull; Tinder-Style Decision Deck</span>
+                <span id="deck-progress-label" class="text-xs font-semibold text-slate-400">Card 1 of 3</span>
+            </div>
+
+            <!-- Swipe Deck Container -->
+            <div id="tinder-swipe-deck" class="relative w-full max-w-md min-h-[470px]">
+                <article th:each="card, iterStat : ${candidates}"
+                         data-swipe-card
+                         th:attr="data-card-id=${card.id},data-card-name=${card.name},data-card-location=${card.location},data-card-price=${card.pricePerNightLkr},data-card-yes=${card.yesVotes},data-card-total=${card.totalMembers}"
+                         th:classappend="${iterStat.index == 0 ? '' : 'hidden'}"
+                         class="swipe-card-transition w-full rounded-3xl bg-slate-900 border border-slate-800 overflow-hidden shadow-2xl">
+
+                    <!-- Visual Hero -->
+                    <div class="relative h-64 w-full bg-slate-800">
+                        <img th:src="${card.imageUrl}" th:alt="${card.name}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+                        <div class="absolute top-4 left-4">
+                            <span class="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-slate-950/80 text-teal-300 border border-teal-500/30"
+                                  th:text="${card.category}">LUXURY COASTAL RESORT</span>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <span class="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-amber-400 text-slate-950"
+                                  th:text="'★ ' + ${card.rating}">★ 4.9</span>
+                        </div>
+                        <div class="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+                            <div>
+                                <h2 class="text-xl font-extrabold text-white" th:text="${card.name}">Cape Weligama Cliffside Sanctuary</h2>
+                                <p class="text-xs text-slate-300" th:text="${card.location}">Weligama, Southern Province</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-slate-400 block">From</span>
+                                <span class="text-base font-extrabold text-emerald-400" th:text="'LKR ' + ${card.pricePerNightLkr}">LKR 145,000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="p-6 space-y-4">
+                        <div class="flex flex-wrap gap-2">
+                            <span th:each="perk : ${card.highlights}"
+                                  class="px-2.5 py-1 rounded-lg bg-slate-800/90 text-slate-200 text-xs font-medium border border-slate-700"
+                                  th:text="${perk}">Crescent Infinity Pool</span>
+                        </div>
+
+                        <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs">
+                            <span class="text-slate-400">Current Squad Approval:</span>
+                            <span class="font-extrabold text-teal-400"
+                                  th:text="${card.yesVotes} + ' / ' + ${card.totalMembers} + ' members voted YES'">4 / 5 members voted YES</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Pass / Like Swipe Action Controls -->
+            <div id="swipe-action-controls" class="flex items-center justify-center gap-6 mt-6 w-full max-w-md">
+                <button type="button"
+                        data-swipe-action="pass"
+                        onclick="handleSwipeAction('pass')"
+                        class="flex-1 py-3.5 px-6 rounded-2xl bg-slate-900 hover:bg-rose-500/15 text-rose-400 border border-rose-500/30 font-extrabold text-sm shadow-lg transition flex items-center justify-center gap-2">
+                    <span>✕ Pass</span>
+                </button>
+                <button type="button"
+                        data-swipe-action="like"
+                        onclick="handleSwipeAction('like')"
+                        class="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/25 transition flex items-center justify-center gap-2">
+                    <span>♥ Like &amp; Shortlist</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Right Column: Majority Consensus Winner Panel & Live Tally -->
+        <aside class="lg:col-span-5 space-y-6">
+            <!-- Majority Consensus Winner Panel -->
+            <div id="tinder-winner-panel" class="rounded-3xl bg-gradient-to-br from-emerald-950/60 via-slate-900 to-slate-900 border border-emerald-500/40 p-6 shadow-2xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        Majority Consensus Winner
+                    </span>
+                    <span id="winner-consensus-badge" class="text-xs font-bold text-emerald-400">80% Squad Match</span>
+                </div>
+
+                <div>
+                    <h3 id="winner-property-name" class="text-xl font-extrabold text-white">Cape Weligama Cliffside Sanctuary</h3>
+                    <p id="winner-property-location" class="text-xs text-slate-400 mt-0.5">Weligama, Southern Province</p>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Group Rate / Night:</span>
+                        <span id="winner-property-price" class="font-bold text-white">LKR 145,000</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Eligible Group Promo Code:</span>
+                        <span class="font-mono font-bold text-emerald-400">SQUADLANKA15</span>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex flex-col sm:flex-row gap-3">
+                    <a href="/tourist/trips"
+                       class="flex-1 text-center py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition">
+                        Lock Consensus &amp; Proceed to Split Checkout
+                    </a>
+                </div>
+            </div>
+
+            <!-- Live Group Tally Feed -->
+            <div class="rounded-2xl bg-slate-900/90 border border-slate-800 p-5 space-y-3">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Live Squad Swipe Log</h4>
+                <ul id="swipe-activity-log" class="space-y-2 text-xs text-slate-300">
+                    <li class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                        <span>Amaya &amp; Kasun liked <strong>Cape Weligama</strong></span>
+                        <span class="text-emerald-400 font-bold">♥ LIKE</span>
+                    </li>
+                    <li class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                        <span>Nadeesha liked <strong>98 Acres Tea Estate</strong></span>
+                        <span class="text-emerald-400 font-bold">♥ LIKE</span>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        let currentCardIndex = 0;
+        const likedCards = [];
+
+        function handleSwipeAction(action) {
+            const cards = Array.from(document.querySelectorAll('#tinder-swipe-deck [data-swipe-card]'));
+            if (cards.length === 0 || currentCardIndex >= cards.length) {
+                return;
+            }
+
+            const activeCard = cards[currentCardIndex];
+            const cardName = activeCard.getAttribute('data-card-name');
+            const cardLocation = activeCard.getAttribute('data-card-location');
+            const cardPrice = activeCard.getAttribute('data-card-price');
+
+            if (action === 'like') {
+                likedCards.push({ name: cardName, location: cardLocation, price: cardPrice });
+                document.getElementById('winner-property-name').textContent = cardName;
+                document.getElementById('winner-property-location').textContent = cardLocation;
+                document.getElementById('winner-property-price').textContent = 'LKR ' + cardPrice;
+                document.getElementById('winner-consensus-badge').textContent = '100% Majority Consensus';
+            }
+
+            const log = document.getElementById('swipe-activity-log');
+            const entry = document.createElement('li');
+            entry.className = 'p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between';
+            entry.innerHTML = '<span>You voted on <strong>' + cardName + '</strong></span>' +
+                (action === 'like'
+                    ? '<span class="text-emerald-400 font-bold">♥ LIKE</span>'
+                    : '<span class="text-rose-400 font-bold">✕ PASS</span>');
+            log.prepend(entry);
+
+            activeCard.classList.add('hidden');
+            currentCardIndex++;
+
+            if (currentCardIndex < cards.length) {
+                cards[currentCardIndex].classList.remove('hidden');
+                document.getElementById('deck-progress-label').textContent =
+                    'Card ' + (currentCardIndex + 1) + ' of ' + cards.length;
+            } else {
+                document.getElementById('deck-progress-label').textContent = 'All candidates reviewed!';
+                cards[0].classList.remove('hidden');
+                currentCardIndex = 0;
+            }
+        }
+    </script>
+</body>
+</html>
