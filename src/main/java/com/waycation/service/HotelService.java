@@ -1,5 +1,7 @@
 package com.waycation.service;
 
+import com.waycation.exception.HotelAccessDeniedException;
+import com.waycation.exception.HotelNotFoundException;
 import com.waycation.model.Hotel;
 import com.waycation.model.HotelPhoto;
 import com.waycation.model.HotelStatus;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 /**
  * Domain service managing hotel property listings, room types, photo galleries,
@@ -139,12 +142,8 @@ public class HotelService {
      * Updates mutable fields of an existing hotel and appends or updates its room categories.
      */
     public Hotel updateHotelWithRooms(String callerUid, String hotelId, Hotel updatedFields, List<RoomType> newRoomTypes) {
-        Hotel existing = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new IllegalArgumentException("Hotel not found: " + hotelId));
-
-        if (!existing.getOwnerUid().equals(callerUid)) {
-            throw new SecurityException("Unauthorized: Only the property owner can update this hotel.");
-        }
+        Hotel existing = findHotelOrThrow(hotelId);
+        requireOwner(callerUid, existing, "update it");
 
         if (updatedFields.getName() != null && !updatedFields.getName().isBlank()) {
             existing.setName(updatedFields.getName());
@@ -232,4 +231,32 @@ public class HotelService {
         existing.setUpdatedAt(Instant.now());
         return hotelRepository.save(existing);
     }
+
+    // ---------- ownership checks (used by update, delete and deactivate) ----------
+
+    /**
+     * Loads a hotel or throws HotelNotFoundException.
+     */
+    private Hotel findHotelOrThrow(String hotelId) {
+        return hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new HotelNotFoundException(hotelId));
+    }
+
+    /**
+     * METHOD OVERLOADING (1 of 2): checks the caller owns the hotel, with a default action text.
+     */
+    private void requireOwner(String callerUid, Hotel hotel) {
+        requireOwner(callerUid, hotel, "change it");
+    }
+
+    /**
+     * METHOD OVERLOADING (2 of 2): same name, extra parameter for the message.
+     * Refuses when the caller is missing (not logged in) or is not the hotel's owner.
+     */
+    private void requireOwner(String callerUid, Hotel hotel, String action) {
+        if (callerUid == null || callerUid.isBlank() || !callerUid.equals(hotel.getOwnerUid())) {
+            throw new HotelAccessDeniedException(action, hotel.getId());
+        }
+    }
+
 }

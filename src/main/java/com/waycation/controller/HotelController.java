@@ -273,6 +273,11 @@ public class HotelController {
             return "redirect:/owner/hotels";
         }
         Hotel hotel = hotelOpt.get();
+        // Only the owner of this hotel may open its edit page
+        if (!hotel.getOwnerUid().equals(resolveOwnerUid(session))) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Only the owner of this hotel can edit it.");
+            return "redirect:/owner/hotels";
+        }
         model.addAttribute("hotel", hotel);
         model.addAttribute("roomTypes", hotel.getRoomTypes());
         model.addAttribute("ownerUid", resolveOwnerUid(session));
@@ -303,10 +308,13 @@ public class HotelController {
                 redirectAttributes.addFlashAttribute("errorMessage", "Hotel not found.");
                 return "redirect:/owner/hotels";
             }
-            Hotel existing = hotelOpt.get();
-            String callerUid = existing.getOwnerUid();
+            // The caller is the logged-in user, never the hotel's own owner field
+            String callerUid = resolveOwnerUid(session);
 
             Hotel updateData = new Hotel();
+            // new Hotel() starts as ACTIVE / "Sri Lanka"; null means "keep the current value"
+            updateData.setStatus(null);
+            updateData.setCountry(null);
             updateData.setName(name);
             updateData.setCity(city);
             updateData.setAddress(address);
