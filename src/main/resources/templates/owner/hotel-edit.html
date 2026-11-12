@@ -1,0 +1,174 @@
+<!--
+  waYcation 2.0 — Hotelier Property Edit & Multipart Image Upload View (templates/owner/hotel-edit.html)
+  Allows the verified property owner to update hotel metadata, upload new featured/gallery photos
+  from disk (multipart/form-data) or URLs, and manage room categories.
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Edit ' + ${hotel.name} + ' — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
+    <div class="mb-6 flex items-center justify-between pb-4 border-b border-[var(--border-structural)]">
+        <div>
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-2">
+                <span class="signal-dot"></span>
+                <span>OWNER MANAGEMENT</span>
+            </div>
+            <h1 class="font-headline text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+                Edit Accommodation: <span th:text="${hotel.name}">Property Name</span>
+            </h1>
+            <p class="font-body text-xs text-[var(--text-secondary)] mt-1">
+                Update property profile, policies, and upload new imagery for your verified listing.
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a th:href="@{/hotels/{id}(id=${hotel.id})}" class="btn-monolith-secondary text-xs py-2 px-3">View Public Listing →</a>
+            <a href="/owner/hotels" class="btn-monolith-secondary text-xs py-2 px-3">← Back to Portfolio</a>
+        </div>
+    </div>
+
+    <!-- Flash Alerts -->
+    <div class="mb-6" th:if="${successMessage != null or errorMessage != null}">
+        <div th:if="${successMessage != null}" class="p-3.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs font-mono" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage != null}" class="p-3.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-mono" th:text="${errorMessage}"></div>
+    </div>
+
+    <form th:action="@{/owner/hotels/{id}/edit(id=${hotel.id})}" method="post" enctype="multipart/form-data"
+          class="monolith-card p-6 sm:p-8 space-y-8 border-2 border-[var(--border-structural)]">
+        <!-- Section 1: Property Metadata -->
+        <div>
+            <h2 class="font-headline text-base font-bold text-[var(--text-primary)] pb-2 border-b border-[var(--border-subtle)] mb-4">
+                1. Property Profile &amp; Location
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label for="name" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Hotel / Villa Name *</label>
+                    <input id="name" name="name" type="text" required th:value="${hotel.name}"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div>
+                    <label for="city" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">City / Region *</label>
+                    <input id="city" name="city" type="text" required th:value="${hotel.city}"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div>
+                    <label for="address" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Street Address</label>
+                    <input id="address" name="address" type="text" th:value="${hotel.address}"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="description" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Property Description</label>
+                    <textarea id="description" name="description" rows="4" th:text="${hotel.description}"
+                              class="monolith-input text-xs font-mono"></textarea>
+                </div>
+
+                <div>
+                    <label for="checkInTime" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Check-In Time</label>
+                    <input id="checkInTime" name="checkInTime" type="text" th:value="${hotel.checkInTime}"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div>
+                    <label for="checkOutTime" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Check-Out Time</label>
+                    <input id="checkOutTime" name="checkOutTime" type="text" th:value="${hotel.checkOutTime}"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="cancellationPolicy" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Cancellation Policy</label>
+                    <input id="cancellationPolicy" name="cancellationPolicy" type="text" th:value="${hotel.cancellationPolicy}"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Property Imagery & Gallery Upload -->
+        <div>
+            <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)] mb-4">
+                <h2 class="font-headline text-base font-bold text-[var(--text-primary)]">2. Property Imagery &amp; Photo Gallery</h2>
+                <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">UPLOAD NEW OR UPDATE URL</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- Replace Cover Photo -->
+                <div class="space-y-3 p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                    <label for="featuredImageFile" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-primary)] font-bold">
+                        Upload New Primary Cover Photo
+                    </label>
+                    <input id="featuredImageFile" name="featuredImageFile" type="file"
+                           accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                           class="block w-full text-xs font-mono text-[var(--text-secondary)]
+                                  file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border file:border-[var(--border-structural)]
+                                  file:text-xs file:font-mono file:font-bold file:bg-[var(--card-surface)] file:text-[var(--text-primary)]
+                                  hover:file:border-[var(--signal-red)] cursor-pointer"/>
+
+                    <div th:if="${hotel.featuredImage != null}" class="relative h-32 rounded-lg overflow-hidden border border-[var(--border-structural)] bg-zinc-900">
+                        <img th:src="${hotel.featuredImage}" th:alt="${hotel.name}" class="w-full h-full object-cover"/>
+                        <span class="absolute bottom-2 left-2 badge-telemetry bg-black/80 text-white text-[10px]">Current Cover</span>
+                    </div>
+
+                    <div class="pt-2 border-t border-[var(--border-subtle)]">
+                        <label for="featuredImage" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">
+                            Cover Photo URL
+                        </label>
+                        <input id="featuredImage" name="featuredImage" type="text" th:value="${hotel.featuredImage}"
+                               class="monolith-input text-xs font-mono"/>
+                    </div>
+                </div>
+
+                <!-- Append Gallery Photos -->
+                <div class="space-y-3 p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                    <label for="galleryFiles" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-primary)] font-bold">
+                        Upload Additional Gallery Photos
+                    </label>
+                    <input id="galleryFiles" name="galleryFiles" type="file" multiple
+                           accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                           class="block w-full text-xs font-mono text-[var(--text-secondary)]
+                                  file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border file:border-[var(--border-structural)]
+                                  file:text-xs file:font-mono file:font-bold file:bg-[var(--card-surface)] file:text-[var(--text-primary)]
+                                  hover:file:border-[var(--signal-red)] cursor-pointer"/>
+
+                    <div th:if="${hotel.photos != null and !hotel.photos.isEmpty()}" class="grid grid-cols-3 gap-2 pt-1">
+                        <div th:each="photo : ${hotel.photos}" class="relative h-16 rounded-lg overflow-hidden border border-[var(--border-structural)] bg-zinc-900">
+                            <img th:src="${photo.url}" th:alt="${photo.caption}" class="w-full h-full object-cover"/>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-[var(--border-subtle)]">
+                        <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">
+                            Or Add Gallery Photo URL
+                        </label>
+                        <input name="galleryUrls" type="url"
+                               placeholder="https://images.unsplash.com/..."
+                               class="monolith-input text-xs font-mono"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit & Actions -->
+        <div class="pt-6 border-t border-[var(--border-subtle)] flex items-center justify-between">
+            <span class="font-mono text-xs text-[var(--text-muted)] flex items-center gap-1.5">
+                <span class="signal-dot"></span>
+                <span>Protected Host Action — Ownership Verified</span>
+            </span>
+            <div class="flex items-center gap-3">
+                <a href="/owner/hotels" class="btn-monolith-secondary text-xs py-2.5 px-5">Cancel</a>
+                <button type="submit" class="btn-monolith-primary py-2.5 px-6 text-xs font-bold">
+                    Save Changes →
+                </button>
+            </div>
+        </div>
+    </form>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

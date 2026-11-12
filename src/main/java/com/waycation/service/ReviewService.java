@@ -1,4 +1,4 @@
-package com.waycation.service;
+﻿package com.waycation.service;
 
 import com.waycation.model.Booking;
 import com.waycation.model.BookingStatus;
@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+    // Service layer managing review submission, verified stay checks, and star averages
 @Service
 public class ReviewService {
 
@@ -42,6 +43,7 @@ public class ReviewService {
         if (touristUid == null || touristUid.isBlank()) {
             throw new IllegalArgumentException("UNAUTHORIZED: Tourist authentication is required.");
         }
+        // Validate rating is between 1 and 5 stars
         if (rating < 1 || rating > 5) {
             throw new IllegalArgumentException("INVALID_RATING: Rating must be an integer between 1 and 5.");
         }
@@ -84,7 +86,9 @@ public class ReviewService {
                 rating,
                 comment.trim()
         );
+        // Set review status to PUBLISHED so it appears on the hotel page
         review.setStatus(ReviewStatus.PUBLISHED);
+        // Persist verified review entity to database
         Review saved = reviewRepository.save(review);
         enrichReviewDisplayFields(saved);
         return saved;
@@ -114,7 +118,8 @@ public class ReviewService {
         }
 
         if (rating != null) {
-            if (rating < 1 || rating > 5) {
+            // Validate rating is between 1 and 5 stars
+        if (rating < 1 || rating > 5) {
                 throw new IllegalArgumentException("INVALID_RATING: Rating must be between 1 and 5.");
             }
             review.setRating(rating);
@@ -128,6 +133,7 @@ public class ReviewService {
         }
 
         review.setUpdatedAt(LocalDateTime.now());
+        // Persist verified review entity to database
         Review saved = reviewRepository.save(review);
         enrichReviewDisplayFields(saved);
         return saved;
@@ -160,6 +166,7 @@ public class ReviewService {
 
         review.setStatus(status);
         review.setUpdatedAt(LocalDateTime.now());
+        // Persist verified review entity to database
         Review saved = reviewRepository.save(review);
         enrichReviewDisplayFields(saved);
         return saved;
@@ -184,3 +191,7 @@ public class ReviewService {
         }
     }
 }
+
+
+
+

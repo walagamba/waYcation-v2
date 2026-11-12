@@ -1,9 +1,10 @@
-package com.waycation.model;
+﻿package com.waycation.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+    // JPA Entity representing guest reviews in the 'reviews' table
 @Entity
 @Table(name = "reviews")
 public class Review {
@@ -13,6 +14,7 @@ public class Review {
     private String id;
 
     @Column(name = "tourist_uid", nullable = false)
+    // Author of the review linked to their user account UID
     private String touristUid;
 
     @Column(name = "hotel_id", nullable = false)
@@ -167,3 +169,5 @@ public class Review {
         this.touristDisplayName = touristDisplayName;
     }
 }
+
+

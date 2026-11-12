@@ -1,0 +1,467 @@
+<!--
+  waYcation 2.0 — Property Detail, Room Selector & Verified Stay Reviews View (templates/hotels/detail.html)
+  Renders hotel photo gallery, interactive room category selector, atomic booking form,
+  strict owner-only edit controls, and verified guest review submission/moderation.
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${hotel.name} + ' — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+
+    <!-- Flash Alerts -->
+    <div class="mb-6" th:if="${successMessage != null or errorMessage != null}">
+        <div th:if="${successMessage != null}" class="p-3.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs font-mono" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage != null}" class="p-3.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-mono" th:text="${errorMessage}"></div>
+    </div>
+
+    <!-- Breadcrumb & Header Telemetry -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-[var(--border-structural)]">
+        <div>
+            <nav class="font-mono text-xs text-[var(--text-muted)] mb-2 flex items-center gap-2">
+                <a href="/" class="hover:text-[var(--text-primary)] transition">Home</a>
+                <span>/</span>
+                <a href="/hotels" class="hover:text-[var(--text-primary)] transition">Stays</a>
+                <span>/</span>
+                <span class="text-[var(--text-primary)]" th:text="${hotel.city}">Galle</span>
+            </nav>
+            <h1 class="font-headline text-3xl sm:text-4xl font-bold tracking-tight text-[var(--text-primary)]" th:text="${hotel.name}">Galle Fort Heritage Villa</h1>
+            <p class="font-mono text-xs text-[var(--text-secondary)] mt-1.5 flex items-center gap-1.5">
+                <span class="signal-dot"></span>
+                <span th:text="${(hotel.address != null ? hotel.address + ', ' : '') + hotel.city + ', ' + hotel.country}">Church Street, Galle, Sri Lanka</span>
+            </p>
+        </div>
+        <div class="flex items-center gap-4">
+            <!-- Edit Accommodation Button: STRICTLY visible only to the property owner or Admin -->
+            <a th:if="${isOwner or (session.role == 'HOTEL_OWNER' and session.uid == hotel.ownerUid)}"
+               th:href="@{/owner/hotels/{id}/edit(id=${hotel.id})}"
+               class="px-4 py-2 rounded-full border border-[var(--signal-red)] bg-[var(--signal-red)]/10 text-xs font-headline font-semibold text-[var(--signal-red)] hover:bg-[var(--signal-red)] hover:text-white transition inline-flex items-center gap-1.5 shadow-sm">
+                <span class="material-symbols-outlined text-sm">edit</span>
+                <span>Edit Accommodation</span>
+            </a>
+
+            <span class="badge-telemetry" th:text="${hotel.status}">ACTIVE</span>
+            <div class="text-right">
+                <div class="font-mono text-[10px] uppercase text-[var(--text-muted)]">Starting rate</div>
+                <div class="font-mono text-2xl font-bold text-[var(--text-primary)]">
+                    LKR <span th:text="${#numbers.formatDecimal(hotel.startingPrice, 1, 'COMMA', 0, 'POINT')}">35,000</span>
+                    <span class="text-xs font-normal text-[var(--text-muted)]">/ night</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Minimalist Photo Mosaic Frame -->
+    <section class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-10">
+        <div class="md:col-span-8 h-80 sm:h-96 rounded-xl overflow-hidden bg-zinc-900 border border-[var(--border-structural)] group">
+            <img th:src="${hotel.featuredImage != null ? hotel.featuredImage : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&amp;fit=crop&amp;w=1200&amp;q=80'}"
+                 th:alt="${hotel.name}"
+                 class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"/>
+        </div>
+        <div class="md:col-span-4 grid grid-cols-2 md:grid-cols-1 gap-4">
+            <div class="h-36 sm:h-[184px] rounded-xl overflow-hidden bg-zinc-900 border border-[var(--border-structural)] group">
+                <img th:src="${hotel.photos != null and !hotel.photos.isEmpty() ? hotel.photos[0].url : 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&amp;fit=crop&amp;w=800&amp;q=80'}"
+                     alt="Suite Interior"
+                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"/>
+            </div>
+            <div class="h-36 sm:h-[184px] rounded-xl overflow-hidden bg-zinc-900 border border-[var(--border-structural)] relative group">
+                <img th:src="${hotel.photos != null and hotel.photos.size() > 1 ? hotel.photos[1].url : 'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&amp;fit=crop&amp;w=800&amp;q=80'}"
+                     alt="Courtyard"
+                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"/>
+                <div class="absolute inset-0 bg-black/60 flex items-end justify-between p-4">
+                    <span class="font-mono text-[11px] text-white flex items-center gap-1.5">
+                        <span class="signal-dot"></span> Verified Partner Property
+                    </span>
+                    <span th:if="${hotel.photos != null and !hotel.photos.isEmpty()}"
+                          class="badge-telemetry bg-black/80 text-white text-[10px]"
+                          th:text="${hotel.photos.size() + ' Photos'}">3 Photos</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Additional Uploaded Gallery Strip (when > 2 photos exist) -->
+    <section th:if="${hotel.photos != null and hotel.photos.size() > 2}" class="mb-10">
+        <div class="flex items-center justify-between mb-3">
+            <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)]">Complete Property Photo Gallery</span>
+            <span class="font-mono text-[10px] text-[var(--text-secondary)]" th:text="${hotel.photos.size() + ' verified images'}"></span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+            <div th:each="photo : ${hotel.photos}"
+                 class="h-24 rounded-lg overflow-hidden bg-zinc-900 border border-[var(--border-structural)] group">
+                <img th:src="${photo.url}" th:alt="${photo.caption}"
+                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"/>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main 2-Column Content: Details (Left) & Sticky Monolith Booking Pod (Right) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- Left Column: Overview, Policies, Room Categories & Verified Reviews -->
+        <div class="lg:col-span-8 space-y-8">
+            <section class="monolith-card p-6">
+                <div class="inline-flex items-center gap-2 badge-telemetry mb-3">
+                    <span class="signal-dot"></span>
+                    <span>OVERVIEW</span>
+                </div>
+                <h2 class="font-headline text-xl font-bold text-[var(--text-primary)] mb-3">Property Profile</h2>
+                <p class="font-body text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed" th:text="${hotel.description}">
+                    Experience authentic Sri Lankan boutique hospitality with private balconies, tropical gardens, and instant room inventory confirmation.
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-[var(--border-subtle)] text-xs font-mono">
+                    <div class="p-3.5 rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                        <span class="text-[10px] uppercase text-[var(--text-muted)] block">Check-In</span>
+                        <span class="text-sm font-bold text-[var(--text-primary)] mt-1 block" th:text="${hotel.checkInTime + ' onwards'}">14:00 onwards</span>
+                    </div>
+                    <div class="p-3.5 rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                        <span class="text-[10px] uppercase text-[var(--text-muted)] block">Check-Out</span>
+                        <span class="text-sm font-bold text-[var(--text-primary)] mt-1 block" th:text="${'Before ' + hotel.checkOutTime}">Before 11:00</span>
+                    </div>
+                    <div class="p-3.5 rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                        <span class="text-[10px] uppercase text-[var(--text-muted)] block">Policy</span>
+                        <span class="text-xs font-bold text-emerald-500 mt-1 block"
+                              th:text="${hotel.cancellationPolicy != null ? hotel.cancellationPolicy : 'Free 48h prior'}">
+                            Free 48h prior
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Available Room Categories -->
+            <section class="space-y-4">
+                <div class="flex items-center justify-between pb-2 border-b border-[var(--border-structural)]">
+                    <h2 class="font-headline text-xl font-bold text-[var(--text-primary)]">Available Room Categories</h2>
+                    <span class="font-mono text-[11px] text-[var(--text-muted)]">GUARANTEED ALLOCATION</span>
+                </div>
+
+                <div th:if="${hotel.roomTypes != null and !hotel.roomTypes.isEmpty()}" class="space-y-4">
+                    <div th:each="rt, iterStat : ${hotel.roomTypes}"
+                         class="monolith-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-2 border-l-[var(--border-active)]">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-headline text-base font-bold text-[var(--text-primary)]" th:text="${rt.name}">Deluxe Ocean Suite</h3>
+                                <span class="badge-telemetry" th:text="${'Up to ' + rt.capacity + ' Guests'}">Up to 2 Guests</span>
+                            </div>
+                            <p class="font-body text-xs text-[var(--text-secondary)] mt-1.5 leading-relaxed" th:text="${rt.description != null ? rt.description : 'King bed, private terrace, rainfall shower, and Ceylon breakfast.'}">
+                                King bed, private terrace, rainfall shower, and Ceylon breakfast.
+                            </p>
+                            <div class="font-mono text-[11px] text-emerald-500 mt-2 flex items-center gap-1.5">
+                                <span class="signal-dot"></span>
+                                <span><span th:text="${rt.totalRooms}">5</span> rooms allocated in daily pool</span>
+                            </div>
+                        </div>
+                        <div class="sm:text-right shrink-0">
+                            <div class="font-mono text-lg font-bold text-[var(--text-primary)]">
+                                <span th:text="${rt.currency}">LKR</span>
+                                <span th:text="${#numbers.formatDecimal(rt.basePrice, 1, 'COMMA', 0, 'POINT')}">38,000</span>
+                            </div>
+                            <div class="font-mono text-[10px] text-[var(--text-muted)]">Per room / night</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Verified Guest Reviews Section -->
+            <section class="space-y-6 pt-6 border-t border-[var(--border-structural)]">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="inline-flex items-center gap-2 badge-telemetry mb-2">
+                            <span class="signal-dot"></span>
+                            <span>VERIFIED FEEDBACK</span>
+                        </div>
+                        <h2 class="font-headline text-xl font-bold text-[var(--text-primary)]">
+                            Guest Reviews (<span th:text="${reviewCount}">0</span>)
+                        </h2>
+                    </div>
+                    <div class="flex items-center gap-2 font-mono text-xs">
+                        <span class="text-amber-400 font-bold text-sm">★</span>
+                        <span class="font-bold text-[var(--text-primary)] text-sm" th:text="${averageRating}">4.8</span>
+                        <span class="text-[var(--text-muted)]">/ 5.0</span>
+                    </div>
+                </div>
+
+                <!-- Verified Review Submission Box: Strictly for users who completed a stay -->
+                <div th:if="${canReview}" class="monolith-card p-6 border-2 border-[var(--signal-red)]/30 bg-[var(--bg-canvas-subtle)] space-y-4 animate-fade-up">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[var(--signal-red)]">rate_review</span>
+                            <h3 class="font-headline text-base font-bold text-[var(--text-primary)]">Write a Verified Review</h3>
+                        </div>
+                        <span class="badge-telemetry text-emerald-500">STAY VERIFIED</span>
+                    </div>
+                    <p class="text-xs text-[var(--text-secondary)]">
+                        You stayed at this property. Share your honest impressions to help fellow travelers.
+                    </p>
+                    <form action="/reviews/create" method="post" class="space-y-4">
+                        <input type="hidden" name="hotelId" th:value="${hotel.id}"/>
+                        <input type="hidden" name="bookingId" th:value="${eligibleBookingId}"/>
+                        <input type="hidden" name="redirectUrl" th:value="${'/hotels/' + hotel.id}"/>
+
+                        <div>
+                            <label class="block font-mono text-[10px] uppercase text-[var(--text-muted)] mb-1">Rating</label>
+                            <select name="rating" class="p-2.5 rounded-lg border border-[var(--border-structural)] bg-[var(--card-surface)] text-xs font-mono text-[var(--text-primary)] focus:outline-none">
+                                <option value="5">★★★★★ — 5 / 5 (Exceptional)</option>
+                                <option value="4">★★★★☆ — 4 / 5 (Very Good)</option>
+                                <option value="3">★★★☆☆ — 3 / 5 (Average)</option>
+                                <option value="2">★★☆☆☆ — 2 / 5 (Below Expectation)</option>
+                                <option value="1">★☆☆☆☆ — 1 / 5 (Poor)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-mono text-[10px] uppercase text-[var(--text-muted)] mb-1">Your Review</label>
+                            <textarea name="comment" rows="3" required placeholder="Describe the hospitality, rooms, breakfast, or atmosphere..."
+                                      class="w-full p-3 rounded-lg border border-[var(--border-structural)] bg-[var(--card-surface)] text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--signal-red)]"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-monolith-primary py-2 px-5 text-xs font-bold inline-flex items-center gap-1.5">
+                            <span>Submit Verified Review</span>
+                            <span class="font-mono text-xs">→</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Unverified notice if user has not completed a stay -->
+                <div th:unless="${canReview}" class="p-4 rounded-lg bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] text-xs font-mono text-[var(--text-secondary)] flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">verified_user</span>
+                        <span>Only travelers who completed a stay at this property can publish reviews.</span>
+                    </div>
+                    <a th:if="${session.uid == null}" th:href="@{/tourist/sign-in(redirect=@{/hotels/{id}(id=${hotel.id})})}"
+                       class="text-[var(--signal-red)] font-bold hover:underline shrink-0">Sign In →</a>
+                </div>
+
+                <!-- Published Reviews Feed -->
+                <div th:if="${reviews != null and !reviews.isEmpty()}" class="space-y-4">
+                    <article th:each="rev : ${reviews}" class="monolith-card p-5 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-full bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] flex items-center justify-center font-mono text-xs font-bold text-[var(--signal-red)]">
+                                    <span th:text="${rev.touristDisplayName != null ? rev.touristDisplayName.substring(0, 1).toUpperCase() : 'G'}">G</span>
+                                </div>
+                                <div>
+                                    <div class="font-headline text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
+                                        <span th:text="${rev.touristDisplayName}">Verified Guest</span>
+                                        <span class="badge-telemetry text-emerald-500 text-[9px] py-0 px-1">VERIFIED STAY</span>
+                                    </div>
+                                    <div class="font-mono text-[10px] text-[var(--text-muted)]"
+                                         th:text="${rev.createdAt != null ? #temporals.format(rev.createdAt, 'dd MMM yyyy') : 'Recent stay'}">
+                                        Recent stay
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-xs font-bold text-amber-400">
+                                    <span th:each="i : ${#numbers.sequence(1, rev.rating)}">★</span>
+                                </span>
+                                <!-- Delete Button: Only for the author of this review -->
+                                <form th:if="${session.uid != null and session.uid == rev.touristUid}"
+                                      th:action="@{/reviews/{id}/delete(id=${rev.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('Remove your review?');">
+                                    <input type="hidden" name="redirectUrl" th:value="${'/hotels/' + hotel.id}"/>
+                                    <button type="submit" class="text-[10px] font-mono text-[var(--text-muted)] hover:text-red-500 transition">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <p class="font-body text-xs text-[var(--text-secondary)] leading-relaxed" th:text="${rev.comment}">
+                            Great hospitality and spotless rooms.
+                        </p>
+                    </article>
+                </div>
+
+                <div th:if="${reviews == null or reviews.isEmpty()}" class="p-8 text-center monolith-card text-xs font-mono text-[var(--text-muted)]">
+                    No verified reviews yet for this accommodation. Be the first verified guest to review after your stay!
+                </div>
+            </section>
+        </div>
+
+        <!-- Right Column: Sticky Reservation Monolith (#dynamic-booking-form) -->
+        <aside class="lg:col-span-4 lg:sticky lg:top-24">
+            <form id="dynamic-booking-form"
+                  action="/bookings/create"
+                  method="post"
+                  th:attr="data-default-price=${hotel.startingPrice}"
+                  class="monolith-card p-6 border-2 border-[var(--border-structural)] space-y-4">
+
+                <input type="hidden" name="hotelId" th:value="${hotel.id}"/>
+
+                <div class="pb-3 border-b border-[var(--border-subtle)] flex items-center justify-between">
+                    <div>
+                        <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">RESERVATION POD</span>
+                        <h3 class="font-headline text-lg font-bold text-[var(--text-primary)]">Lock Stays</h3>
+                    </div>
+                    <span class="badge-telemetry">INSTANT CONFIRMATION</span>
+                </div>
+
+                <!-- Room Category Radio Selector -->
+                <div>
+                    <div class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)] mb-2">
+                        <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">bed</span>
+                        <span>Room Category</span>
+                    </div>
+                    <div class="space-y-2" th:if="${hotel.roomTypes != null and !hotel.roomTypes.isEmpty()}">
+                        <label th:each="rt, iterStat : ${hotel.roomTypes}"
+                               class="flex items-center justify-between p-3 rounded-lg border border-[var(--border-structural)] hover:border-[var(--border-active)] cursor-pointer bg-[var(--bg-canvas-subtle)] transition">
+                            <span class="flex items-center gap-2.5">
+                                <input type="radio"
+                                       name="roomTypeId"
+                                       th:value="${rt.id}"
+                                       th:checked="${iterStat.index == 0}"
+                                       th:attr="data-room-price=${rt.basePrice}"
+                                       class="accent-[var(--signal-red)]"/>
+                                <div>
+                                    <div class="font-headline text-xs font-semibold text-[var(--text-primary)]" th:text="${rt.name}">Deluxe Suite</div>
+                                    <div class="font-mono text-[10px] text-[var(--signal-red)]">Max <span th:text="${rt.capacity}">2</span> Guests · Breakfast Included</div>
+                                </div>
+                            </span>
+                            <span class="font-mono text-xs font-bold text-[var(--text-primary)]">
+                                LKR <span th:text="${#numbers.formatDecimal(rt.basePrice, 1, 'COMMA', 0, 'POINT')}">38,000</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Meal Basis Plan Selector -->
+                <div>
+                    <div class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)] mb-2">
+                        <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">restaurant</span>
+                        <span>Meal Basis Plan</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                        <label class="p-2.5 rounded-lg border border-[var(--border-structural)] hover:border-[var(--border-active)] bg-[var(--bg-canvas-subtle)] cursor-pointer flex flex-col justify-between">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-[var(--text-primary)]">[BB] Breakfast</span>
+                                <input type="radio" name="mealBasis" value="BB" data-meal-price="0" checked class="accent-[var(--signal-red)]"/>
+                            </div>
+                            <span class="text-[10px] text-[var(--text-muted)] mt-1">Included in stay</span>
+                        </label>
+                        <label class="p-2.5 rounded-lg border border-[var(--border-structural)] hover:border-[var(--border-active)] bg-[var(--bg-canvas-subtle)] cursor-pointer flex flex-col justify-between">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-[var(--text-primary)]">[HB] Half Board</span>
+                                <input type="radio" name="mealBasis" value="HB" data-meal-price="4500" class="accent-[var(--signal-red)]"/>
+                            </div>
+                            <span class="text-[10px] text-[var(--signal-red)] mt-1">+ LKR 4,500/night</span>
+                        </label>
+                        <label class="p-2.5 rounded-lg border border-[var(--border-structural)] hover:border-[var(--border-active)] bg-[var(--bg-canvas-subtle)] cursor-pointer flex flex-col justify-between">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-[var(--text-primary)]">[FB] Full Board</span>
+                                <input type="radio" name="mealBasis" value="FB" data-meal-price="8500" class="accent-[var(--signal-red)]"/>
+                            </div>
+                            <span class="text-[10px] text-[var(--signal-red)] mt-1">+ LKR 8,500/night</span>
+                        </label>
+                        <label class="p-2.5 rounded-lg border border-[var(--border-structural)] hover:border-[var(--border-active)] bg-[var(--bg-canvas-subtle)] cursor-pointer flex flex-col justify-between">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-[var(--text-primary)]">[RO] Room Only</span>
+                                <input type="radio" name="mealBasis" value="RO" data-meal-price="-2000" class="accent-[var(--signal-red)]"/>
+                            </div>
+                            <span class="text-[10px] text-emerald-500 mt-1">- LKR 2,000/night</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Date Range Selector -->
+                <div class="console-cell booking-date-container relative">
+                    <div class="flex items-center justify-between text-[var(--text-muted)] mb-0.5">
+                        <div class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
+                            <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">calendar_today</span>
+                            <span>Check-in — Check-out</span>
+                        </div>
+                        <span class="night-count-pill">2 NIGHTS</span>
+                    </div>
+                    <input type="hidden" name="checkIn" class="check-in-input" th:value="${defaultCheckIn}"/>
+                    <input type="hidden" name="checkOut" class="check-out-input" th:value="${defaultCheckOut}"/>
+                    <button type="button" class="booking-date-trigger w-full text-left flex items-center justify-between text-xs font-headline font-semibold text-[var(--text-primary)] mt-1 focus:outline-none">
+                        <span class="booking-date-range-text truncate">Select dates</span>
+                        <span class="font-mono text-[10px] text-[var(--text-muted)]">▾</span>
+                    </button>
+                    <!-- Calendar Popover -->
+                    <div class="booking-calendar-popover"></div>
+                </div>
+
+                <!-- Occupancy Stepper Cell -->
+                <div class="console-cell occupancy-container relative">
+                    <div class="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--text-secondary)] mb-0.5">
+                        <span class="material-symbols-outlined text-sm text-[var(--signal-red)]">group</span>
+                        <span>Guests & Rooms</span>
+                    </div>
+                    <input type="hidden" id="booking-room-count" name="roomCount" value="1"/>
+                    <input type="hidden" id="booking-guests" name="guests" value="2"/>
+                    <button type="button" class="occupancy-trigger w-full text-left flex items-center justify-between text-xs font-headline font-semibold text-[var(--text-primary)] mt-1 focus:outline-none">
+                        <span class="occupancy-summary-text truncate">2 Travelers · 1 Room</span>
+                        <span class="font-mono text-[10px] text-[var(--text-muted)]">▾ Adjust</span>
+                    </button>
+
+                    <!-- Occupancy Popover -->
+                    <div class="occupancy-popover space-y-3">
+                        <div class="flex items-center justify-between text-xs font-mono">
+                            <span class="text-[var(--text-secondary)] uppercase tracking-wider">Guests</span>
+                            <div class="flex items-center gap-2">
+                                <button type="button" class="stepper-btn" data-stepper-target="adults" data-stepper-delta="-1">-</button>
+                                <span class="stepper-adults-val font-bold text-[var(--text-primary)] w-5 text-center">02</span>
+                                <button type="button" class="stepper-btn" data-stepper-target="adults" data-stepper-delta="1">+</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-xs font-mono pt-2 border-t border-[var(--border-subtle)]">
+                            <span class="text-[var(--text-secondary)] uppercase tracking-wider">Rooms</span>
+                            <div class="flex items-center gap-2">
+                                <button type="button" class="stepper-btn" data-stepper-target="rooms" data-stepper-delta="-1">-</button>
+                                <span class="stepper-rooms-val font-bold text-[var(--text-primary)] w-5 text-center">01</span>
+                                <button type="button" class="stepper-btn" data-stepper-target="rooms" data-stepper-delta="1">+</button>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-[var(--border-subtle)] flex flex-wrap gap-1">
+                            <button type="button" data-preset-guests="1" data-preset-rooms="1" class="destination-chip">Solo (1)</button>
+                            <button type="button" data-preset-guests="2" data-preset-rooms="1" class="destination-chip">Couple (2)</button>
+                            <button type="button" data-preset-guests="4" data-preset-rooms="2" class="destination-chip">Family (4)</button>
+                            <button type="button" data-preset-guests="6" data-preset-rooms="3" class="destination-chip">Villa (6+)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Telemetry Price Summary Box -->
+                <div class="p-4 rounded-lg bg-[var(--card-surface-elevated)] border border-[var(--border-structural)] flex items-center justify-between">
+                    <div>
+                        <div class="font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Estimated Total</div>
+                        <div id="estimated-booking-nights" class="font-mono text-xs text-[var(--signal-red)] font-bold">2 night(s)</div>
+                    </div>
+                    <div id="estimated-booking-total" class="font-mono text-xl font-bold text-[var(--text-primary)]">
+                        LKR <span th:text="${#numbers.formatDecimal(hotel.startingPrice * 2, 1, 'COMMA', 0, 'POINT')}">70,000</span>
+                    </div>
+                </div>
+
+                <!-- GUEST USER RESERVATION GUARD: Authenticated users can lock reservation; guest users MUST sign up/sign in first -->
+                <button th:if="${session.uid != null}" type="submit" class="w-full btn-monolith-primary py-3 text-xs justify-center font-bold">
+                    <span>Lock Reservation</span>
+                    <span class="font-mono text-xs">→</span>
+                </button>
+
+                <div th:unless="${session.uid != null}" class="space-y-2">
+                    <a th:href="@{/sign-up(redirect=@{/hotels/{id}(id=${hotel.id})})}"
+                       class="w-full btn-monolith-primary py-3 text-xs justify-center font-bold flex items-center gap-2 text-center">
+                        <span class="material-symbols-outlined text-sm">person_add</span>
+                        <span>Sign Up to Reserve Room</span>
+                        <span class="font-mono text-xs">→</span>
+                    </a>
+                    <div class="text-center font-mono text-[11px] text-[var(--text-muted)]">
+                        Already have an account? 
+                        <a th:href="@{/tourist/sign-in(redirect=@{/hotels/{id}(id=${hotel.id})})}" class="text-[var(--signal-red)] hover:underline font-bold">Sign In</a>
+                    </div>
+                </div>
+
+            </form>
+        </aside>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

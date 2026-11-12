@@ -1,4 +1,4 @@
-package com.waycation.actions;
+﻿package com.waycation.actions;
 
 import com.waycation.model.Review;
 import com.waycation.model.ReviewStatus;
@@ -13,6 +13,7 @@ import java.util.List;
  * updating ratings and comments, deleting reviews, and administrator moderation.
  */
 @Component
+    // Facade Design Pattern: wraps review actions into clean, reusable action methods
 public class ReviewAction {
 
     private final ReviewService reviewService;
@@ -52,3 +53,4 @@ public class ReviewAction {
         return reviewService.moderateReview(adminUid, reviewId, status);
     }
 }
+
