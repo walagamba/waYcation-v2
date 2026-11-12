@@ -1,4 +1,4 @@
-﻿package com.waycation.model;
+package com.waycation.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

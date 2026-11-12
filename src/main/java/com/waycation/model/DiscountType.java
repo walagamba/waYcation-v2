@@ -1,4 +1,4 @@
-﻿package com.waycation.model;
+package com.waycation.model;
 
 /**
  * Supported discount valuation strategies for promotional coupons.

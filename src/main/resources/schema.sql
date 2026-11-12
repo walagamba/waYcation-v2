@@ -1,5 +1,16 @@
--- waYcation 2.0 PostgreSQL Relational Schema
+-- ==========================================================================
+-- waYcation 2.0 — PostgreSQL Relational Database Schema (DDL)
+-- Defines all core entities, foreign key constraints, and lookup indices
+-- across the 6 platform modules:
+--   1. Profiles & Role Governance (profiles)
+--   2. Hotel & Room Catalog (hotels, hotel_photos, room_types, room_inventory)
+--   3. Tourist Bookings (bookings)
+--   4. Verified Guest Reviews (reviews)
+--   5. Curated Travel Packages (packages, package_hotels, package_purchases)
+--   6. Promotional Coupons & Redemptions (coupons, coupon_redemptions)
+-- ==========================================================================
 
+-- 1. User Profiles & Role-Based Access Control (Module 1)
 CREATE TABLE IF NOT EXISTS profiles (
     id VARCHAR(64) PRIMARY KEY,
     firebase_uid VARCHAR(128) NOT NULL UNIQUE,
@@ -11,6 +22,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 2. Hotel Accommodations & Owner Portfolio (Module 2)
 CREATE TABLE IF NOT EXISTS hotels (
     id VARCHAR(64) PRIMARY KEY,
     owner_uid VARCHAR(128) NOT NULL REFERENCES profiles(firebase_uid) ON DELETE RESTRICT,
@@ -34,6 +46,7 @@ CREATE INDEX IF NOT EXISTS idx_hotels_owner_uid ON hotels(owner_uid);
 CREATE INDEX IF NOT EXISTS idx_hotels_city ON hotels(city);
 CREATE INDEX IF NOT EXISTS idx_hotels_status ON hotels(status);
 
+-- Hotel Photo Gallery (Supports uploaded images in /uploads/hotels/ and external URLs)
 CREATE TABLE IF NOT EXISTS hotel_photos (
     id VARCHAR(64) PRIMARY KEY,
     hotel_id VARCHAR(64) NOT NULL REFERENCES hotels(id) ON DELETE CASCADE,
@@ -43,6 +56,7 @@ CREATE TABLE IF NOT EXISTS hotel_photos (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Room Categories per Hotel
 CREATE TABLE IF NOT EXISTS room_types (
     id VARCHAR(64) PRIMARY KEY,
     hotel_id VARCHAR(64) NOT NULL REFERENCES hotels(id) ON DELETE CASCADE,
@@ -56,6 +70,7 @@ CREATE TABLE IF NOT EXISTS room_types (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Per-Night Atomic Room Inventory Ledger
 CREATE TABLE IF NOT EXISTS room_inventory (
     id VARCHAR(64) PRIMARY KEY,
     room_type_id VARCHAR(64) NOT NULL REFERENCES room_types(id) ON DELETE CASCADE,
@@ -65,6 +80,7 @@ CREATE TABLE IF NOT EXISTS room_inventory (
     CONSTRAINT uq_room_inventory_date UNIQUE (room_type_id, date)
 );
 
+-- 3. Tourist Reservations & Stay Lifecycle (Module 3)
 CREATE TABLE IF NOT EXISTS bookings (
     id VARCHAR(64) PRIMARY KEY,
     tourist_uid VARCHAR(128) NOT NULL REFERENCES profiles(firebase_uid) ON DELETE RESTRICT,
@@ -87,6 +103,7 @@ CREATE INDEX IF NOT EXISTS idx_bookings_tourist_uid ON bookings(tourist_uid);
 CREATE INDEX IF NOT EXISTS idx_bookings_hotel_id ON bookings(hotel_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
 
+-- 4. Verified Guest Reviews & Star Ratings (Module 4)
 CREATE TABLE IF NOT EXISTS reviews (
     id VARCHAR(64) PRIMARY KEY,
     tourist_uid VARCHAR(128) NOT NULL REFERENCES profiles(firebase_uid) ON DELETE CASCADE,
@@ -99,6 +116,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 5. Curated Multi-Hotel Travel Packages & Purchases (Module 5)
 CREATE TABLE IF NOT EXISTS packages (
     id VARCHAR(64) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -130,10 +148,12 @@ CREATE TABLE IF NOT EXISTS package_purchases (
     price_snapshot NUMERIC(10, 2) NOT NULL,
     currency VARCHAR(16) NOT NULL DEFAULT 'LKR',
     package_snapshot TEXT NOT NULL,
+    start_date DATE,
     status VARCHAR(32) NOT NULL DEFAULT 'CONFIRMED',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 6. Promotional Coupons & Redemption Audit Ledger (Module 6)
 CREATE TABLE IF NOT EXISTS coupons (
     id VARCHAR(64) PRIMARY KEY,
     code VARCHAR(64) NOT NULL UNIQUE,

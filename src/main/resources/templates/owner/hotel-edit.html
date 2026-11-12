@@ -1,0 +1,269 @@
+<!--
+  waYcation 2.0 — Hotelier Property Edit & Multipart Image Upload View (templates/owner/hotel-edit.html)
+  Allows the verified property owner to update hotel metadata, upload new featured/gallery photos
+  from disk (multipart/form-data) or URLs, and manage room categories.
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Edit ' + ${hotel.name} + ' — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
+
+<header th:replace="~{fragments/layout :: navbar}"></header>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
+    <div class="mb-6 flex items-center justify-between pb-4 border-b border-[var(--border-structural)]">
+        <div>
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-2">
+                <span class="signal-dot"></span>
+                <span>OWNER MANAGEMENT</span>
+            </div>
+            <h1 class="font-headline text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+                Edit Accommodation: <span th:text="${hotel.name}">Property Name</span>
+            </h1>
+            <p class="font-body text-xs text-[var(--text-secondary)] mt-1">
+                Update property profile, policies, imagery, and room categories for your verified listing.
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a th:href="@{/hotels/{id}(id=${hotel.id})}" class="btn-monolith-secondary text-xs py-2 px-3">View Public Listing →</a>
+            <a href="/owner/hotels" class="btn-monolith-secondary text-xs py-2 px-3">← Back to Portfolio</a>
+        </div>
+    </div>
+
+    <!-- Flash Alerts -->
+    <div class="mb-6" th:if="${successMessage != null or errorMessage != null}">
+        <div th:if="${successMessage != null}" class="p-3.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 text-xs font-mono" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage != null}" class="p-3.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-mono" th:text="${errorMessage}"></div>
+    </div>
+
+    <form th:action="@{/owner/hotels/{id}/edit(id=${hotel.id})}" method="post" enctype="multipart/form-data"
+          class="monolith-card p-6 sm:p-8 space-y-8 border-2 border-[var(--border-structural)]">
+        <!-- Section 1: Property Metadata -->
+        <div>
+            <h2 class="font-headline text-base font-bold text-[var(--text-primary)] pb-2 border-b border-[var(--border-subtle)] mb-4">
+                1. Property Profile &amp; Location
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label for="name" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Hotel / Villa Name *</label>
+                    <input id="name" name="name" type="text" required th:value="${hotel.name}"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div>
+                    <label for="city" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">City / Region *</label>
+                    <input id="city" name="city" type="text" required th:value="${hotel.city}"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div>
+                    <label for="address" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Street Address</label>
+                    <input id="address" name="address" type="text" th:value="${hotel.address}"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="description" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Property Description</label>
+                    <textarea id="description" name="description" rows="4" th:text="${hotel.description}"
+                              class="monolith-input text-xs font-mono"></textarea>
+                </div>
+
+                <div>
+                    <label for="checkInTime" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Check-In Time</label>
+                    <input id="checkInTime" name="checkInTime" type="text" th:value="${hotel.checkInTime}"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div>
+                    <label for="checkOutTime" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Check-Out Time</label>
+                    <input id="checkOutTime" name="checkOutTime" type="text" th:value="${hotel.checkOutTime}"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <label for="cancellationPolicy" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Cancellation Policy</label>
+                    <input id="cancellationPolicy" name="cancellationPolicy" type="text" th:value="${hotel.cancellationPolicy}"
+                           class="monolith-input text-xs font-mono"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Property Imagery & Gallery Upload -->
+        <div>
+            <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)] mb-4">
+                <h2 class="font-headline text-base font-bold text-[var(--text-primary)]">2. Property Imagery &amp; Photo Gallery</h2>
+                <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--signal-red)]">UPLOAD NEW OR UPDATE URL</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- Replace Cover Photo -->
+                <div class="space-y-3 p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                    <label for="featuredImageFile" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-primary)] font-bold">
+                        Upload New Primary Cover Photo
+                    </label>
+                    <input id="featuredImageFile" name="featuredImageFile" type="file"
+                           accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                           class="block w-full text-xs font-mono text-[var(--text-secondary)]
+                                  file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border file:border-[var(--border-structural)]
+                                  file:text-xs file:font-mono file:font-bold file:bg-[var(--card-surface)] file:text-[var(--text-primary)]
+                                  hover:file:border-[var(--signal-red)] cursor-pointer"/>
+
+                    <div th:if="${hotel.featuredImage != null}" class="relative h-32 rounded-lg overflow-hidden border border-[var(--border-structural)] bg-zinc-900">
+                        <img th:src="${hotel.featuredImage}" th:alt="${hotel.name}" class="w-full h-full object-cover"/>
+                        <span class="absolute bottom-2 left-2 badge-telemetry bg-black/80 text-white text-[10px]">Current Cover</span>
+                    </div>
+
+                    <div class="pt-2 border-t border-[var(--border-subtle)]">
+                        <label for="featuredImage" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">
+                            Cover Photo URL
+                        </label>
+                        <input id="featuredImage" name="featuredImage" type="text" th:value="${hotel.featuredImage}"
+                               class="monolith-input text-xs font-mono"/>
+                    </div>
+                </div>
+
+                <!-- Append Gallery Photos -->
+                <div class="space-y-3 p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)]">
+                    <label for="galleryFiles" class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-primary)] font-bold">
+                        Upload Additional Gallery Photos
+                    </label>
+                    <input id="galleryFiles" name="galleryFiles" type="file" multiple
+                           accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                           class="block w-full text-xs font-mono text-[var(--text-secondary)]
+                                  file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border file:border-[var(--border-structural)]
+                                  file:text-xs file:font-mono file:font-bold file:bg-[var(--card-surface)] file:text-[var(--text-primary)]
+                                  hover:file:border-[var(--signal-red)] cursor-pointer"/>
+
+                    <div th:if="${hotel.photos != null and !hotel.photos.isEmpty()}" class="grid grid-cols-3 gap-2 pt-1">
+                        <div th:each="photo : ${hotel.photos}" class="relative h-16 rounded-lg overflow-hidden border border-[var(--border-structural)] bg-zinc-900">
+                            <img th:src="${photo.url}" th:alt="${photo.caption}" class="w-full h-full object-cover"/>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-[var(--border-subtle)]">
+                        <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">
+                            Or Add Gallery Photo URL
+                        </label>
+                        <input name="galleryUrls" type="url"
+                               placeholder="https://images.unsplash.com/..."
+                               class="monolith-input text-xs font-mono"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Room Categories Management -->
+        <div>
+            <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)] mb-4">
+                <div>
+                    <h2 class="font-headline text-base font-bold text-[var(--text-primary)]">3. Room Categories &amp; Daily Allocation</h2>
+                    <p class="font-body text-xs text-[var(--text-secondary)] mt-0.5">Manage existing room types or dynamically add new room categories.</p>
+                </div>
+                <button type="button" onclick="addNewRoomCategoryRow()" class="btn-monolith-secondary text-xs py-1.5 px-3 flex items-center gap-1 font-mono">
+                    <span class="text-sm font-bold text-[var(--signal-red)]">+</span>
+                    <span>Add Room Category</span>
+                </button>
+            </div>
+
+            <!-- Existing Room Categories List -->
+            <div th:if="${hotel.roomTypes != null and !hotel.roomTypes.isEmpty()}" class="space-y-3 mb-6">
+                <span class="font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] block">Current Active Categories</span>
+                <div th:each="rt : ${hotel.roomTypes}"
+                     class="p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border border-[var(--border-structural)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono text-xs">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-[var(--text-primary)]" th:text="${rt.name}">Deluxe Suite</span>
+                            <span class="badge-telemetry" th:text="${'Max ' + rt.capacity + ' Guests'}">Max 2 Guests</span>
+                            <span class="text-emerald-500" th:text="${rt.totalRooms + ' Rooms Daily'}">5 Rooms</span>
+                        </div>
+                        <p class="font-body text-xs text-[var(--text-secondary)] mt-1" th:text="${rt.description}">Description</p>
+                    </div>
+                    <div class="flex items-center gap-4 shrink-0">
+                        <div class="text-right">
+                            <span class="font-bold text-[var(--text-primary)]" th:text="${'LKR ' + #numbers.formatDecimal(rt.basePrice, 1, 'COMMA', 0, 'POINT')}">LKR 38,000</span>
+                            <span class="text-[10px] text-[var(--text-muted)] block">/ night</span>
+                        </div>
+                        <!-- Delete Room Type Button (Only if more than 1 room exists) -->
+                        <button th:if="${hotel.roomTypes.size() > 1}"
+                                type="button"
+                                th:attr="onclick='submitDeleteRoom(\'' + ${hotel.id} + '\', \'' + ${rt.id} + '\')'"
+                                class="text-red-500 hover:text-red-400 text-xs font-mono border border-red-500/30 px-2 py-1 rounded">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic New Room Categories Addition Container -->
+            <div id="new-room-categories-container" class="space-y-4"></div>
+        </div>
+
+        <!-- Submit & Actions -->
+        <div class="pt-6 border-t border-[var(--border-subtle)] flex items-center justify-between">
+            <span class="font-mono text-xs text-[var(--text-muted)] flex items-center gap-1.5">
+                <span class="signal-dot"></span>
+                <span>Protected Host Action — Ownership Verified</span>
+            </span>
+            <div class="flex items-center gap-3">
+                <a href="/owner/hotels" class="btn-monolith-secondary text-xs py-2.5 px-5">Cancel</a>
+                <button type="submit" class="btn-monolith-primary py-2.5 px-6 text-xs font-bold">
+                    Save Changes &amp; Room Categories →
+                </button>
+            </div>
+        </div>
+    </form>
+</main>
+
+<!-- Hidden form for deleting an individual room type -->
+<form id="delete-room-form" method="post" style="display: none;"></form>
+
+<script>
+    function submitDeleteRoom(hotelId, roomId) {
+        if (confirm('Are you sure you want to remove this room category?')) {
+            const form = document.getElementById('delete-room-form');
+            form.action = '/owner/hotels/' + hotelId + '/rooms/' + roomId + '/delete';
+            form.submit();
+        }
+    }
+
+    function addNewRoomCategoryRow() {
+        const container = document.getElementById('new-room-categories-container');
+        const count = container.children.length + 1;
+        const card = document.createElement('div');
+        card.className = 'room-category-card p-4 rounded-xl bg-[var(--bg-canvas-subtle)] border-2 border-dashed border-[var(--border-structural)] space-y-4 animate-fade-in';
+        card.innerHTML = `
+            <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                <span class="font-mono text-xs font-bold text-[var(--signal-red)]">New Room Category #\${count}</span>
+                <button type="button" onclick="this.closest('.room-category-card').remove();" class="text-xs font-mono text-red-500 hover:underline">Cancel</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Category Title *</label>
+                    <input name="newRoomName" type="text" required placeholder="e.g. Deluxe Garden Villa" class="monolith-input text-xs font-mono"/>
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Max Guests *</label>
+                    <input name="newRoomCapacity" type="number" min="1" max="12" value="2" required class="monolith-input text-xs font-mono"/>
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Nightly Rate (LKR) *</label>
+                    <input name="newBasePrice" type="number" step="500" min="1000" value="30000" required class="monolith-input text-xs font-mono"/>
+                </div>
+                <div>
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Daily Pool *</label>
+                    <input name="newTotalRooms" type="number" min="1" max="100" value="5" required class="monolith-input text-xs font-mono"/>
+                </div>
+                <div class="sm:col-span-3">
+                    <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Amenities Specification</label>
+                    <input name="newRoomDescription" type="text" placeholder="Private balcony, ocean view, air-conditioned..." class="monolith-input text-xs font-mono"/>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    }
+</script>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+</body>
+</html>

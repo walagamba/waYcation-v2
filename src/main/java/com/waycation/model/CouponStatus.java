@@ -1,4 +1,4 @@
-﻿package com.waycation.model;
+package com.waycation.model;
 
 /**
  * Operational lifecycle status for promotional coupons.
