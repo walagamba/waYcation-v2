@@ -1,4 +1,4 @@
-﻿package com.waycation.actions;
+package com.waycation.actions;
 
 import com.waycation.model.Review;
 import com.waycation.model.ReviewStatus;

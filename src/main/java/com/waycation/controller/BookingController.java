@@ -1,4 +1,4 @@
-﻿package com.waycation.controller;
+package com.waycation.controller;
 
 import com.waycation.model.Booking;
 import com.waycation.model.BookingStatus;
@@ -26,7 +26,6 @@ import java.util.List;
  * Spring MVC Controller for tourist booking checkout, reservation management,
  * rescheduling, cancellations, and hotel owner reservation views.
  */
-    // MVC controller for reservation checkout, booking history, and owner reservation approval
 @Controller
 public class BookingController {
 
@@ -49,7 +48,6 @@ public class BookingController {
     /**
      * Renders the booking checkout summary screen with atomic inventory lock details.
      */
-    // Display checkout page with stay summary and price calculation
     @GetMapping("/checkout")
     public String showCheckout(
             @RequestParam(name = "hotelId", required = false) String hotelId,
@@ -136,10 +134,7 @@ public class BookingController {
                             + ") for " + created.getHotelName() + "!");
             return "redirect:/tourist/bookings";
         } catch (RuntimeException ex) {
-            // FIX: preserve date inputs in flash attributes when booking date validation fails
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
-            redirectAttributes.addFlashAttribute("prevCheckIn", checkInDateStr);
-            redirectAttributes.addFlashAttribute("prevCheckOut", checkOutDateStr);
             return "redirect:/checkout?roomTypeId=" + roomTypeId
                     + "&checkIn=" + checkIn
                     + "&checkOut=" + checkOut
@@ -151,7 +146,6 @@ public class BookingController {
     /**
      * Screen 13: Tourist Bookings list with status filters, reschedule modal, and cancellation actions.
      */
-    // View active and past bookings for the logged-in tourist
     @GetMapping("/tourist/bookings")
     public String listTouristBookings(
             @RequestParam(name = "status", required = false) String statusFilter,
@@ -201,10 +195,7 @@ public class BookingController {
             redirectAttributes.addFlashAttribute("successMessage",
                     "Booking cancelled and room inventory released back to the property.");
         } catch (RuntimeException ex) {
-            // FIX: preserve date inputs in flash attributes when booking date validation fails
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
-            redirectAttributes.addFlashAttribute("prevCheckIn", checkInDateStr);
-            redirectAttributes.addFlashAttribute("prevCheckOut", checkOutDateStr);
         }
         return "redirect:/tourist/bookings";
     }
@@ -224,13 +215,10 @@ public class BookingController {
         try {
             Booking updated = bookingService.rescheduleBooking(touristUid, bookingId, newCheckIn, newCheckOut);
             redirectAttributes.addFlashAttribute("successMessage",
-                    "Booking rescheduled to " + updated.getCheckIn() + " â†’ " + updated.getCheckOut()
+                    "Booking rescheduled to " + updated.getCheckIn() + " → " + updated.getCheckOut()
                             + " (New Total: LKR " + updated.getPriceTotal() + ").");
         } catch (RuntimeException ex) {
-            // FIX: preserve date inputs in flash attributes when booking date validation fails
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
-            redirectAttributes.addFlashAttribute("prevCheckIn", checkInDateStr);
-            redirectAttributes.addFlashAttribute("prevCheckOut", checkOutDateStr);
         }
         return "redirect:/tourist/bookings";
     }
@@ -251,10 +239,7 @@ public class BookingController {
             redirectAttributes.addFlashAttribute("successMessage",
                     "Stay marked as COMPLETED. Verified guest review eligibility is now unlocked.");
         } catch (RuntimeException ex) {
-            // FIX: preserve date inputs in flash attributes when booking date validation fails
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
-            redirectAttributes.addFlashAttribute("prevCheckIn", checkInDateStr);
-            redirectAttributes.addFlashAttribute("prevCheckOut", checkOutDateStr);
         }
         return "redirect:" + (redirectTo.startsWith("/") ? redirectTo : "/tourist/bookings");
     }
@@ -311,6 +296,3 @@ public class BookingController {
         return DEFAULT_OWNER_UID;
     }
 }
-
-
-

@@ -1,4 +1,4 @@
-﻿package com.waycation.model;
+package com.waycation.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;

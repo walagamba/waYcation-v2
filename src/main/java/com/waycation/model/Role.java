@@ -1,4 +1,4 @@
-﻿package com.waycation.model;
+package com.waycation.model;
 
 /**
  * Defines user access roles within the waYcation platform.

@@ -1,4 +1,4 @@
-﻿package com.waycation.repository;
+package com.waycation.repository;
 
 import com.waycation.model.PackageStatus;
 import com.waycation.model.TravelPackage;

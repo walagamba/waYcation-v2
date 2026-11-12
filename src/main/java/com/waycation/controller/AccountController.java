@@ -1,4 +1,4 @@
-﻿package com.waycation.controller;
+package com.waycation.controller;
 
 import com.waycation.model.Profile;
 import com.waycation.model.Role;

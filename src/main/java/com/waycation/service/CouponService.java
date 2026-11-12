@@ -1,4 +1,4 @@
-﻿package com.waycation.service;
+package com.waycation.service;
 
 import com.waycation.model.Coupon;
 import com.waycation.model.CouponRedemption;

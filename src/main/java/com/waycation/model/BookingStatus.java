@@ -1,4 +1,4 @@
-﻿package com.waycation.model;
+package com.waycation.model;
 
 /**
  * Reservation lifecycle state for tourist hotel bookings.
