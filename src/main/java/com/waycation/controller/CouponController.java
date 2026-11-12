@@ -145,6 +145,71 @@ public class CouponController {
         return "redirect:/admin/coupons";
     }
 
+    @PostMapping("/admin/coupons/{id}/activate")
+    public String activateCoupon(
+            @PathVariable("id") String couponId,
+            @RequestParam(name = "adminUid", required = false) String adminUid,
+            RedirectAttributes redirectAttributes) {
+        try {
+            String effectiveAdminUid = resolveAdminUid(adminUid);
+            Coupon activated = couponService.activateCoupon(effectiveAdminUid, couponId);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Coupon '" + activated.getCode() + "' has been activated.");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/coupons";
+    }
+
+    @PostMapping("/admin/coupons/{id}/update")
+    public String updateCoupon(
+            @PathVariable("id") String couponId,
+            @RequestParam(name = "adminUid", required = false) String adminUid,
+            @RequestParam("code") String code,
+            @RequestParam("discountType") DiscountType discountType,
+            @RequestParam("discountValue") BigDecimal discountValue,
+            @RequestParam(name = "minimumSpend", defaultValue = "0") BigDecimal minimumSpend,
+            @RequestParam(name = "maximumDiscount", required = false) BigDecimal maximumDiscount,
+            @RequestParam(name = "globalUsageLimit", defaultValue = "100") int globalUsageLimit,
+            @RequestParam(name = "perUserLimit", defaultValue = "1") int perUserLimit,
+            @RequestParam(name = "status", defaultValue = "ACTIVE") CouponStatus status,
+            RedirectAttributes redirectAttributes) {
+        try {
+            String effectiveAdminUid = resolveAdminUid(adminUid);
+            Coupon updatedData = new Coupon();
+            updatedData.setCode(code);
+            updatedData.setDiscountType(discountType);
+            updatedData.setDiscountValue(discountValue);
+            updatedData.setMinimumSpend(minimumSpend);
+            updatedData.setMaximumDiscount(maximumDiscount);
+            updatedData.setGlobalUsageLimit(globalUsageLimit);
+            updatedData.setPerUserLimit(perUserLimit);
+            updatedData.setStatus(status);
+
+            Coupon updated = couponService.updateCoupon(effectiveAdminUid, couponId, updatedData);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Coupon '" + updated.getCode() + "' updated successfully.");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/coupons";
+    }
+
+    @PostMapping("/admin/coupons/{id}/delete")
+    public String deleteCoupon(
+            @PathVariable("id") String couponId,
+            @RequestParam(name = "adminUid", required = false) String adminUid,
+            RedirectAttributes redirectAttributes) {
+        try {
+            String effectiveAdminUid = resolveAdminUid(adminUid);
+            couponService.deleteCoupon(effectiveAdminUid, couponId);
+            redirectAttributes.addFlashAttribute("successMessage", "Coupon deleted successfully.");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/coupons";
+    }
+
     @GetMapping("/tourist/trips")
     public String showTouristTrips(Model model) {
         List<Map<String, Object>> activeSessions = List.of(
@@ -232,5 +297,75 @@ public class CouponController {
         model.addAttribute("sessionTitle", "Sri Lanka Group Escape (" + token + ")");
         model.addAttribute("candidates", candidateCards);
         return "group/voting-room";
+    }
+
+    @GetMapping(value = {"/admin/coupons/{id}/activate", "/admin/coupons/{id}/update", "/admin/coupons/{id}/delete"})
+    public String couponActionGetFallback(@PathVariable("id") String id) {
+        return "redirect:/admin/coupons";
+    }
+
+    @PostMapping("/admin/coupons/{id}/activate")
+    public String activateCoupon(
+            @PathVariable("id") String couponId,
+            @RequestParam(name = "adminUid", required = false) String adminUid,
+            RedirectAttributes redirectAttributes) {
+        try {
+            String effectiveAdminUid = resolveAdminUid(adminUid);
+            Coupon activated = couponService.activateCoupon(effectiveAdminUid, couponId);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Coupon '" + activated.getCode() + "' has been activated.");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/coupons";
+    }
+
+    @PostMapping("/admin/coupons/{id}/update")
+    public String updateCoupon(
+            @PathVariable("id") String couponId,
+            @RequestParam(name = "adminUid", required = false) String adminUid,
+            @RequestParam("code") String code,
+            @RequestParam("discountType") DiscountType discountType,
+            @RequestParam("discountValue") BigDecimal discountValue,
+            @RequestParam(name = "minimumSpend", defaultValue = "0") BigDecimal minimumSpend,
+            @RequestParam(name = "maximumDiscount", required = false) BigDecimal maximumDiscount,
+            @RequestParam(name = "globalUsageLimit", defaultValue = "100") int globalUsageLimit,
+            @RequestParam(name = "perUserLimit", defaultValue = "1") int perUserLimit,
+            @RequestParam(name = "status", defaultValue = "ACTIVE") CouponStatus status,
+            RedirectAttributes redirectAttributes) {
+        try {
+            String effectiveAdminUid = resolveAdminUid(adminUid);
+            Coupon data = new Coupon();
+            data.setCode(code);
+            data.setDiscountType(discountType);
+            data.setDiscountValue(discountValue);
+            data.setMinimumSpend(minimumSpend);
+            data.setMaximumDiscount(maximumDiscount);
+            data.setGlobalUsageLimit(globalUsageLimit);
+            data.setPerUserLimit(perUserLimit);
+            data.setStatus(status);
+
+            Coupon updated = couponService.updateCoupon(effectiveAdminUid, couponId, data);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Coupon '" + updated.getCode() + "' updated successfully.");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/coupons";
+    }
+
+    @PostMapping("/admin/coupons/{id}/delete")
+    public String deleteCoupon(
+            @PathVariable("id") String couponId,
+            @RequestParam(name = "adminUid", required = false) String adminUid,
+            RedirectAttributes redirectAttributes) {
+        try {
+            String effectiveAdminUid = resolveAdminUid(adminUid);
+            couponService.deleteCoupon(effectiveAdminUid, couponId);
+            redirectAttributes.addFlashAttribute("successMessage", "Coupon permanently deleted.");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/coupons";
     }
 }

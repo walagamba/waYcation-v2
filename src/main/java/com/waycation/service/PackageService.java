@@ -18,10 +18,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-    // Service layer managing curated package creation, partner hotel mapping, and purchases
+// Service layer managing curated package creation, partner hotel mapping, and purchases
 @Service
 public class PackageService {
 
@@ -62,17 +64,21 @@ public class PackageService {
         pkg.setCreatedByUid(adminUid);
         if (pkg.getStatus() == null) {
             // Set vacation package status to PUBLISHED for catalog listing
-        pkg.setStatus(PackageStatus.PUBLISHED);
+            pkg.setStatus(PackageStatus.PUBLISHED);
         }
         if (pkg.getCurrency() == null || pkg.getCurrency().isBlank()) {
             pkg.setCurrency("LKR");
         }
 
+        Set<String> seenHotelIds = new HashSet<>();
         List<PackageHotel> linkedStops = new ArrayList<>();
         int index = 1;
         for (PackageHotel stop : stops) {
             if (stop.getHotelId() == null || stop.getHotelId().isBlank()) {
                 continue;
+            }
+            if (!seenHotelIds.add(stop.getHotelId().trim())) {
+                throw new IllegalArgumentException("Each stop in a curated package must be a distinct hotel property. Duplicate hotel was selected.");
             }
             stop.setTravelPackage(pkg);
             if (stop.getStopOrder() <= 0) {
@@ -86,7 +92,7 @@ public class PackageService {
         }
 
         if (linkedStops.size() < 2) {
-            throw new IllegalArgumentException("A curated travel package must include at least 2 valid hotel stops.");
+            throw new IllegalArgumentException("A curated travel package must include at least 2 distinct hotel stops.");
         }
 
         linkedStops.sort(Comparator.comparingInt(PackageHotel::getStopOrder));
@@ -120,6 +126,11 @@ public class PackageService {
 
     @Transactional
     public PackagePurchase purchasePackage(String touristUid, String packageId) {
+        return purchasePackage(touristUid, packageId, java.time.LocalDate.now().plusDays(7));
+    }
+
+    @Transactional
+    public PackagePurchase purchasePackage(String touristUid, String packageId, java.time.LocalDate startDate) {
         if (touristUid == null || touristUid.isBlank()) {
             throw new IllegalArgumentException("Tourist authentication is required to purchase a travel package.");
         }
@@ -140,6 +151,7 @@ public class PackageService {
         purchase.setPackageSnapshot(snapshotJson);
         purchase.setStatus("CONFIRMED");
         purchase.setCreatedAt(LocalDateTime.now());
+        purchase.setStartDate(startDate != null ? startDate : java.time.LocalDate.now().plusDays(7));
 
         return packagePurchaseRepository.save(purchase);
     }
@@ -155,6 +167,22 @@ public class PackageService {
         TravelPackage saved = travelPackageRepository.save(pkg);
         enrichPackageStops(saved);
         return saved;
+    }
+
+    @Transactional
+    public TravelPackage updatePackage(String adminUid, String packageId, TravelPackage updatedData) {
+        if (updatedData == null) {
+            throw new IllegalArgumentException("Updated package data cannot be null.");
+        }
+        return updatePackage(
+                adminUid,
+                packageId,
+                updatedData.getTitle(),
+                updatedData.getDescription(),
+                updatedData.getDurationDays(),
+                updatedData.getPriceTotal(),
+                updatedData.getStatus()
+        );
     }
 
     @Transactional
@@ -191,6 +219,14 @@ public class PackageService {
         TravelPackage saved = travelPackageRepository.save(pkg);
         enrichPackageStops(saved);
         return saved;
+    }
+
+    @Transactional
+    public void deletePackage(String adminUid, String packageId) {
+        verifyAdminAccess(adminUid);
+        TravelPackage pkg = travelPackageRepository.findById(packageId)
+                .orElseThrow(() -> new IllegalArgumentException("Travel package not found: " + packageId));
+        travelPackageRepository.delete(pkg);
     }
 
     @Transactional(readOnly = true)
@@ -276,7 +312,3 @@ public class PackageService {
                 .replace("\r", "\\r");
     }
 }
-
-
-
-

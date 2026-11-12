@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-    // JPA Entity tracking tourist package purchase orders in 'package_purchases' table
+// JPA Entity tracking tourist package purchase orders in 'package_purchases' table
 @Entity
 @Table(name = "package_purchases")
 public class PackagePurchase {
@@ -116,5 +116,15 @@ public class PackagePurchase {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-}
 
+    @Column(name = "start_date")
+    private java.time.LocalDate startDate;
+
+    public java.time.LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(java.time.LocalDate startDate) {
+        this.startDate = startDate;
+    }
+}

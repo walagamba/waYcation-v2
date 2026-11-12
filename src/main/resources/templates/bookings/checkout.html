@@ -100,9 +100,11 @@
                                class="monolith-input text-xs font-mono"/>
                     </div>
                     <div>
-                        <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Promo Code</label>
+                        <label class="block font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Promo / Coupon Code</label>
                         <input type="text" name="couponCode" th:value="${couponCode}" placeholder="LANKA10"
                                class="monolith-input text-xs font-mono uppercase"/>
+                        <span th:if="${couponError != null}" class="text-[10px] font-mono text-red-500 mt-1 block" th:text="${couponError}"></span>
+                        <span th:if="${discount != null and discount > 0}" class="text-[10px] font-mono text-emerald-500 mt-1 block">Coupon Applied Successfully!</span>
                     </div>
                 </div>
 
@@ -161,12 +163,23 @@
                         <span>Occupants</span>
                         <span class="font-bold text-[var(--text-primary)]" th:text="${guests + (guests == 1 ? ' Guest' : ' Guests')}">2 Guests</span>
                     </div>
+                    <div class="flex justify-between text-[var(--text-secondary)]">
+                        <span>Subtotal</span>
+                        <span class="font-bold text-[var(--text-primary)]"
+                              th:text="${'LKR ' + #numbers.formatDecimal(subtotal, 1, 'COMMA', 0, 'POINT')}">
+                            LKR 105,000
+                        </span>
+                    </div>
+                    <div th:if="${discount != null and discount > 0}" class="flex justify-between text-emerald-500 font-bold">
+                        <span>Coupon Discount</span>
+                        <span th:text="${'- LKR ' + #numbers.formatDecimal(discount, 1, 'COMMA', 0, 'POINT')}">- LKR 10,500</span>
+                    </div>
                 </div>
 
                 <div class="pt-2 flex items-baseline justify-between font-mono">
-                    <span class="text-xs uppercase text-[var(--text-muted)]">Estimated Total</span>
+                    <span class="text-xs uppercase text-[var(--text-muted)]">Total Payable</span>
                     <span class="text-xl font-bold text-[var(--text-primary)]"
-                          th:text="${'LKR ' + #numbers.formatDecimal(subtotal, 1, 'COMMA', 0, 'POINT')}">
+                          th:text="${'LKR ' + #numbers.formatDecimal(total != null ? total : subtotal, 1, 'COMMA', 0, 'POINT')}">
                         LKR 105,000
                     </span>
                 </div>
