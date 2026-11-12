@@ -1,4 +1,4 @@
-﻿package com.waycation.actions;
+package com.waycation.actions;
 
 import com.waycation.model.Booking;
 import com.waycation.service.BookingService;

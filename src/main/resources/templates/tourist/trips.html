@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Trips &amp; Voting Hub | waYcation 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Top Navigation -->
+    <header class="border-b border-slate-800/80 bg-slate-900/75 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-400 to-emerald-500 flex items-center justify-center text-slate-950 font-extrabold text-lg">W</span>
+                <div>
+                    <span class="font-extrabold tracking-tight text-lg text-white">waYcation</span>
+                    <span class="text-xs font-semibold uppercase tracking-widest text-teal-400 ml-1.5 px-2 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20">Group Hub</span>
+                </div>
+            </a>
+            <nav class="flex items-center gap-6 text-sm font-medium text-slate-300">
+                <a href="/tourist/trips" class="text-teal-400 font-semibold border-b-2 border-teal-400 pb-1">Group Voting Hub</a>
+                <a href="/group/SOUTH-SURF-2026" class="hover:text-white transition">Live Swipe Room</a>
+                <button type="button" onclick="document.getElementById('create-session-modal').classList.remove('hidden')"
+                        class="px-4 py-2 rounded-xl bg-teal-400 hover:bg-teal-300 text-slate-950 font-bold text-sm transition shadow-lg shadow-teal-500/20">
+                    + Create Voting Session
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Hero Banner -->
+        <section class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-teal-950/60 border border-slate-800 p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div class="max-w-2xl space-y-2">
+                <span class="text-xs font-bold uppercase tracking-widest text-teal-400">Screen 06 &bull; Collaborative Itinerary Planning</span>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-white">Group Trips &amp; Decision Voting Hub</h1>
+                <p class="text-sm text-slate-300 leading-relaxed">
+                    Invite friends with a shareable token link, swipe together on curated Sri Lankan stays and packages in real time, and lock in majority consensus with group promo discounts.
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <button type="button" onclick="document.getElementById('create-session-modal').classList.remove('hidden')"
+                        class="px-5 py-3 rounded-xl bg-teal-400 hover:bg-teal-300 text-slate-950 font-extrabold text-sm shadow-lg shadow-teal-500/25 transition">
+                    Create New Group Session
+                </button>
+                <a href="/group/SOUTH-SURF-2026"
+                   class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm border border-slate-700 transition">
+                    Enter Demo Swipe Room &rarr;
+                </a>
+            </div>
+        </section>
+
+        <!-- Copy Notification Toast -->
+        <div id="copy-toast" class="hidden p-3.5 rounded-xl bg-teal-500/15 border border-teal-500/30 text-teal-300 text-xs font-semibold">
+            Shareable group invite link copied to clipboard!
+        </div>
+
+        <!-- Active Group Voting Sessions Grid -->
+        <section class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-extrabold text-white">Your Collaborative Voting Rooms</h2>
+                <span class="text-xs text-slate-400">Click any room to launch the Tinder-style swipe deck</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="sessions-grid">
+                <article th:each="tripSession : ${groupSessions}"
+                         class="rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-teal-500/40 p-6 flex flex-col justify-between transition shadow-lg">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-teal-500/15 text-teal-300 border border-teal-500/30"
+                                  th:text="${tripSession.status}">VOTING_OPEN</span>
+                            <span class="font-mono text-xs text-slate-400" th:text="'Token: ' + ${tripSession.token}">Token: SOUTH-SURF-2026</span>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-extrabold text-white" th:text="${tripSession.title}">South Coast Surf &amp; Villa Escape</h3>
+                            <p class="text-xs text-slate-400 mt-1" th:text="${tripSession.destination} + ' • ' + ${tripSession.dates}">Ahangama, Weligama &amp; Mirissa • Dec 14 – Dec 19, 2026</p>
+                        </div>
+
+                        <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-1.5 text-xs">
+                            <div class="flex items-center justify-between text-slate-400">
+                                <span>Leading Consensus Pick:</span>
+                                <span class="text-emerald-400 font-bold" th:text="${tripSession.votesCast} + ' votes'">18 votes</span>
+                            </div>
+                            <p class="font-bold text-slate-200 truncate" th:text="${tripSession.topPick}">Cape Weligama</p>
+                        </div>
+                    </div>
+
+                    <div class="pt-5 mt-5 border-t border-slate-800 flex items-center justify-between gap-2">
+                        <button type="button"
+                                th:attr="data-invite-token=${tripSession.token}"
+                                onclick="copyInviteLink(this.getAttribute('data-invite-token'))"
+                                class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition">
+                            Copy Invite Link
+                        </button>
+                        <a th:href="@{/group/{token}(token=${tripSession.token})}"
+                           class="px-4 py-2 rounded-xl bg-teal-400 hover:bg-teal-300 text-slate-950 text-xs font-extrabold transition">
+                            Open Swipe Room &rarr;
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <!-- Create Group Voting Session Modal -->
+    <div id="create-session-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <h3 class="text-lg font-extrabold text-white">Create Group Voting Session</h3>
+                    <p class="text-xs text-slate-400">Generate an instant invite token for your travel squad.</p>
+                </div>
+                <button type="button" onclick="document.getElementById('create-session-modal').classList.add('hidden')"
+                        class="text-slate-400 hover:text-white text-sm font-bold px-2.5 py-1 rounded-lg bg-slate-800">
+                    ✕
+                </button>
+            </div>
+
+            <form onsubmit="handleCreateSession(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Trip Title *</label>
+                    <input type="text" id="new-session-title" required placeholder="e.g. New Year Trincomalee Beach Crew"
+                           class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-teal-400">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Target Region *</label>
+                        <input type="text" id="new-session-region" required placeholder="Galle, Ella, Yala..."
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-teal-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Custom Invite Token *</label>
+                        <input type="text" id="new-session-token" required value="LANKA-SQUAD-99"
+                               class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm font-mono uppercase text-teal-300 focus:outline-none focus:border-teal-400">
+                    </div>
+                </div>
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                    <button type="button" onclick="document.getElementById('create-session-modal').classList.add('hidden')"
+                            class="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="px-5 py-2.5 rounded-xl bg-teal-400 hover:bg-teal-300 text-slate-950 text-xs font-extrabold">
+                        Launch Voting Room &rarr;
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function copyInviteLink(token) {
+            const url = window.location.origin + '/group/' + encodeURIComponent(token);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url);
+            }
+            const toast = document.getElementById('copy-toast');
+            toast.textContent = 'Copied invite link: ' + url;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 4000);
+        }
+
+        function handleCreateSession(event) {
+            event.preventDefault();
+            const tokenInput = document.getElementById('new-session-token').value.trim() || 'LANKA-SQUAD-99';
+            window.location.href = '/group/' + encodeURIComponent(tokenInput.toUpperCase());
+        }
+    </script>
+</body>
+</html>

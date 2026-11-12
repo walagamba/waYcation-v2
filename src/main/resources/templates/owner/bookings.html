@@ -1,141 +1,149 @@
+<!--
+  waYcation 2.0 — Hotelier Incoming Guest Reservations Ledger (templates/owner/bookings.html)
+  Displays reservations across properties owned by the authenticated hotelier
+  with stay completion marking (CONFIRMED -> COMPLETED) to unlock guest review eligibility.
+-->
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('Owner Guest Reservations')}"></head>
-<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+<head th:replace="~{fragments/layout :: head('Owner Guest Reservations — waYcation')}"></head>
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col font-sans transition-colors duration-200">
 
 <header th:replace="~{fragments/layout :: navbar}"></header>
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
 
-    <!-- Header & Owner Navigation -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+    <!-- Header & Navigation -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-[var(--border-structural)]">
         <div>
-            <span class="text-xs font-extrabold uppercase tracking-wider text-[#003580]">Hotel Owner Console • Screen 17</span>
-            <h1 class="text-3xl font-black tracking-tight text-slate-900 mt-1">Guest Reservations &amp; Payouts</h1>
-            <p class="text-sm text-slate-600 mt-1">
-                Real-time ledger of incoming tourist reservations, room allocations, and verified stay completions across your properties.
+            <div class="inline-flex items-center gap-2 badge-telemetry mb-2">
+                <span class="signal-dot"></span>
+                <span>GUEST LEDGER</span>
+            </div>
+            <h1 class="font-headline text-3xl font-bold tracking-tight text-[var(--text-primary)]">Guest Reservations &amp; Payouts</h1>
+            <p class="font-body text-xs text-[var(--text-secondary)] mt-1">
+                Real-time ledger of incoming tourist stays, room allocations, and check-outs across your portfolio.
             </p>
         </div>
         <div class="flex items-center gap-3">
             <a href="/owner/hotels"
-               class="px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-xs font-extrabold text-slate-800">
-                ← Manage My Properties
+               class="btn-monolith-secondary text-xs py-2 px-3.5">
+                ← Properties Portfolio
             </a>
         </div>
     </div>
 
-    <!-- KPI Summary Cards -->
+    <!-- KPI Summary Metrics -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Reservations</span>
-            <div class="text-3xl font-black text-slate-900 mt-1" th:text="${#lists.size(bookings)}">0</div>
-            <span class="text-xs text-slate-500 mt-1 block">Across all owned properties</span>
+        <div class="monolith-card p-5">
+            <span class="font-mono text-[10px] uppercase text-[var(--text-muted)] block">Total Reservations</span>
+            <div class="font-mono text-3xl font-bold text-[var(--text-primary)] mt-1" th:text="${#lists.size(bookings)}">0</div>
+            <span class="font-mono text-[11px] text-[var(--text-muted)] mt-1 block">Across all owned properties</span>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Active Confirmed Stays</span>
-            <div class="text-3xl font-black text-emerald-600 mt-1" th:text="${activeReservations}">0</div>
-            <span class="text-xs text-slate-500 mt-1 block">Inventory locked in PostgreSQL</span>
+        <div class="monolith-card p-5">
+            <span class="font-mono text-[10px] uppercase text-[var(--text-muted)] block">Active Confirmed Stays</span>
+            <div class="font-mono text-3xl font-bold text-emerald-500 mt-1" th:text="${activeReservations}">0</div>
+            <span class="font-mono text-[11px] text-[var(--text-muted)] mt-1 block">Real-time Room Inventory Active</span>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Confirmed &amp; Completed Gross</span>
-            <div class="text-3xl font-black text-[#003580] mt-1"
+        <div class="monolith-card p-5">
+            <span class="font-mono text-[10px] uppercase text-[var(--text-muted)] block">Confirmed Gross Volume</span>
+            <div class="font-mono text-3xl font-bold text-[var(--text-primary)] mt-1"
                  th:text="${'LKR ' + #numbers.formatDecimal(confirmedRevenue, 1, 'COMMA', 0, 'POINT')}">
                 LKR 0
             </div>
-            <span class="text-xs text-slate-500 mt-1 block">Excludes cancelled bookings</span>
+            <span class="font-mono text-[11px] text-[var(--text-muted)] mt-1 block">Excluding cancellations</span>
         </div>
     </div>
 
     <!-- Empty State -->
-    <div th:if="${#lists.isEmpty(bookings)}" class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
-        <div class="text-4xl mb-3">🛎️</div>
-        <h2 class="text-lg font-extrabold text-slate-900">No guest reservations yet</h2>
-        <p class="text-sm text-slate-500 mt-1 max-w-md mx-auto">
-            Ensure your hotel listings are marked ACTIVE and room types have sufficient daily inventory configured.
+    <div th:if="${#lists.isEmpty(bookings)}" class="monolith-card p-12 text-center">
+        <div class="inline-flex items-center gap-2 badge-telemetry mb-4">
+            <span class="signal-dot"></span>
+            <span>ZERO RESERVATIONS</span>
+        </div>
+        <h2 class="font-headline text-lg font-bold text-[var(--text-primary)] mb-2">No Guest Reservations Found</h2>
+        <p class="font-body text-xs text-[var(--text-secondary)] max-w-md mx-auto mb-6">
+            Verify that your boutique properties are set to ACTIVE and have room categories with positive daily quotas.
         </p>
-        <a href="/owner/hotels" class="inline-block mt-5 px-6 py-2.5 rounded-xl bg-[#003580] text-white text-xs font-extrabold hover:bg-blue-900">
-            Configure Property Inventory →
+        <a href="/owner/hotels" class="btn-monolith-primary text-xs">
+            Manage Inventory →
         </a>
     </div>
 
     <!-- Reservations Table -->
-    <div th:if="${!#lists.isEmpty(bookings)}" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div th:if="${!#lists.isEmpty(bookings)}" class="monolith-card overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="monolith-table">
                 <thead>
-                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-                    <th class="py-3.5 px-5">Booking Ref &amp; Guest</th>
-                    <th class="py-3.5 px-5">Property &amp; Room Type</th>
-                    <th class="py-3.5 px-5">Check-In / Check-Out</th>
-                    <th class="py-3.5 px-5">Allocation</th>
-                    <th class="py-3.5 px-5">Payout Total</th>
-                    <th class="py-3.5 px-5">Status</th>
-                    <th class="py-3.5 px-5 text-right">Owner Action</th>
+                <tr>
+                    <th>Ref &amp; Guest</th>
+                    <th>Stay &amp; Category</th>
+                    <th>Check-In / Out</th>
+                    <th>Allocation</th>
+                    <th>Payout Total</th>
+                    <th>Status</th>
+                    <th class="text-right">Action</th>
                 </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 text-sm">
-                <tr th:each="booking : ${bookings}" class="hover:bg-slate-50/80 transition">
-                    <td class="py-4 px-5">
-                        <div class="font-mono text-xs font-bold text-[#003580]"
+                <tbody>
+                <tr th:each="booking : ${bookings}">
+                    <td>
+                        <div class="font-mono text-xs font-bold text-[var(--text-primary)]"
                              th:text="${'#' + (#strings.length(booking.id) > 8 ? #strings.substring(booking.id, 0, 8).toUpperCase() : booking.id)}">
                             #A1B2C3D4
                         </div>
-                        <div class="font-bold text-slate-900 mt-0.5" th:text="${booking.guestName}">Tourist</div>
-                        <div class="text-xs text-slate-400" th:text="${'UID: ' + booking.touristUid}">UID: tourist-1</div>
+                        <div class="font-headline font-semibold text-xs text-[var(--text-primary)] mt-0.5" th:text="${booking.guestName}">Tourist</div>
+                        <div class="font-mono text-[10px] text-[var(--text-muted)]" th:text="${'UID: ' + booking.touristUid}">UID: tourist-1</div>
                     </td>
-                    <td class="py-4 px-5">
-                        <div class="font-extrabold text-slate-900" th:text="${booking.hotelName}">Ceylon Tea Bungalow</div>
-                        <div class="text-xs text-slate-500" th:text="${booking.roomTypeName + ' • ' + booking.city}">Planter Suite • Ella</div>
+                    <td>
+                        <div class="font-headline font-semibold text-xs text-[var(--text-primary)]" th:text="${booking.hotelName}">Ceylon Tea Bungalow</div>
+                        <div class="font-mono text-[11px] text-[var(--text-muted)]" th:text="${booking.roomTypeName + ' · ' + booking.city}">Planter Suite · Ella</div>
                     </td>
-                    <td class="py-4 px-5">
-                        <div class="font-bold text-slate-800">
-                            <span th:text="${booking.checkIn}">2026-05-01</span>
-                            <span class="text-slate-400 mx-1">→</span>
-                            <span th:text="${booking.checkOut}">2026-05-04</span>
-                        </div>
-                        <div class="text-xs text-slate-500" th:text="${booking.nights + ' Nights'}">3 Nights</div>
+                    <td class="font-mono text-xs">
+                        <span th:text="${booking.checkIn}">2026-05-01</span>
+                        <span class="text-[var(--text-muted)] mx-1">→</span>
+                        <span th:text="${booking.checkOut}">2026-05-04</span>
+                        <div class="text-[10px] text-[var(--text-muted)]" th:text="${booking.nights + ' Nights'}">3 Nights</div>
                     </td>
-                    <td class="py-4 px-5">
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-bold"
+                    <td>
+                        <span class="badge-telemetry"
                               th:text="${booking.roomCount + ' Rm · ' + booking.guestCount + ' Guests'}">
                             1 Rm · 2 Guests
                         </span>
                     </td>
-                    <td class="py-4 px-5">
-                        <div class="font-black text-slate-900"
-                             th:text="${booking.currency + ' ' + #numbers.formatDecimal(booking.priceTotal, 1, 'COMMA', 0, 'POINT')}">
+                    <td class="font-mono text-xs font-bold text-[var(--text-primary)]">
+                        <span th:text="${booking.currency + ' ' + #numbers.formatDecimal(booking.priceTotal, 1, 'COMMA', 0, 'POINT')}">
                             LKR 105,000
-                        </div>
+                        </span>
                     </td>
-                    <td class="py-4 px-5">
+                    <td>
                         <span th:if="${booking.status.name() == 'CONFIRMED'}"
-                              class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold uppercase">
+                              class="badge-telemetry text-emerald-500 border-emerald-500/30">
                             CONFIRMED
                         </span>
                         <span th:if="${booking.status.name() == 'COMPLETED'}"
-                              class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-extrabold uppercase">
+                              class="badge-telemetry text-blue-400 border-blue-500/30">
                             COMPLETED
                         </span>
                         <span th:if="${booking.status.name() == 'CANCELLED'}"
-                              class="px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-extrabold uppercase">
+                              class="badge-telemetry text-red-500 border-red-500/30">
                             CANCELLED
                         </span>
                         <span th:if="${booking.status.name() == 'PENDING'}"
-                              class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-extrabold uppercase">
+                              class="badge-telemetry text-amber-500 border-amber-500/30">
                             PENDING
                         </span>
                     </td>
-                    <td class="py-4 px-5 text-right">
+                    <td class="text-right">
                         <form th:if="${booking.status.name() == 'CONFIRMED'}"
                               method="post"
                               th:action="@{/bookings/{id}/complete(id=${booking.id}, redirectTo='/owner/bookings')}">
                             <button type="submit"
-                                    class="px-3 py-1.5 rounded-lg bg-[#003580] hover:bg-blue-900 text-white text-xs font-extrabold transition">
-                                Check-Out Complete
+                                    class="btn-monolith-primary text-xs py-1.5 px-3">
+                                Check-Out
                             </button>
                         </form>
-                        <span th:if="${booking.status.name() != 'CONFIRMED'}" class="text-xs text-slate-400 font-semibold">
-                            No action required
+                        <span th:if="${booking.status.name() != 'CONFIRMED'}" class="font-mono text-[11px] text-[var(--text-muted)]">
+                            Settled
                         </span>
                     </td>
                 </tr>
