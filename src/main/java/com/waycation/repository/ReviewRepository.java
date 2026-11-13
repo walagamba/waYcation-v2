@@ -10,7 +10,7 @@ import java.util.Optional;
 
     // Spring Data JPA repository for saving and querying hotel reviews
 @Repository
-public interface ReviewRepository extends JpaRepository<Review, String> {
+public interface ReviewRepository extends JpaRepository<Review, String> {//inheritance
 
     Optional<Review> findByBookingId(String bookingId);
 
