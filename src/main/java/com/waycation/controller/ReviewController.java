@@ -30,7 +30,7 @@ public class ReviewController {
     private static final String DEFAULT_TOURIST_UID = "tourist-demo-001";
     private static final String DEFAULT_ADMIN_UID = "admin-demo-001";
 
-    private final ReviewService reviewService;
+    private final ReviewService reviewService; //association
     private final BookingRepository bookingRepository;
     private final HotelRepository hotelRepository;
     private final ReviewRepository reviewRepository;
