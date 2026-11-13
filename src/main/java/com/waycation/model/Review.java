@@ -15,19 +15,19 @@ public class Review {
 
     @Column(name = "tourist_uid", nullable = false)
     // Author of the review linked to their user account UID
-    private String touristUid;
+    private String touristUid; // Encapsulation
 
     @Column(name = "hotel_id", nullable = false)
-    private String hotelId;
+    private String hotelId;// Encapsulation
 
     @Column(name = "booking_id", nullable = false, unique = true)
-    private String bookingId;
+    private String bookingId; // Encapsulation
 
     @Column(name = "rating", nullable = false)
-    private int rating;
+    private int rating; // Encapsulation
 
     @Column(name = "comment", columnDefinition = "TEXT", nullable = false)
-    private String comment;
+    private String comment; // Encapsulation
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
