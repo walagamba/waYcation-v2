@@ -22,7 +22,7 @@ import java.util.Optional;
 @Service
 public class ReviewService {
 
-    private final ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository; //association
     private final BookingRepository bookingRepository;
     private final HotelRepository hotelRepository;
     private final ProfileRepository profileRepository;
